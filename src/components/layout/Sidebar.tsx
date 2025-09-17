@@ -7,11 +7,10 @@ import {
   LayoutDashboard,
   Settings,
   LogOut,
-  Menu,
-  X,
   Image,
   Users,
   FileText,
+  ListCollapseIcon,
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -67,7 +66,9 @@ export function Sidebar({ className }: SidebarProps) {
 
   return (
     <div
-      className={`relative flex flex-col bg-background border-r ${className}`}
+      className={`relative flex flex-col bg-background border-r ${
+        !isCollapsed ? "w-64" : "w-16"
+      } flex-shrink-0 transition-all duration-200 ease-in-out ${className}`}
     >
       {/* 헤더 */}
       <div className="flex items-center justify-between p-4">
@@ -79,9 +80,9 @@ export function Sidebar({ className }: SidebarProps) {
           className="h-8 w-8 p-0"
         >
           {isCollapsed ? (
-            <Menu className="h-4 w-4" />
+            <ListCollapseIcon className="h-4 w-4" />
           ) : (
-            <X className="h-4 w-4" />
+            <ListCollapseIcon className="h-4 w-4 rotate-180" />
           )}
         </Button>
       </div>
@@ -92,10 +93,7 @@ export function Sidebar({ className }: SidebarProps) {
       {!isCollapsed && user && (
         <div className="p-4">
           <div className="text-sm">
-            <p className="font-medium">{user.username}</p>
-            {user.email && (
-              <p className="text-muted-foreground">{user.email}</p>
-            )}
+            <p className="font-medium">{user.name}</p>
           </div>
         </div>
       )}
@@ -113,14 +111,20 @@ export function Sidebar({ className }: SidebarProps) {
               <li key={item.href}>
                 <Link href={item.href}>
                   <div
-                    className={`flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-all hover:bg-accent hover:text-accent-foreground ${
+                    className={`flex items-center ${
+                      isCollapsed ? "justify-center" : "justify-start"
+                    } gap-3 rounded-lg px-3 py-2 text-sm transition-all hover:bg-accent hover:text-accent-foreground ${
                       isActive
                         ? "bg-accent text-accent-foreground"
                         : "text-muted-foreground"
                     }`}
                   >
                     <Icon className="h-4 w-4" />
-                    {!isCollapsed && <span>{item.title}</span>}
+                    {!isCollapsed && (
+                      <span className="whitespace-nowrap overflow-hidden">
+                        {item.title}
+                      </span>
+                    )}
                   </div>
                 </Link>
               </li>

@@ -3,10 +3,9 @@ import { createJSONStorage, persist } from "zustand/middleware";
 import { axiosApiAuth } from "@/lib/axios";
 
 interface User {
-  id: string;
-  username: string;
-  email?: string;
-  role?: string;
+  _id: string;
+  name: string;
+  account?: string;
 }
 
 interface AuthState {
