@@ -10,23 +10,23 @@ interface AdminLayoutProps {
 }
 
 export function AdminLayout({ children }: AdminLayoutProps) {
-  const { isAuthenticated, isLoading, checkAuth } = useAuthStore();
+  const { isAuthenticated, isLoading, checkAuth, hasHydrated } = useAuthStore();
   const router = useRouter();
   const pathname = usePathname();
-  
+
   const isLoginPage = pathname === "/login";
 
   useEffect(() => {
-    if (!isLoginPage) {
+    if (!isLoginPage && hasHydrated) {
       checkAuth();
     }
-  }, [checkAuth, isLoginPage]);
+  }, [checkAuth, isLoginPage, hasHydrated]);
 
   useEffect(() => {
-    if (!isLoginPage && !isLoading && !isAuthenticated) {
+    if (!isLoginPage && !isLoading && !isAuthenticated && hasHydrated) {
       router.push("/login");
     }
-  }, [isAuthenticated, isLoading, router, isLoginPage]);
+  }, [isAuthenticated, isLoading, router, isLoginPage, hasHydrated]);
 
   // 로그인 페이지면 children만 렌더링
   if (isLoginPage) {

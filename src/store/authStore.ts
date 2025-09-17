@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import { persist } from "zustand/middleware";
+import { createJSONStorage, persist } from "zustand/middleware";
 import { axiosApiAuth } from "@/lib/axios";
 
 interface User {
@@ -14,6 +14,7 @@ interface AuthState {
   token: string | null;
   isAuthenticated: boolean;
   isLoading: boolean;
+  hasHydrated: boolean;
 }
 
 interface AuthActions {
@@ -21,6 +22,7 @@ interface AuthActions {
   logout: () => Promise<void>;
   checkAuth: () => Promise<void>;
   setLoading: (loading: boolean) => void;
+  setHasHydrated: (hasHydrated: boolean) => void;
 }
 
 type AuthStore = AuthState & AuthActions;
@@ -33,6 +35,7 @@ export const useAuthStore = create<AuthStore>()(
       token: null,
       isAuthenticated: false,
       isLoading: false,
+      hasHydrated: false,
 
       // 로그인
       login: async (credentials) => {
@@ -77,10 +80,12 @@ export const useAuthStore = create<AuthStore>()(
         const { token, user } = get();
 
         if (!token || !user) {
+          console.log("ws", token, user);
           set({ isAuthenticated: false });
           return;
         }
       },
+      setHasHydrated: (hasHydrated) => set({ hasHydrated }),
 
       // 로딩 상태 설정
       setLoading: (loading) => set({ isLoading: loading }),
@@ -92,6 +97,13 @@ export const useAuthStore = create<AuthStore>()(
         token: state.token,
         isAuthenticated: state.isAuthenticated,
       }),
+      storage: createJSONStorage(() => localStorage),
+      onRehydrateStorage: () => (state) => {
+        // Storage 로딩 완료 시 hasHydrated를 true로 설정
+        if (state) {
+          state.setHasHydrated(true);
+        }
+      },
     }
   )
 );
