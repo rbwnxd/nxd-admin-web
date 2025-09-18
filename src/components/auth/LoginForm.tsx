@@ -129,19 +129,6 @@ export function LoginForm() {
               )}
             </div>
 
-            <div className="flex items-center space-x-2">
-              <input
-                id="rememberMe"
-                type="checkbox"
-                {...form.register("rememberMe")}
-                disabled={isLoading}
-                className="h-4 w-4 rounded border-gray-300"
-              />
-              <Label htmlFor="rememberMe" className="text-sm">
-                로그인 상태 유지
-              </Label>
-            </div>
-
             {error && (
               <div className="p-3 text-sm text-destructive bg-destructive/10 rounded-md">
                 {error}
