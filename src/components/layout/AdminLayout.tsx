@@ -50,14 +50,17 @@ export function AdminLayout({ children }: AdminLayoutProps) {
   }
 
   return (
-    <div className="flex h-screen bg-background">
-      <SidebarProvider>
-        <CustomSidebar className="" />
-
-        <main className="flex-1 overflow-auto">
-          <div className="container mx-auto p-6">{children}</div>
-        </main>
-      </SidebarProvider>
-    </div>
+    <SidebarProvider>
+      <CustomSidebar className="" />
+      <main className="flex h-screen w-full flex-col overflow-hidden">
+        <header className="flex h-16 shrink-0 items-center gap-2 border-b px-4 lg:hidden">
+          <SidebarTrigger className="-ml-1" />
+          <h1 className="text-lg font-semibold">NXD Admin</h1>
+        </header>
+        <div className="flex-1 overflow-auto p-6">
+          <div className="container mx-auto">{children}</div>
+        </div>
+      </main>
+    </SidebarProvider>
   );
 }
