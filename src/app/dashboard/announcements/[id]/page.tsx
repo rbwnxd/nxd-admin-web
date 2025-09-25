@@ -1,13 +1,8 @@
 "use client";
 
-import { useParams, useRouter } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { useEffect, useState, use } from "react";
-import {
-  deleteAnnouncement,
-  getAnnouncement,
-  getAnnouncements,
-} from "../actions";
-import { useAnnouncementStore } from "@/store/announcementStore";
+import { deleteAnnouncement, getAnnouncement } from "../actions";
 import { Announcement } from "@/lib/types";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -28,20 +23,11 @@ import { ConfirmDialog } from "@/components/dialog";
 
 export default function AnnouncementDetailPage({
   params,
-  searchParams,
 }: {
   params: Promise<{ id: string }>;
-  searchParams: Promise<{ isUpdate?: boolean }>;
 }) {
-  // searchParams를 React.use()로 unwrap
   const resolvedParams = use(params);
-  const resolvedSearchParams = use(searchParams);
   const router = useRouter();
-
-  const announcements = useAnnouncementStore((state) => state.announcements);
-  const setAnnouncements = useAnnouncementStore(
-    (state) => state.setAnnouncements
-  );
 
   const [currentAnnouncement, setCurrentAnnouncement] =
     useState<Announcement | null>(null);
@@ -66,15 +52,6 @@ export default function AnnouncementDetailPage({
     if (!jsonWebToken || !resolvedParams.id) return;
 
     fetchAnnouncement();
-
-    // if (resolvedParams.id && announcements) {
-    //   setCurrentAnnouncement(
-    //     announcements?.find(
-    //       (announcement: Announcement) =>
-    //         announcement?._id === resolvedParams.id
-    //     ) || null
-    //   );
-    // }
   }, [resolvedParams.id, setCurrentAnnouncement, jsonWebToken]);
 
   const handleDelete = (id: string) => {
@@ -92,14 +69,6 @@ export default function AnnouncementDetailPage({
       });
 
       if (result) {
-        // 삭제 성공 시 해당 공지사항에 deletedAt 추가
-        const updatedAnnouncements = announcements.map((announcement) =>
-          announcement._id === selectedAnnouncementId
-            ? { ...announcement, deletedAt: new Date().toISOString() }
-            : announcement
-        );
-        setAnnouncements(updatedAnnouncements);
-
         setCurrentAnnouncement((val) => {
           if (val === null) return null;
           return { ...val, deletedAt: new Date().toISOString() };
