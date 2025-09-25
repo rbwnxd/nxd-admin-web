@@ -13,6 +13,7 @@ import {
   MoreHorizontal,
   Sun,
   Moon,
+  Megaphone,
 } from "lucide-react";
 
 import { useAuthStore } from "@/store/authStore";
@@ -49,6 +50,11 @@ const menuItems = [
     title: "사용자 관리",
     href: "/dashboard/users",
     icon: Users,
+  },
+  {
+    title: "공지사항 관리",
+    href: "/dashboard/announcements",
+    icon: Megaphone,
   },
   {
     title: "콘텐츠 관리",
@@ -126,7 +132,10 @@ export function CustomSidebar({ className }: SidebarProps) {
             <SidebarMenu>
               {menuItems.map((item) => {
                 const Icon = item.icon;
-                const isActive = pathname === item.href;
+                const isActive =
+                  item?.href?.split("/")?.length > 2
+                    ? pathname.includes(item.href)
+                    : pathname === item.href;
 
                 return (
                   <SidebarMenuItem key={item.href}>

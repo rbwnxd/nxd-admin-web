@@ -1,8 +1,16 @@
-import axios, { AxiosError, Method } from "axios";
+import axios, { AxiosError, Method, AxiosRequestConfig } from "axios";
 import moment from "moment";
 import { API_URL } from "./api";
 
 export const IS_DEV = process.env["NODE_ENV"] === "development";
+
+// API 옵션 타입 정의
+interface ApiOptions {
+  headers?: Record<string, string>;
+  timeout?: number;
+  params?: Record<string, unknown>;
+  [key: string]: unknown;
+}
 
 const apiHandler = axios.create({
   timeout: 30000,
@@ -51,32 +59,43 @@ export async function axiosApi(
     | "POST"
     | "PUT"
     | "DELETE"
+    | "PATCH"
     | "get"
     | "post"
     | "put"
-    | "delete" = "GET",
+    | "delete"
+    | "patch" = "GET",
   data?: object,
-  options = {},
+  options: ApiOptions = {},
   baseURL = `${API_URL}`
 ) {
   try {
     const _method = method.toLowerCase();
-    data =
-      _method === "get"
-        ? { ...options, params: { ...data } }
-        : _method === "delete"
-        ? { ...options, data }
-        : data;
+
+    // headers와 다른 옵션들을 분리
+    const { headers, ...restOptions } = options;
+
+    const requestConfig: AxiosRequestConfig = {
+      method: _method as Method,
+      baseURL,
+      url,
+      headers,
+      ...restOptions,
+    };
+
+    // 메서드에 따른 데이터 처리
+    if (_method === "get") {
+      requestConfig.params = data;
+    } else if (_method === "delete") {
+      requestConfig.data = data;
+    } else {
+      requestConfig.data = data;
+    }
 
     if (IS_DEV) {
       const _startTime = new Date().getTime();
       try {
-        const res = await apiHandler.request({
-          method: _method as Method,
-          baseURL,
-          url,
-          data,
-        });
+        const res = await apiHandler.request(requestConfig);
         console.log(
           `[${moment().format("YYYY.MM.DD h:mm:ss")}]` +
             `[DEV][LOG][axiosApi][respond]`,
@@ -102,12 +121,7 @@ export async function axiosApi(
         throw error;
       }
     } else {
-      const res = await apiHandler.request({
-        method: _method as Method,
-        baseURL,
-        url,
-        data,
-      });
+      const res = await apiHandler.request(requestConfig);
       return res;
     }
   } catch (error) {
@@ -115,28 +129,3 @@ export async function axiosApi(
     throw error;
   }
 }
-
-export const axiosApiAuth = async (
-  url: string,
-  method:
-    | "GET"
-    | "POST"
-    | "PUT"
-    | "DELETE"
-    | "get"
-    | "post"
-    | "put"
-    | "delete" = "GET",
-  data?: object,
-  options?: object
-) => {
-  const jsonWebToken = localStorage.getItem("auth-token");
-
-  const _options = {
-    headers: { Authorization: `jwt ${jsonWebToken || ""}` },
-    ...options,
-  };
-  return axiosApi(url, method, data, _options);
-};
-
-export const { CancelToken } = axios;

@@ -1,6 +1,6 @@
 import { create } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
-import { axiosApiAuth } from "@/lib/axios";
+import { axiosApi } from "@/lib/axios";
 
 interface User {
   _id: string;
@@ -40,7 +40,7 @@ export const useAuthStore = create<AuthStore>()(
       login: async (credentials) => {
         try {
           set({ isLoading: true });
-          const response = await axiosApiAuth(
+          const response = await axiosApi(
             "/admin/web/signIn",
             "POST",
             credentials

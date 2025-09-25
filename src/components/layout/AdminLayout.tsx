@@ -5,6 +5,7 @@ import { useRouter, usePathname } from "next/navigation";
 import { useAuthStore } from "@/store/authStore";
 import { CustomSidebar } from "./CustomSidebar";
 import { SidebarProvider, SidebarTrigger } from "../ui/sidebar";
+import { Toaster } from "../ui/sonner";
 
 interface AdminLayoutProps {
   children: React.ReactNode;
@@ -60,6 +61,7 @@ export function AdminLayout({ children }: AdminLayoutProps) {
         <div className="flex-1 overflow-auto p-6">
           <div className="container mx-auto">{children}</div>
         </div>
+        <Toaster position="top-center" />
       </main>
     </SidebarProvider>
   );
