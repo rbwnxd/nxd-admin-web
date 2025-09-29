@@ -166,7 +166,7 @@ export default function ArtistsPage() {
 
       <Card>
         <CardHeader>
-          <CardTitle>아티스트 목록</CardTitle>
+          <CardTitle>{`아티스트 목록 (${totalCount})`}</CardTitle>
         </CardHeader>
         <CardContent>
           {isFetching ? (

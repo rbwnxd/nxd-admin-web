@@ -178,7 +178,7 @@ export default function AnnouncementsPage() {
 
       <Card>
         <CardHeader>
-          <CardTitle>공지사항 목록</CardTitle>
+          <CardTitle>{`공지사항 목록 (${totalCount})`}</CardTitle>
         </CardHeader>
         <CardContent>
           {isFetching ? (
