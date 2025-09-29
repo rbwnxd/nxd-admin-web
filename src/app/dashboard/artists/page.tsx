@@ -204,7 +204,7 @@ export default function ArtistsPage() {
                             alt="Artist"
                             width={48}
                             height={48}
-                            className="w-12 h-auto rounded-sm"
+                            className="w-16 h-auto rounded-sm"
                           />
                           {artist.imageList.length > 1 && (
                             <div className="absolute -top-0 -right-0 bg-black/45 text-primary-foreground rounded-sm p-1">
@@ -213,8 +213,10 @@ export default function ArtistsPage() {
                           )}
                         </div>
                       ) : (
-                        <div className="w-12 h-12 bg-muted rounded-lg flex items-center justify-center">
-                          <FileText className="h-6 w-6 text-muted-foreground" />
+                        <div className="w-16 h-20 bg-muted rounded-lg flex items-center justify-center">
+                          <span className="text-xs text-muted-foreground">
+                            이미지
+                          </span>
                         </div>
                       )}
 
