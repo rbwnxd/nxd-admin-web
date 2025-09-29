@@ -1,4 +1,4 @@
-"use server";
+"use client";
 
 import { axiosApi } from "@/lib/axios";
 
@@ -144,10 +144,12 @@ export const uploadImageFile = async ({
   file,
   jsonWebToken,
   onProgress,
+  dataCollectionName = "announcements",
 }: {
   file: File;
   jsonWebToken: string | null;
   onProgress?: (progress: number) => void;
+  dataCollectionName?: string;
 }): Promise<string> => {
   try {
     onProgress?.(10); // 시작
@@ -156,7 +158,7 @@ export const uploadImageFile = async ({
     const uploadData = await getMultipartUploadId({
       filename: file.name,
       fileType: "images",
-      dataCollectionName: "announcements",
+      dataCollectionName,
       jsonWebToken,
     });
 

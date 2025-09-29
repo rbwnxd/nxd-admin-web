@@ -28,3 +28,26 @@ export interface Announcement {
   updatedAt: string;
   deletedAt: string | null;
 }
+
+export interface Artist {
+  _id: string;
+  nameList: [
+    {
+      ko: string;
+      en: string;
+    }
+  ];
+  imageList: {
+    image64Path: string;
+    image128Path: string;
+    image256Path: string;
+    image512Path: string;
+    image1024Path: string;
+    imageFilename: string;
+    imageOriginalPath: string;
+    name: string;
+  }[];
+  createdAt: string;
+  updatedAt: string;
+  deletedAt: string | null;
+}

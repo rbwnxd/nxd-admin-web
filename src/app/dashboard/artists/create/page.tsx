@@ -2,28 +2,22 @@
 
 import { useRouter } from "next/navigation";
 import { useEffect, useState, use } from "react";
-import { useAnnouncementStore } from "@/store/announcementStore";
 import { useAuthStore } from "@/store/authStore";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import { Progress } from "@/components/ui/progress";
 import { ArrowLeft, Save, X, Upload, Trash2, Eye } from "lucide-react";
-import moment from "moment";
-import { postAnnouncement, putAnnouncement } from "../actions";
+import { postArtist, patchArtist } from "../actions";
 import { uploadImageFile } from "@/app/actions";
 import { STORAGE_URL } from "@/lib/api";
 import Image from "next/image";
+import { useArtistStore } from "@/store/artistStore";
 
 interface FormData {
-  titleKo: string;
-  titleEn: string;
-  contentKo: string;
-  contentEn: string;
-  publishedAt: string;
-  externalLink: string;
+  nameKo: string;
+  nameEn: string;
 }
 
 interface UploadedImage {
@@ -36,7 +30,7 @@ interface UploadedImage {
   preview?: string; // 미리보기 URL 추가
 }
 
-export default function AnnouncementCreatePage({
+export default function ArtistCreatePage({
   searchParams,
 }: {
   searchParams: Promise<{ id?: string; isUpdate?: string }>;
@@ -44,18 +38,14 @@ export default function AnnouncementCreatePage({
   const router = useRouter();
   const resolvedSearchParams = use(searchParams);
   const isUpdateMode = resolvedSearchParams.isUpdate === "true";
-  const announcementId = resolvedSearchParams.id;
+  const artistId = resolvedSearchParams.id;
 
-  const announcements = useAnnouncementStore((state) => state.announcements);
+  const artists = useArtistStore((state) => state.artists);
   const jsonWebToken = useAuthStore((state) => state.token);
 
   const [formData, setFormData] = useState<FormData>({
-    titleKo: "",
-    titleEn: "",
-    contentKo: "",
-    contentEn: "",
-    publishedAt: "",
-    externalLink: "",
+    nameKo: "",
+    nameEn: "",
   });
 
   const [isLoading, setIsLoading] = useState(false);
@@ -64,26 +54,18 @@ export default function AnnouncementCreatePage({
 
   // 수정 모드인 경우 기존 데이터 로드
   useEffect(() => {
-    if (isUpdateMode && announcementId && announcements.length > 0) {
-      const existingAnnouncement = announcements.find(
-        (announcement) => announcement._id === announcementId
-      );
+    if (isUpdateMode && artistId && artists.length > 0) {
+      const existingArtist = artists.find((artist) => artist._id === artistId);
 
-      if (existingAnnouncement) {
+      if (existingArtist) {
         setFormData({
-          titleKo: existingAnnouncement.titleList[0]?.ko || "",
-          titleEn: existingAnnouncement.titleList[0]?.en || "",
-          contentKo: existingAnnouncement.contentList[0]?.ko || "",
-          contentEn: existingAnnouncement.contentList[0]?.en || "",
-          publishedAt: moment(existingAnnouncement.publishedAt).format(
-            "YYYY-MM-DDTHH:mm"
-          ),
-          externalLink: existingAnnouncement.externalLink || "",
+          nameKo: existingArtist.nameList[0]?.ko || "",
+          nameEn: existingArtist.nameList[0]?.en || "",
         });
 
         // 기존 이미지들을 UploadedImage 형태로 변환
         setImages(
-          existingAnnouncement.imageList.map((image, index) => ({
+          existingArtist.imageList.map((image, index) => ({
             id: Date.now().toString() + index + Math.random().toString(36),
             file: null, // 이미 업로드된 파일이므로 null
             progress: 100, // 완료된 상태
@@ -94,7 +76,7 @@ export default function AnnouncementCreatePage({
         );
       }
     }
-  }, [isUpdateMode, announcementId, announcements]);
+  }, [isUpdateMode, artistId, artists]);
   const handleInputChange = (field: keyof FormData, value: string) => {
     setFormData((prev) => ({
       ...prev,
@@ -131,7 +113,7 @@ export default function AnnouncementCreatePage({
       const path = await uploadImageFile({
         file: imageData.file,
         jsonWebToken,
-        dataCollectionName: "announcements",
+        dataCollectionName: "artists",
         onProgress: (progress) => {
           setImages((prev) =>
             prev.map((img) =>
@@ -192,19 +174,12 @@ export default function AnnouncementCreatePage({
 
     try {
       const requestData = {
-        titleList: [
+        nameList: [
           {
-            ko: formData.titleKo,
-            en: formData.titleEn,
+            ko: formData.nameKo,
+            en: formData.nameEn,
           },
         ] as [{ ko: string; en: string }],
-        contentList: [
-          {
-            ko: formData.contentKo,
-            en: formData.contentEn,
-          },
-        ] as [{ ko: string; en: string }],
-        publishedAt: moment(formData.publishedAt).toISOString(),
         imageList: images
           .filter((img) => img.path)
           .map((img) => {
@@ -213,29 +188,28 @@ export default function AnnouncementCreatePage({
               imageOriginalPath: img.path!,
             };
           }) as { name: string; imageOriginalPath: string }[],
-        externalLink: formData.externalLink || "",
       };
 
       let result;
-      if (isUpdateMode && announcementId) {
-        result = await putAnnouncement({
-          id: announcementId,
+      if (isUpdateMode && artistId) {
+        result = await patchArtist({
+          id: artistId,
           body: requestData,
           jsonWebToken,
         });
       } else {
-        result = await postAnnouncement({
+        result = await postArtist({
           body: requestData,
           jsonWebToken,
         });
       }
 
       if (result) {
-        router.push("/dashboard/announcements");
+        router.push("/dashboard/artists");
       }
     } catch (error) {
-      console.error("공지사항 저장 오류:", error);
-      alert("공지사항 저장 중 오류가 발생했습니다.");
+      console.error("아티스트 저장 오류:", error);
+      alert("아티스트 저장 중 오류가 발생했습니다.");
     } finally {
       setIsLoading(false);
     }
@@ -260,10 +234,10 @@ export default function AnnouncementCreatePage({
             type="button"
             variant="outline"
             onClick={() => {
-              if (announcementId && isUpdateMode) {
+              if (artistId && isUpdateMode) {
                 router.back();
               } else {
-                router.push("/dashboard/announcements");
+                router.push("/dashboard/artists");
               }
             }}
             disabled={isLoading}
@@ -274,7 +248,7 @@ export default function AnnouncementCreatePage({
           </Button>
           <Button
             type="submit"
-            form="announcement-form"
+            form="artist-form"
             disabled={isLoading}
             className="flex items-center gap-2"
           >
@@ -288,121 +262,43 @@ export default function AnnouncementCreatePage({
       <Card>
         <CardHeader>
           <CardTitle className="text-2xl">
-            {isUpdateMode ? "공지사항 수정" : "공지사항 작성"}
+            {isUpdateMode ? "아티스트 수정" : "아티스트 작성"}
           </CardTitle>
         </CardHeader>
 
         <CardContent>
-          <form id="announcement-form" onSubmit={handleSubmit}>
+          <form id="artist-form" onSubmit={handleSubmit}>
             {/* 제목 섹션 */}
             <div className="mb-8">
-              <h3 className="text-lg font-semibold mb-4">제목</h3>
+              <h3 className="text-lg font-semibold mb-4">이름</h3>
               <div className="space-y-4">
                 <div>
-                  <Label htmlFor="titleKo" className="text-sm font-medium">
-                    한국어 제목 *
+                  <Label htmlFor="nameKo" className="text-sm font-medium">
+                    한국어 이름 *
                   </Label>
                   <Input
-                    id="titleKo"
-                    value={formData.titleKo}
+                    id="nameKo"
+                    value={formData.nameKo}
                     onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                      handleInputChange("titleKo", e.target.value)
+                      handleInputChange("nameKo", e.target.value)
                     }
-                    placeholder="한국어 제목을 입력하세요"
+                    placeholder="한국어 이름을 입력하세요"
                     required
                     disabled={isLoading}
                     className="mt-1"
                   />
                 </div>
                 <div>
-                  <Label htmlFor="titleEn" className="text-sm font-medium">
-                    영어 제목
+                  <Label htmlFor="nameEn" className="text-sm font-medium">
+                    영어 이름
                   </Label>
                   <Input
-                    id="titleEn"
-                    value={formData.titleEn}
+                    id="nameEn"
+                    value={formData.nameEn}
                     onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                      handleInputChange("titleEn", e.target.value)
+                      handleInputChange("nameEn", e.target.value)
                     }
-                    placeholder="Enter English title"
-                    disabled={isLoading}
-                    className="mt-1"
-                  />
-                </div>
-              </div>
-            </div>
-
-            {/* 내용 섹션 */}
-            <div className="mb-8">
-              <h3 className="text-lg font-semibold mb-4">내용</h3>
-              <div className="space-y-4">
-                <div>
-                  <Label htmlFor="contentKo" className="text-sm font-medium">
-                    한국어 내용 *
-                  </Label>
-                  <Textarea
-                    id="contentKo"
-                    value={formData.contentKo}
-                    onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) =>
-                      handleInputChange("contentKo", e.target.value)
-                    }
-                    placeholder="한국어 내용을 입력하세요"
-                    required
-                    rows={6}
-                    disabled={isLoading}
-                    className="mt-1 max-h-40 overflow-y-auto resize-none"
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="contentEn" className="text-sm font-medium">
-                    영어 내용
-                  </Label>
-                  <Textarea
-                    id="contentEn"
-                    value={formData.contentEn}
-                    onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) =>
-                      handleInputChange("contentEn", e.target.value)
-                    }
-                    placeholder="Enter English content"
-                    rows={6}
-                    disabled={isLoading}
-                    className="mt-1 max-h-40 overflow-y-auto resize-none"
-                  />
-                </div>
-              </div>
-            </div>
-
-            {/* 공지일 및 외부링크 섹션 */}
-            <div className="mb-8">
-              <h3 className="text-lg font-semibold mb-4">추가 정보</h3>
-              <div className="flex flex-col md:flex-row gap-4 md:items-end">
-                <div className="flex-shrink-0">
-                  <Label htmlFor="publishedAt" className="text-sm font-medium">
-                    공지일
-                  </Label>
-                  <Input
-                    id="publishedAt"
-                    type="datetime-local"
-                    value={formData.publishedAt}
-                    onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                      handleInputChange("publishedAt", e.target.value)
-                    }
-                    disabled={isLoading}
-                    className="mt-1 w-fit"
-                  />
-                </div>
-                <div className="flex-1">
-                  <Label htmlFor="externalLink" className="text-sm font-medium">
-                    외부 링크
-                  </Label>
-                  <Input
-                    id="externalLink"
-                    type="url"
-                    value={formData.externalLink}
-                    onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                      handleInputChange("externalLink", e.target.value)
-                    }
-                    placeholder="https://example.com"
+                    placeholder="영어 이름을 입력하세요"
                     disabled={isLoading}
                     className="mt-1"
                   />
@@ -412,7 +308,7 @@ export default function AnnouncementCreatePage({
 
             {/* 이미지 업로드 섹션 */}
             <div className="mb-8">
-              <h3 className="text-lg font-semibold mb-4">첨부 이미지</h3>
+              <h3 className="text-lg font-semibold mb-4">아티스트 이미지</h3>
 
               {/* 파일 업로드 영역 */}
               <div

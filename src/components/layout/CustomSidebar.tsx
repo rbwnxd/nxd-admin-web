@@ -14,6 +14,7 @@ import {
   Sun,
   Moon,
   Megaphone,
+  Star,
 } from "lucide-react";
 
 import { useAuthStore } from "@/store/authStore";
@@ -50,6 +51,11 @@ const menuItems = [
     title: "사용자 관리",
     href: "/dashboard/users",
     icon: Users,
+  },
+  {
+    title: "아티스트 관리",
+    href: "/dashboard/artists",
+    icon: Star,
   },
   {
     title: "공지사항 관리",
