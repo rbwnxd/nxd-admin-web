@@ -16,6 +16,7 @@ import {
   UserMinus,
   Trash2,
   Loader2,
+  Copy,
 } from "lucide-react";
 import {
   getAppAdminUser,
@@ -192,6 +193,25 @@ export default function AppAdminDetailPage({
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
+            <div>
+              <Label className="text-sm font-medium text-muted-foreground">
+                ID
+              </Label>
+              <div className="flex items-center gap-2">
+                <p className="text-lg font-semibold">{appAdminUser._id}</p>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    navigator.clipboard.writeText(appAdminUser._id);
+                    toast.success("ID가 클립보드에 복사되었습니다.");
+                  }}
+                  className="h-6 w-6 p-0 cursor-pointer"
+                >
+                  <Copy className="h-3 w-3" />
+                </Button>
+              </div>
+            </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <Label className="text-sm font-medium text-muted-foreground">

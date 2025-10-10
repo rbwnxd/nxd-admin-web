@@ -217,6 +217,9 @@ export default function AppAdminPage() {
                       </div>
 
                       <p className="text-sm text-muted-foreground mb-2">
+                        ID: {user._id}
+                      </p>
+                      <p className="text-sm text-muted-foreground mb-2">
                         계정: {user.account}
                       </p>
 
