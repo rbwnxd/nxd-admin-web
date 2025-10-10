@@ -15,6 +15,10 @@ import {
   Moon,
   Megaphone,
   Star,
+  QrCode,
+  BarChart3,
+  Gift,
+  Shield,
 } from "lucide-react";
 
 import { useAuthStore } from "@/store/authStore";
@@ -37,21 +41,21 @@ import {
 import { useTheme } from "next-themes";
 
 const menuItems = [
-  {
-    title: "대시보드",
-    href: "/dashboard",
-    icon: LayoutDashboard,
-  },
-  {
-    title: "포토카드 관리",
-    href: "/dashboard/photocards",
-    icon: Image,
-  },
-  {
-    title: "사용자 관리",
-    href: "/dashboard/users",
-    icon: Users,
-  },
+  // {
+  //   title: "대시보드",
+  //   href: "/dashboard",
+  //   icon: LayoutDashboard,
+  // },
+  // {
+  //   title: "포토카드 관리",
+  //   href: "/dashboard/photocards",
+  //   icon: Image,
+  // },
+  // {
+  //   title: "사용자 관리",
+  //   href: "/dashboard/users",
+  //   icon: Users,
+  // },
   {
     title: "아티스트 관리",
     href: "/dashboard/artists",
@@ -63,15 +67,35 @@ const menuItems = [
     icon: Megaphone,
   },
   {
-    title: "콘텐츠 관리",
-    href: "/dashboard/contents",
-    icon: FileText,
+    title: "QR 코드 관리",
+    href: "/dashboard/qr-codes",
+    icon: QrCode,
   },
   {
-    title: "설정",
-    href: "/dashboard/settings",
-    icon: Settings,
+    title: "차트 관리",
+    href: "/dashboard/charts",
+    icon: BarChart3,
   },
+  {
+    title: "특전 관리",
+    href: "/dashboard/benefits",
+    icon: Gift,
+  },
+  {
+    title: "앱 관리자",
+    href: "/dashboard/app-admin",
+    icon: Shield,
+  },
+  // {
+  //   title: "콘텐츠 관리",
+  //   href: "/dashboard/contents",
+  //   icon: FileText,
+  // },
+  // {
+  //   title: "설정",
+  //   href: "/dashboard/settings",
+  //   icon: Settings,
+  // },
 ];
 
 interface SidebarProps {

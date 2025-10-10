@@ -1,0 +1,321 @@
+"use client";
+
+import { useRouter } from "next/navigation";
+import { use, useCallback, useEffect, useState } from "react";
+import Image from "next/image";
+import moment from "moment";
+import { useAuthStore } from "@/store/authStore";
+import { useChartStore } from "@/store/chartStore";
+import { ChartItem, AdminChartRankingItem } from "@/lib/types";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { ArrowLeft, Calendar, Trophy, User } from "lucide-react";
+import { getChartRanking } from "../actions";
+import { toast } from "sonner";
+import { STORAGE_URL } from "@/lib/api";
+
+
+
+export default function ChartDetailPage({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}) {
+  const resolvedParams = use(params);
+  const router = useRouter();
+  const jsonWebToken = useAuthStore((state) => state.token);
+  
+  // Chart Store에서 차트 정보 가져오기
+  const { findChartById } = useChartStore();
+
+  // Persist 스토어 하이드레이션
+  useEffect(() => {
+    useChartStore.persist.rehydrate();
+  }, []);
+
+  const [rankings, setRankings] = useState<AdminChartRankingItem[]>([]);
+  const [totalCount, setTotalCount] = useState(0);
+  const [isFetching, setIsFetching] = useState(false);
+  const [currentPage, setCurrentPage] = useState(0);
+  const [hasMore, setHasMore] = useState(true);
+
+  // 랭킹 데이터 가져오기
+  const fetchRankings = useCallback(
+    async (skip = 0, reset = false) => {
+      if (!jsonWebToken || !resolvedParams.id) {
+        toast.error("인증 토큰이나 차트 ID가 없습니다.");
+        return;
+      }
+
+      setIsFetching(true);
+      try {
+        const result = await getChartRanking({
+          chartId: resolvedParams.id,
+          params: {
+            __skip: skip,
+            __limit: 20,
+          },
+          jsonWebToken,
+        });
+
+        if (result) {
+          const newRankings = result.rankings || [];
+          if (reset) {
+            setRankings(newRankings);
+          } else {
+            setRankings((prev) => [...prev, ...newRankings]);
+          }
+          setTotalCount(result.count || 0);
+          setHasMore(newRankings.length === 20);
+        }
+      } catch (error) {
+        console.error("Chart ranking fetch error:", error);
+        toast.error("차트 랭킹을 불러오는 중 오류가 발생했습니다.");
+      } finally {
+        setIsFetching(false);
+      }
+    },
+    [jsonWebToken, resolvedParams.id]
+  );
+
+  useEffect(() => {
+    fetchRankings(0, true);
+    setCurrentPage(0);
+  }, [fetchRankings]);
+
+  const loadMore = () => {
+    if (!isFetching && hasMore) {
+      const newPage = currentPage + 1;
+      setCurrentPage(newPage);
+      fetchRankings(newPage * 20, false);
+    }
+  };
+
+  const getChartTypeLabel = (type: string) => {
+    const typeLabels = {
+      DAILY_ACCUMULATED: "데일리 누적",
+      ALL_TIME_ACCUMULATED: "올타임 누적",
+      SEASON: "시즌 차트",
+    };
+    return typeLabels[type as keyof typeof typeLabels] || type;
+  };
+
+  const getChartTypeVariant = (type: string) => {
+    const variants = {
+      DAILY_ACCUMULATED: "default" as const,
+      ALL_TIME_ACCUMULATED: "secondary" as const,
+      SEASON: "outline" as const,
+    };
+    return variants[type as keyof typeof variants] || "default";
+  };
+
+  // Chart Store에서 차트 정보 가져오기
+  const chartInfo = findChartById(resolvedParams.id);
+  
+  // 차트 정보가 없으면 기본값 사용 (차트 목록을 먼저 방문하지 않은 경우)
+  const defaultChartInfo: ChartItem = {
+    _id: resolvedParams.id,
+    nameList: [{ ko: "차트 랭킹", en: "Chart Ranking" }],
+    descriptionList: [
+      { ko: "사용자 랭킹 정보", en: "User ranking information" },
+    ],
+    type: "ALL_TIME_ACCUMULATED",
+    isActivated: true,
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+  };
+  
+  const currentChartInfo = chartInfo || defaultChartInfo;
+
+  return (
+    <div className="container mx-auto">
+      {/* 상단 네비게이션 */}
+      <div className="flex items-center justify-between mb-6">
+        <Button
+          variant="ghost"
+          onClick={() => router.back()}
+          className="flex items-center gap-2"
+        >
+          <ArrowLeft className="w-4 h-4" />
+          돌아가기
+        </Button>
+      </div>
+
+      <Card className="mb-6">
+        <CardHeader>
+          <div className="flex items-center justify-between">
+            <div>
+              <CardTitle className="text-2xl">
+                {currentChartInfo.nameList[0]?.ko}
+              </CardTitle>
+              <p className="text-muted-foreground">
+                {currentChartInfo.descriptionList[0]?.ko}
+              </p>
+            </div>
+            <div className="flex items-center gap-2">
+              <Badge variant={getChartTypeVariant(currentChartInfo.type)}>
+                {getChartTypeLabel(currentChartInfo.type)}
+              </Badge>
+              <Badge variant={currentChartInfo.isActivated ? "default" : "secondary"}>
+                {currentChartInfo.isActivated ? "활성화" : "비활성화"}
+              </Badge>
+            </div>
+          </div>
+        </CardHeader>
+        <CardContent>
+          {currentChartInfo.season && (
+            <div className="flex items-center gap-4 text-sm text-muted-foreground">
+              <div className="flex items-center gap-1">
+                <Calendar className="w-4 h-4" />
+                시작: {moment(currentChartInfo.season.startedAt).format("YYYY-MM-DD")}
+              </div>
+              <div className="flex items-center gap-1">
+                <Calendar className="w-4 h-4" />
+                종료: {moment(currentChartInfo.season.endedAt).format("YYYY-MM-DD")}
+              </div>
+            </div>
+          )}
+          <div className="text-xs text-muted-foreground mt-2">
+            생성일: {moment(currentChartInfo.createdAt).format("YYYY-MM-DD HH:mm")}
+          </div>
+          <div className="flex items-center gap-4 text-sm text-muted-foreground mt-2">
+            <span>총 참가자: {totalCount}명</span>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* 랭킹 목록 카드 */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Trophy className="w-5 h-5" />
+            사용자 랭킹 ({totalCount})
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          {isFetching && rankings.length === 0 ? (
+            <div className="flex items-center justify-center h-32">
+              <div className="text-muted-foreground">로딩 중...</div>
+            </div>
+          ) : rankings.length === 0 ? (
+            <div className="flex flex-col items-center justify-center h-32 text-muted-foreground">
+              <Trophy className="w-12 h-12 mb-2 opacity-50" />
+              <p>등록된 랭킹이 없습니다.</p>
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {rankings.map((ranking) => (
+                <div
+                  key={`${ranking.user._id}-${ranking.index}`}
+                  className={`border rounded-lg p-4 ${
+                    ranking.ranking <= 3
+                      ? "bg-gradient-to-r from-yellow-50 to-amber-50 border-yellow-200 dark:from-yellow-900/20 dark:to-amber-900/20 dark:border-yellow-700/30"
+                      : "hover:bg-muted/30"
+                  } transition-colors`}
+                >
+                  <div className="flex items-center gap-4">
+                    {/* 프로필 이미지 */}
+                    <div className="flex items-center justify-center w-12 h-12 rounded-full overflow-hidden bg-background border">
+                      {ranking.user.imageList &&
+                      ranking.user.imageList.length > 0 ? (
+                        <Image
+                          src={`${STORAGE_URL}/${ranking.user.imageList[0].image64Path}`}
+                          alt={ranking.user.nickname || "사용자"}
+                          width={64}
+                          height={64}
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
+                        <User className="w-8 h-8 text-muted-foreground" />
+                      )}
+                    </div>
+
+                    {/* 사용자 정보 */}
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2 mb-1">
+                        <Badge
+                          variant={ranking.ranking <= 3 ? "default" : "outline"}
+                          className={
+                            ranking.ranking === 1
+                              ? "bg-yellow-500 hover:bg-yellow-600"
+                              : ranking.ranking === 2
+                              ? "bg-gray-400 hover:bg-gray-500"
+                              : ranking.ranking === 3
+                              ? "bg-amber-600 hover:bg-amber-700"
+                              : ""
+                          }
+                        >
+                          #{ranking.ranking}
+                        </Badge>
+                        <h3 className="font-semibold text-lg">
+                          {ranking.user.nickname || "이름 없음"}
+                        </h3>
+                        {ranking.changedRanking !== null && (
+                          <span
+                            className={`text-xs px-2 py-1 rounded ${
+                              ranking.changedRanking > 0
+                                ? "bg-red-100 text-red-600"
+                                : ranking.changedRanking < 0
+                                ? "bg-green-100 text-green-600"
+                                : "bg-gray-100 text-gray-600"
+                            }`}
+                          >
+                            {ranking.changedRanking > 0 && "↓"}
+                            {ranking.changedRanking < 0 && "↑"}
+                            {Math.abs(ranking.changedRanking) > 0 &&
+                              Math.abs(ranking.changedRanking)}
+                          </span>
+                        )}
+                      </div>
+                      <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                        <span className="flex items-center gap-1">
+                          <User className="w-3 h-3" />
+                          ID: {ranking.user._id}
+                        </span>
+                        <span>
+                          현재 포인트:{" "}
+                          {ranking.user.currentPoint.toLocaleString()}
+                        </span>
+                        {ranking.previousPoint && (
+                          <span>
+                            이전 포인트:{" "}
+                            {ranking.previousPoint.toLocaleString()}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* 포인트 */}
+                    <div className="text-right">
+                      <div className="text-2xl font-bold text-primary">
+                        {ranking.totalPoint.toLocaleString()}
+                      </div>
+                      <div className="text-sm text-muted-foreground">
+                        총 포인트
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ))}
+
+              {/* 더 보기 버튼 */}
+              {hasMore && (
+                <div className="flex justify-center pt-4">
+                  <Button
+                    variant="outline"
+                    onClick={loadMore}
+                    disabled={isFetching}
+                    className="flex items-center gap-2"
+                  >
+                    {isFetching ? "로딩 중..." : "더 보기"}
+                  </Button>
+                </div>
+              )}
+            </div>
+          )}
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
