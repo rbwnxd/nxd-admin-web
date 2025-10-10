@@ -88,12 +88,14 @@ export default function AppAdminPage() {
         appAdminUserId: userId,
         jsonWebToken,
       });
-      
+
       toast.success("앱 관리자가 비활성화되었습니다.");
       // 목록 새로고침
-      setAppAdminUsers(prev => prev.map(user => 
-        user._id === userId ? { ...user, isEnabled: false } : user
-      ));
+      setAppAdminUsers((prev) =>
+        prev.map((user) =>
+          user._id === userId ? { ...user, isEnabled: false } : user
+        )
+      );
     } catch (error) {
       console.error("Disable user error:", error);
       toast.error("사용자 비활성화에 실패했습니다.");
@@ -108,14 +110,16 @@ export default function AppAdminPage() {
         appAdminUserId: userId,
         jsonWebToken,
       });
-      
+
       toast.success("앱 관리자가 삭제되었습니다.");
       // 목록 새로고침
-      setAppAdminUsers(prev => prev.map(user => 
-        user._id === userId 
-          ? { ...user, deletedAt: new Date().toISOString() }
-          : user
-      ));
+      setAppAdminUsers((prev) =>
+        prev.map((user) =>
+          user._id === userId
+            ? { ...user, deletedAt: new Date().toISOString() }
+            : user
+        )
+      );
     } catch (error) {
       console.error("Delete user error:", error);
       toast.error("사용자 삭제에 실패했습니다.");
@@ -142,7 +146,7 @@ export default function AppAdminPage() {
         </Button>
       </div>
 
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex md:flex-row flex-col md:items-center justify-between mb-6">
         <div className="flex items-center gap-3">
           <Users className="w-8 h-8" />
           <div>
@@ -155,10 +159,9 @@ export default function AppAdminPage() {
 
         <Button
           onClick={() => router.push("/dashboard/app-admin/create")}
-          className="flex items-center gap-2"
+          className="flex items-center gap-2 md:mt-0 mt-4"
         >
-          <Plus className="w-4 h-4" />
-          새 앱 관리자 생성
+          <Plus className="w-4 h-4" />새 앱 관리자 생성
         </Button>
       </div>
 
@@ -194,15 +197,18 @@ export default function AppAdminPage() {
                   className={`border rounded-lg p-4 hover:bg-muted/30 transition-colors ${
                     !user.deletedAt ? "cursor-pointer" : "cursor-default"
                   }`}
-                  onClick={() => 
-                    !user.deletedAt && router.push(`/dashboard/app-admin/${user._id}`)
+                  onClick={() =>
+                    !user.deletedAt &&
+                    router.push(`/dashboard/app-admin/${user._id}`)
                   }
                 >
                   <div className="flex items-start justify-between">
                     <div className="flex-1">
                       <div className="flex items-center gap-2 mb-2">
                         <h3 className="font-semibold text-lg">{user.name}</h3>
-                        <Badge variant={user.isEnabled ? "default" : "secondary"}>
+                        <Badge
+                          variant={user.isEnabled ? "default" : "secondary"}
+                        >
                           {user.isEnabled ? "활성화" : "비활성화"}
                         </Badge>
                         {user.deletedAt && (
@@ -214,16 +220,19 @@ export default function AppAdminPage() {
                         계정: {user.account}
                       </p>
 
-                      <div className="flex items-center gap-4 text-xs text-muted-foreground">
+                      <div className="flex flex-col md:flex-row gap-1 md:gap-4 text-xs text-muted-foreground">
                         <span>
-                          생성일: {moment(user.createdAt).format("YYYY-MM-DD HH:mm")}
+                          생성일:{" "}
+                          {moment(user.createdAt).format("YYYY-MM-DD HH:mm")}
                         </span>
                         <span>
-                          수정일: {moment(user.updatedAt).format("YYYY-MM-DD HH:mm")}
+                          수정일:{" "}
+                          {moment(user.updatedAt).format("YYYY-MM-DD HH:mm")}
                         </span>
                         {user.deletedAt && (
                           <span>
-                            삭제일: {moment(user.deletedAt).format("YYYY-MM-DD HH:mm")}
+                            삭제일:{" "}
+                            {moment(user.deletedAt).format("YYYY-MM-DD HH:mm")}
                           </span>
                         )}
                       </div>
@@ -245,7 +254,9 @@ export default function AppAdminPage() {
                           <DropdownMenuItem
                             onClick={(e) => {
                               e.stopPropagation();
-                              router.push(`/dashboard/app-admin/${user._id}/edit`);
+                              router.push(
+                                `/dashboard/app-admin/${user._id}/edit`
+                              );
                             }}
                           >
                             <Edit className="mr-2 h-4 w-4" />
@@ -290,26 +301,41 @@ export default function AppAdminPage() {
             <div className="flex justify-center mt-6">
               <Pagination>
                 <PaginationContent>
-                  <PaginationPrevious 
-                    onClick={() => currentPage > 1 && handlePageChange(currentPage - 1)}
-                    className={currentPage <= 1 ? "pointer-events-none opacity-50" : "cursor-pointer"}
+                  <PaginationPrevious
+                    onClick={() =>
+                      currentPage > 1 && handlePageChange(currentPage - 1)
+                    }
+                    className={
+                      currentPage <= 1
+                        ? "pointer-events-none opacity-50"
+                        : "cursor-pointer"
+                    }
                   />
-                  
-                  {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
-                    <PaginationItem key={page}>
-                      <PaginationLink
-                        onClick={() => handlePageChange(page)}
-                        isActive={currentPage === page}
-                        className="cursor-pointer"
-                      >
-                        {page}
-                      </PaginationLink>
-                    </PaginationItem>
-                  ))}
-                  
-                  <PaginationNext 
-                    onClick={() => currentPage < totalPages && handlePageChange(currentPage + 1)}
-                    className={currentPage >= totalPages ? "pointer-events-none opacity-50" : "cursor-pointer"}
+
+                  {Array.from({ length: totalPages }, (_, i) => i + 1).map(
+                    (page) => (
+                      <PaginationItem key={page}>
+                        <PaginationLink
+                          onClick={() => handlePageChange(page)}
+                          isActive={currentPage === page}
+                          className="cursor-pointer"
+                        >
+                          {page}
+                        </PaginationLink>
+                      </PaginationItem>
+                    )
+                  )}
+
+                  <PaginationNext
+                    onClick={() =>
+                      currentPage < totalPages &&
+                      handlePageChange(currentPage + 1)
+                    }
+                    className={
+                      currentPage >= totalPages
+                        ? "pointer-events-none opacity-50"
+                        : "cursor-pointer"
+                    }
                   />
                 </PaginationContent>
               </Pagination>
