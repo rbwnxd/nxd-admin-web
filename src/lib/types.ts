@@ -104,3 +104,30 @@ export interface SeasonChartForm {
   startedAt: string;
   endedAt: string;
 }
+
+// === 앱 관리자 관련 타입들 ===
+
+export interface AppAdminUser {
+  _id: string;
+  account: string;
+  name: string;
+  isEnabled: boolean;
+  permissions?: string[];
+  createdAt: string;
+  updatedAt: string;
+  deletedAt?: string | null;
+}
+
+// 앱 관리자 생성 폼 타입
+export interface AppAdminUserForm {
+  account: string;
+  password: string;
+  name: string;
+}
+
+// 앱 관리자 수정 폼 타입
+export interface AppAdminUserUpdateForm {
+  password?: string;
+  permissions?: string[];
+  name?: string;
+}
