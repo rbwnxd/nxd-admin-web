@@ -15,8 +15,7 @@ export const getQRCodes = async ({
   jsonWebToken: string;
 }) => {
   try {
-    const { data } = await axiosApi("/admin/qr-codes", "get", undefined, {
-      params,
+    const { data } = await axiosApi("/admin/qr-codes", "get", params, {
       headers: {
         Authorization: `jwt ${jsonWebToken}`,
       },
@@ -162,9 +161,8 @@ export const getQRCodeHashes = async ({
     const { data } = await axiosApi(
       `/admin/qr-codes/${qrCodeId}/hashes`,
       "get",
-      undefined,
+      params,
       {
-        params,
         headers: {
           Authorization: `jwt ${jsonWebToken}`,
         },
@@ -189,17 +187,11 @@ export const getQRCodeCheckIns = async ({
   jsonWebToken: string;
 }) => {
   try {
-    const { data } = await axiosApi(
-      "/admin/qr-codes/check-in",
-      "get",
-      undefined,
-      {
-        params,
-        headers: {
-          Authorization: `jwt ${jsonWebToken}`,
-        },
-      }
-    );
+    const { data } = await axiosApi("/admin/qr-codes/check-in", "get", params, {
+      headers: {
+        Authorization: `jwt ${jsonWebToken}`,
+      },
+    });
     return (data && data["data"]) || null;
   } catch (error) {
     console.warn("QRCode getQRCodeCheckIns error", error);
@@ -344,9 +336,8 @@ export const getQRCodeVerifications = async ({
     const { data } = await axiosApi(
       `/admin/qr-codes/check-in/${qrCodeCheckInId}/verifications`,
       "get",
-      undefined,
+      params,
       {
-        params,
         headers: {
           Authorization: `jwt ${jsonWebToken}`,
         },
