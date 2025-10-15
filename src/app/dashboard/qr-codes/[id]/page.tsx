@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation";
 import { use, useEffect, useState } from "react";
 import { useAuthStore } from "@/store/authStore";
+import { useQRCodeStore } from "@/store/qrCodeStore";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -15,8 +16,10 @@ import {
   Loader2,
   FileText,
   Edit,
+  Trash2,
 } from "lucide-react";
-import { getQRCodeDetail } from "../actions";
+import { getQRCodeDetail, deleteQRCode } from "../actions";
+import { ConfirmDialog } from "@/components/dialog/ConfirmDialog";
 import { toast } from "sonner";
 import moment from "moment";
 import { getCategoryLabel } from "@/lib/consts";
@@ -67,9 +70,12 @@ export default function QRCodeDetailPage({
   const resolvedParams = use(params);
   const router = useRouter();
   const jsonWebToken = useAuthStore((state) => state.token);
+  const removeQRCode = useQRCodeStore((state) => state.removeQRCode);
 
   const [qrCode, setQrCode] = useState<QRCodeDetail | null>(null);
   const [loading, setLoading] = useState(false);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   useEffect(() => {
     if (!jsonWebToken || !resolvedParams.id) return;
@@ -146,6 +152,16 @@ export default function QRCodeDetailPage({
           <Button
             variant="outline"
             onClick={() =>
+              router.push(`/dashboard/qr-codes/${qrCode._id}/hashes`)
+            }
+            className="flex items-center gap-2"
+          >
+            <Hash className="w-4 h-4" />
+            해시 관리
+          </Button>
+          <Button
+            variant="outline"
+            onClick={() =>
               router.push(
                 `/dashboard/qr-codes/create?isUpdate=true&id=${qrCode._id}`
               )
@@ -156,14 +172,12 @@ export default function QRCodeDetailPage({
             수정
           </Button>
           <Button
-            variant="outline"
-            onClick={() =>
-              router.push(`/dashboard/qr-codes/${qrCode._id}/hashes`)
-            }
+            variant="destructive"
+            onClick={() => setIsDeleteDialogOpen(true)}
             className="flex items-center gap-2"
           >
-            <Hash className="w-4 h-4" />
-            해시 관리
+            <Trash2 className="w-4 h-4" />
+            삭제
           </Button>
         </div>
       </div>
@@ -351,7 +365,7 @@ export default function QRCodeDetailPage({
                 >
                   {/* 이미지 미리보기 */}
                   <div className="flex-shrink-0">
-                    <div className="w-48 h-48 relative border rounded-lg overflow-hidden bg-gray-50">
+                    <div className="w-48 h-48 relative overflow-hidden bg-gray-50">
                       <Image
                         src={`${STORAGE_URL}/${
                           image?.image256Path || image?.imageOriginalPath
@@ -513,6 +527,39 @@ export default function QRCodeDetailPage({
           </CardContent>
         </Card>
       </div>
+
+      {/* 삭제 확인 다이얼로그 */}
+      <ConfirmDialog
+        open={isDeleteDialogOpen}
+        onOpenChange={setIsDeleteDialogOpen}
+        title="QR 코드 삭제"
+        description="이 QR 코드를 정말 삭제하시겠습니까?"
+        variant="destructive"
+        onConfirm={async () => {
+          if (!qrCode?._id || !jsonWebToken) return;
+
+          setIsDeleting(true);
+          try {
+            await deleteQRCode({
+              id: qrCode._id,
+              jsonWebToken,
+            });
+            removeQRCode(qrCode._id);
+            toast.success("QR 코드가 성공적으로 삭제되었습니다.");
+            router.replace("/dashboard/qr-codes");
+          } catch (error) {
+            console.error("QR 코드 삭제 실패:", error);
+            toast.error("QR 코드 삭제에 실패했습니다.");
+          } finally {
+            setIsDeleting(false);
+            setIsDeleteDialogOpen(false);
+          }
+        }}
+        onCancel={() => {
+          setIsDeleteDialogOpen(false);
+        }}
+        confirmText={isDeleting ? "삭제 중..." : "삭제"}
+      />
     </div>
   );
 }

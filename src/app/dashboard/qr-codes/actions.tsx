@@ -1,4 +1,4 @@
-"use client";
+"use server";
 
 import { axiosApi } from "@/lib/axios";
 
@@ -89,6 +89,32 @@ export const updateQRCode = async ({
     return (data && data["data"] && data["data"]["qrCode"]) || null;
   } catch (error) {
     console.warn("QRCode updateQRCode error", error);
+    throw error;
+  }
+};
+
+// QR 코드 삭제 함수
+export const deleteQRCode = async ({
+  id,
+  jsonWebToken,
+}: {
+  id: string;
+  jsonWebToken: string;
+}) => {
+  try {
+    const { data } = await axiosApi(
+      `/admin/qr-codes/${id}`,
+      "delete",
+      undefined,
+      {
+        headers: {
+          Authorization: `jwt ${jsonWebToken}`,
+        },
+      }
+    );
+    return (data && data["data"]) || null;
+  } catch (error) {
+    console.warn("QRCode deleteQRCode error", error);
     throw error;
   }
 };
@@ -266,37 +292,6 @@ export const deleteQRCodeCheckIn = async ({
     return (data && data["data"]) || null;
   } catch (error) {
     console.warn("QRCode deleteQRCodeCheckIn error", error);
-    throw error;
-  }
-};
-
-// 어드민 유저 리스트 조회
-export const getAdminUsers = async ({
-  params,
-  jsonWebToken,
-}: {
-  params?: {
-    __skip?: number;
-    __limit?: number;
-    search?: string;
-  };
-  jsonWebToken: string;
-}) => {
-  try {
-    const { data } = await axiosApi(
-      "/admin/users",
-      "get",
-      undefined,
-      {
-        params,
-        headers: {
-          Authorization: `jwt ${jsonWebToken}`,
-        },
-      }
-    );
-    return (data && data["data"]) || null;
-  } catch (error) {
-    console.warn("getAdminUsers error", error);
     throw error;
   }
 };

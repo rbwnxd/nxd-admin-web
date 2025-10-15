@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useAuthStore } from "@/store/authStore";
 import { useQRCodeStore } from "@/store/qrCodeStore";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -15,8 +15,24 @@ import {
   PaginationNext,
   PaginationPrevious,
 } from "@/components/ui/pagination";
-import { QrCode, Plus, Users, Settings, Loader2, Edit } from "lucide-react";
-import { getQRCodes } from "./actions";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
+  QrCode,
+  Plus,
+  Users,
+  Settings,
+  Loader2,
+  Edit,
+  MoreHorizontal,
+  Trash2,
+} from "lucide-react";
+import { getQRCodes, deleteQRCode } from "./actions";
+import { ConfirmDialog } from "@/components/dialog/ConfirmDialog";
 import { toast } from "sonner";
 import moment from "moment";
 import { getCategoryLabel } from "@/lib/consts";
@@ -31,15 +47,20 @@ export default function QRCodesPage() {
     currentQRPage,
     qrItemsPerPage,
     selectedCategory,
+    setSelectedCategory,
     setQRCodes,
     setTotalQRCount,
     setQRLoading,
     setCurrentQRPage,
+    removeQRCode,
   } = useQRCodeStore();
+
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [qrCodeToDelete, setQRCodeToDelete] = useState<string | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   useEffect(() => {
     if (!jsonWebToken) return;
-
     const fetchQRCodes = async () => {
       setQRLoading(true);
       try {
@@ -156,12 +177,15 @@ export default function QRCodesPage() {
                   key={qrCode?._id}
                   className="border rounded-lg p-4 hover:bg-muted/30 transition-colors"
                 >
-                  <div className="flex items-start justify-between">
-                    <div 
-                      className="flex-1 cursor-pointer"
-                      onClick={() =>
-                        router.push(`/dashboard/qr-codes/${qrCode?._id}`)
-                      }
+                  <div className="flex items-center justify-between">
+                    <div
+                      className={`flex-1 cursor-pointer ${
+                        !!qrCode.deletedAt ? "cursor-default" : ""
+                      }`}
+                      onClick={() => {
+                        if (!!qrCode.deletedAt) return;
+                        router.push(`/dashboard/qr-codes/${qrCode?._id}`);
+                      }}
                     >
                       <div className="flex items-center gap-2 mb-2">
                         {/* <Badge variant={getQRCodeTypeVariant(qrCode?.type)}>
@@ -176,6 +200,9 @@ export default function QRCodesPage() {
                         >
                           {qrCode?.isEnabled ? "활성화" : "비활성화"}
                         </Badge>
+                        {!!qrCode.deletedAt && (
+                          <Badge variant="destructive">삭제됨</Badge>
+                        )}
                       </div>
 
                       <h3 className="font-semibold text-lg mb-1">
@@ -197,21 +224,46 @@ export default function QRCodesPage() {
                         {moment(qrCode?.createdAt).format("YYYY-MM-DD HH:mm")}
                       </p>
                     </div>
-                    
-                    {/* 수정 버튼 */}
-                    <div className="ml-4 flex flex-col gap-2">
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          router.push(`/dashboard/qr-codes/create?isUpdate=true&id=${qrCode?._id}`);
-                        }}
-                        className="flex items-center gap-1"
-                      >
-                        <Edit className="w-3 h-3" />
-                        수정
-                      </Button>
+
+                    {/* 액션 버튼 */}
+                    <div className="flex items-center gap-2 ml-4">
+                      <DropdownMenu>
+                        {!qrCode.deletedAt && (
+                          <DropdownMenuTrigger asChild>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={(e) => e.stopPropagation()}
+                            >
+                              <MoreHorizontal className="w-4 h-4" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                        )}
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuItem
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              router.push(
+                                `/dashboard/qr-codes/create?isUpdate=true&id=${qrCode?._id}`
+                              );
+                            }}
+                          >
+                            <Edit className="w-4 h-4 mr-2" />
+                            수정
+                          </DropdownMenuItem>
+                          <DropdownMenuItem
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setQRCodeToDelete(qrCode?._id || null);
+                              setIsDeleteDialogOpen(true);
+                            }}
+                            className="text-red-600 hover:text-red-700"
+                          >
+                            <Trash2 className="w-4 h-4 mr-2" />
+                            삭제
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
                     </div>
                   </div>
                 </div>
@@ -277,6 +329,40 @@ export default function QRCodesPage() {
           체크인 관리
         </Button>
       </div>
+
+      {/* 삭제 확인 다이얼로그 */}
+      <ConfirmDialog
+        open={isDeleteDialogOpen}
+        onOpenChange={setIsDeleteDialogOpen}
+        title="QR 코드 삭제"
+        description={"이 QR 코드를 정말 삭제하시겠습니까?"}
+        variant="destructive"
+        onConfirm={async () => {
+          if (!qrCodeToDelete || !jsonWebToken) return;
+
+          setIsDeleting(true);
+          try {
+            await deleteQRCode({
+              id: qrCodeToDelete,
+              jsonWebToken,
+            });
+            removeQRCode(qrCodeToDelete);
+            toast.success("QR 코드가 성공적으로 삭제되었습니다.");
+          } catch (error) {
+            console.error("QR 코드 삭제 실패:", error);
+            toast.error("QR 코드 삭제에 실패했습니다.");
+          } finally {
+            setIsDeleting(false);
+            setIsDeleteDialogOpen(false);
+            setQRCodeToDelete(null);
+          }
+        }}
+        onCancel={() => {
+          setIsDeleteDialogOpen(false);
+          setQRCodeToDelete(null);
+        }}
+        confirmText={isDeleting ? "삭제 중..." : "삭제"}
+      />
     </div>
   );
 }

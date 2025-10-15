@@ -155,7 +155,7 @@ export default function CreateQRCodePage({
               setImage({
                 id: Date.now().toString(),
                 file: null, // 이미 업로드된 파일이므로 null
-                path: existingImage.imageOriginalPath,
+                path: existingImage.image256Path,
                 isUploading: false,
               });
             }
@@ -368,7 +368,7 @@ export default function CreateQRCodePage({
             ? "QR 코드가 성공적으로 수정되었습니다."
             : "QR 코드가 성공적으로 생성되었습니다."
         );
-        router.replace("/dashboard/qr-codes");
+        router.replace(`/dashboard/qr-codes/${result._id}`);
       } else {
         toast.error(
           isUpdateMode
@@ -720,7 +720,7 @@ export default function CreateQRCodePage({
                   </div>
                 ) : (
                   <div className="relative inline-block">
-                    <div className="w-32 h-32 relative border rounded-lg overflow-hidden">
+                    <div className="w-32 h-32 relative overflow-hidden">
                       <Image
                         src={
                           image.file
