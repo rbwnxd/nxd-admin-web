@@ -205,7 +205,7 @@ export default function ArtistCreatePage({
       }
 
       if (result) {
-        router.push("/dashboard/artists");
+        router.replace("/dashboard/artists");
       }
     } catch (error) {
       console.error("아티스트 저장 오류:", error);
@@ -237,7 +237,7 @@ export default function ArtistCreatePage({
               if (artistId && isUpdateMode) {
                 router.back();
               } else {
-                router.push("/dashboard/artists");
+                router.replace("/dashboard/artists");
               }
             }}
             disabled={isLoading}

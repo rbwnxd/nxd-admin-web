@@ -80,7 +80,7 @@ export default function CreateAppAdminPage() {
 
       if (result) {
         toast.success("앱 관리자가 성공적으로 생성되었습니다.");
-        router.push("/dashboard/app-admin");
+        router.replace("/dashboard/app-admin");
       }
     } catch (error) {
       console.error("Create app admin user error:", error);

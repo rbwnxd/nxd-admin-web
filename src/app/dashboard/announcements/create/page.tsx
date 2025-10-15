@@ -231,7 +231,7 @@ export default function AnnouncementCreatePage({
       }
 
       if (result) {
-        router.push("/dashboard/announcements");
+        router.replace("/dashboard/announcements");
       }
     } catch (error) {
       console.error("공지사항 저장 오류:", error);
@@ -263,7 +263,7 @@ export default function AnnouncementCreatePage({
               if (announcementId && isUpdateMode) {
                 router.back();
               } else {
-                router.push("/dashboard/announcements");
+                router.replace("/dashboard/announcements");
               }
             }}
             disabled={isLoading}

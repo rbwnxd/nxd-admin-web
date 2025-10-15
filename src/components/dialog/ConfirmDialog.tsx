@@ -53,7 +53,7 @@ export function ConfirmDialog({
       <DialogContent>
         <DialogHeader>
           <DialogTitle>{title}</DialogTitle>
-          <DialogDescription className="mt-2 mb-4">
+          <DialogDescription className="mt-2 mb-4 whitespace-pre-line">
             {description}
           </DialogDescription>
         </DialogHeader>

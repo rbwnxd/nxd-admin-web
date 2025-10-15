@@ -96,7 +96,7 @@ export default function ChartCreatePage() {
         // 새로 생성된 차트를 store에 추가
         addChart(result);
         toast.success("시즌 차트가 성공적으로 생성되었습니다.");
-        router.push("/dashboard/charts");
+        router.replace("/dashboard/charts");
       }
     } catch (error) {
       console.error("Season chart creation error:", error);
@@ -124,7 +124,7 @@ export default function ChartCreatePage() {
           result.charts.forEach((chart: ChartItem) => addChart(chart));
         }
         toast.success("시스템 차트가 성공적으로 등록되었습니다.");
-        router.push("/dashboard/charts");
+        router.replace("/dashboard/charts");
       }
     } catch (error) {
       console.error("System charts creation error:", error);
@@ -150,7 +150,7 @@ export default function ChartCreatePage() {
 
         <Button
           variant="outline"
-          onClick={() => router.push("/dashboard/charts")}
+          onClick={() => router.replace("/dashboard/charts")}
           disabled={isSeasonLoading || isSystemLoading}
           className="flex items-center gap-2"
         >

@@ -131,3 +131,90 @@ export interface AppAdminUserUpdateForm {
   permissions?: string[];
   name?: string;
 }
+
+// === QR 코드 관련 타입들 ===
+
+export interface QRCodeImage {
+  name: string;
+  imageOriginalPath: string;
+  image64Path: string;
+  image128Path: string;
+  image256Path: string;
+  image512Path: string;
+  image1024Path: string;
+  imageFilename: string;
+}
+
+export interface MultiLanguageText {
+  ko: string;
+  en: string;
+}
+
+export type QRCodeCategory = "ALBUM" | "CONCERT" | "OFFLINE_SPOT" | "GOODS";
+
+export interface QRCode {
+  _id: string;
+  type: "STATIC" | "CATEGORY";
+  category: QRCodeCategory;
+  imageList: QRCodeImage[];
+  point: number;
+  issuedCount: number;
+  verifiedCount: number;
+  hashCount: number;
+  displayMainTitleList: MultiLanguageText[];
+  displaySubTitleList: MultiLanguageText[];
+  displayTextList: MultiLanguageText[];
+  isEnabled: boolean;
+  expireMinutes: number | null;
+  createdAt: string;
+  updatedAt: string;
+  deletedAt: string | null;
+}
+
+export interface QRCodeHash {
+  _id: string;
+  qrCodeId: string;
+  token: string;
+  expiresAt: string | null;
+  createdAt: string;
+  updatedAt: string;
+  deletedAt: string | null;
+}
+
+export interface QRCodeCheckIn {
+  _id: string;
+  category: QRCodeCategory;
+  title: string;
+  startAt: string;
+  endAt: string;
+  admins: Array<{
+    _id: string;
+    name: string;
+    account: string;
+  }>;
+  memo: string | null;
+  createdAt?: string;
+  updatedAt?: string;
+  deletedAt?: string | null;
+}
+
+export interface QRCodeVerification {
+  _id: string;
+  user: {
+    _id: string;
+    nickname: string;
+    imageList?: QRCodeImage[];
+  };
+  verifiedAt: string;
+  createdAt: string;
+  updatedAt: string;
+
+  qrCodeId: string;
+  qrCodeHashId: string;
+  category: QRCodeCategory;
+  verifiedAdmin: {
+    _id: string;
+    account: string;
+    name: string;
+  };
+}

@@ -14,17 +14,11 @@ export const getAppAdminUsers = async ({
   jsonWebToken: string;
 }) => {
   try {
-    const { data } = await axiosApi(
-      "/admin/app-admin-users",
-      "get",
-      undefined,
-      {
-        params,
-        headers: {
-          Authorization: `jwt ${jsonWebToken}`,
-        },
-      }
-    );
+    const { data } = await axiosApi("/admin/app-admin-users", "get", params, {
+      headers: {
+        Authorization: `jwt ${jsonWebToken}`,
+      },
+    });
     return (data && data["data"]) || null;
   } catch (error) {
     console.warn("AppAdminActions getAppAdminUsers error", error);
