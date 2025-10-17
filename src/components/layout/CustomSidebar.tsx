@@ -42,26 +42,22 @@ import {
 import { useTheme } from "next-themes";
 
 const menuItems = [
+  // {
+  //   title: "사용자 관리",
+  //   href: "/dashboard/users",
+  //   icon: User2,
+  // },
   {
-    title: "사용자 관리",
-    href: "/dashboard/users",
-    icon: User2,
-  },
-  {
-    title: "포인트 지급 관리",
-    href: "/dashboard/point-modifications",
-    icon: Coins,
+    title: "앱 관리자",
+    href: "/dashboard/app-admin",
+    icon: Shield,
   },
   {
     title: "아티스트 관리",
     href: "/dashboard/artists",
     icon: Star,
   },
-  {
-    title: "공지사항 관리",
-    href: "/dashboard/announcements",
-    icon: Megaphone,
-  },
+
   {
     title: "QR 코드 관리",
     href: "/dashboard/qr-codes",
@@ -73,14 +69,19 @@ const menuItems = [
     icon: BarChart3,
   },
   {
+    title: "공지사항 관리",
+    href: "/dashboard/announcements",
+    icon: Megaphone,
+  },
+  {
     title: "특전 관리",
     href: "/dashboard/benefits",
     icon: Gift,
   },
   {
-    title: "앱 관리자",
-    href: "/dashboard/app-admin",
-    icon: Shield,
+    title: "포인트 지급 관리",
+    href: "/dashboard/point-modifications",
+    icon: Coins,
   },
 ];
 

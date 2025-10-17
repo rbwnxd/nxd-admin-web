@@ -218,3 +218,141 @@ export interface QRCodeVerification {
     name: string;
   };
 }
+
+// === 사용자 관련 타입들 ===
+
+export interface UserImage {
+  name: string;
+  imageOriginalPath: string;
+  image64Path: string;
+  image128Path: string;
+  image256Path: string;
+  image512Path: string;
+  image1024Path: string;
+  imageFilename: string;
+}
+
+export interface UserProfile {
+  name: string;
+  nickname: string;
+  birth: string;
+  gender: "MALE" | "FEMALE" | "OTHER";
+  phoneNumber: string;
+}
+
+export interface UserPoint {
+  currentPoint: number;
+  totalUsedPoint: number;
+  totalReceivedPoint: number;
+}
+
+export interface RestrictionInfo {
+  isRestricted: boolean;
+  restrictedAt: string | null;
+  restrictedReason: string | null;
+  restrictionEndsAt: string | null;
+}
+
+export interface BanInfo {
+  isBanned: boolean;
+  bannedReason: string | null;
+  bannedAt: string | null;
+}
+
+// 완전한 사용자 타입 (관리자 페이지용)
+export interface User {
+  _id: string;
+  account: string;
+  email: string;
+  emailVerifiedAt: string | null;
+  platform: "GOOGLE" | "APPLE" | "KAKAO" | "NAVER";
+  platformUserId: string;
+  profile: UserProfile;
+  countryCode: string;
+  languageCode: string;
+  point: UserPoint;
+  termsAgreedAt: string;
+  nicknameChangedAt: string | null;
+  imageList: UserImage[];
+  restrictionInfo: RestrictionInfo;
+  banInfo: BanInfo;
+  memberHash: string;
+  favoriteArtistIds: string[];
+  createdAt: string;
+  updatedAt: string;
+  deletedAt: string | null;
+}
+
+// 사용자 검색 다이얼로그용 간소화된 타입
+export interface UserSearchResult {
+  _id: string;
+  email: string;
+  profile: {
+    nickname: string;
+  };
+  imageList: UserImage[];
+}
+
+// 사용자 목록 API 응답 타입
+export interface UsersResponse {
+  users: User[];
+  count: number;
+}
+
+// 사용자 상세 API 응답 타입
+export interface UserDetailResponse {
+  user: User;
+}
+
+// === 포인트 지급/차감 관련 타입들 ===
+
+// 포인트 작업 대상 사용자 (간소화된 정보)
+export interface TargetUser {
+  _id: string;
+  nickname: string;
+  imageList: UserImage[];
+}
+
+// 포인트 지급/차감 작업
+export interface PointModification {
+  _id: string;
+  type: "GRANT" | "REVOKE";
+  title: string;
+  amount: number;
+  description: string;
+  status: "PENDING" | "SCHEDULED" | "COMPLETED" | "FAILED";
+  targetUserIds: string[];
+  targetUsers: TargetUser[] | null;
+  processedUserIds: string[];
+  processedUsers: TargetUser[] | null;
+  scheduledAt: string | null;
+  processedAt: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+// 포인트 지급/차감 생성 폼 타입
+export interface PointModificationForm {
+  type: "GRANT" | "REVOKE";
+  title: string;
+  amount: number;
+  description: string;
+  targetUserIds: string[];
+  scheduledAt: string | null;
+}
+
+// 포인트 지급/차감 목록 API 응답 타입 (results 내부)
+export interface PointModificationsResponse {
+  count: number;
+  adminPointModifications: PointModification[];
+}
+
+// 포인트 지급/차감 상세 API 응답 타입 (results 내부)
+export interface PointModificationDetailResponse {
+  pointModification: PointModification;
+}
+
+// 포인트 지급/차감 생성 API 응답 타입 (results 내부)
+export interface CreatePointModificationResponse {
+  adminPointModification: PointModification;
+}

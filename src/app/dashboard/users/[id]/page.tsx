@@ -26,57 +26,7 @@ import { getUserDetail } from "../actions";
 import { toast } from "sonner";
 import moment from "moment";
 import { STORAGE_URL } from "@/lib/api";
-
-interface UserDetail {
-  _id: string;
-  account: string;
-  email: string;
-  emailVerifiedAt: string | null;
-  platform: "GOOGLE" | "APPLE" | "KAKAO" | "NAVER";
-  platformUserId: string;
-  profile: {
-    name: string;
-    nickname: string;
-    birth: string;
-    gender: "MALE" | "FEMALE" | "OTHER";
-    phoneNumber: string;
-  };
-  countryCode: string;
-  languageCode: string;
-  point: {
-    currentPoint: number;
-    totalUsedPoint: number;
-    totalReceivedPoint: number;
-  };
-  termsAgreedAt: string;
-  nicknameChangedAt: string | null;
-  imageList: {
-    name: string;
-    imageOriginalPath: string;
-    image64Path: string;
-    image128Path: string;
-    image256Path: string;
-    image512Path: string;
-    image1024Path: string;
-    imageFilename: string;
-  }[];
-  restrictionInfo: {
-    isRestricted: boolean;
-    restrictedAt: string | null;
-    restrictedReason: string | null;
-    restrictionEndsAt: string | null;
-  };
-  banInfo: {
-    isBanned: boolean;
-    bannedReason: string | null;
-    bannedAt: string | null;
-  };
-  memberHash: string;
-  favoriteArtistIds: string[];
-  createdAt: string;
-  updatedAt: string;
-  deletedAt: string | null;
-}
+import { User } from "@/lib/types";
 
 export default function UserDetailPage({
   params,
@@ -87,7 +37,7 @@ export default function UserDetailPage({
   const router = useRouter();
   const jsonWebToken = useAuthStore((state) => state.token);
 
-  const [user, setUser] = useState<UserDetail | null>(null);
+  const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
