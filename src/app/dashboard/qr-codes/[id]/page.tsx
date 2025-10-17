@@ -25,42 +25,7 @@ import moment from "moment";
 import { getCategoryLabel } from "@/lib/consts";
 import { STORAGE_URL } from "@/lib/api";
 import Image from "next/image";
-
-interface QRCodeImage {
-  name: string;
-  imageOriginalPath: string;
-  image64Path: string;
-  image128Path: string;
-  image256Path: string;
-  image512Path: string;
-  image1024Path: string;
-  imageFilename: string;
-}
-
-interface MultiLanguageText {
-  ko: string;
-  en: string;
-}
-
-interface QRCodeDetail {
-  _id: string;
-  type: "STATIC" | "CATEGORY";
-  category: "ALBUM" | "CONCERT" | "OFFLINE_SPOT" | "GOODS";
-  imageList: QRCodeImage[];
-  point: number;
-  issuedCount: number;
-  verifiedCount: number;
-  hashCount?: number; // 발급할 해시 개수
-  isHashReusable?: boolean; // 해시 재활용 가능 여부
-  displayMainTitleList: MultiLanguageText[];
-  displaySubTitleList: MultiLanguageText[];
-  displayTextList: MultiLanguageText[];
-  isEnabled: boolean;
-  expireMinutes?: number;
-  createdAt: string;
-  updatedAt: string;
-  deletedAt?: string | null;
-}
+import { QRCode } from "@/lib/types";
 
 export default function QRCodeDetailPage({
   params,
@@ -72,7 +37,7 @@ export default function QRCodeDetailPage({
   const jsonWebToken = useAuthStore((state) => state.token);
   const removeQRCode = useQRCodeStore((state) => state.removeQRCode);
 
-  const [qrCode, setQrCode] = useState<QRCodeDetail | null>(null);
+  const [qrCode, setQrCode] = useState<QRCode | null>(null);
   const [loading, setLoading] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
@@ -246,7 +211,7 @@ export default function QRCodeDetailPage({
                   타입
                 </Label>
                 <p className="text-lg font-semibold mt-1">
-                  {qrCode.type === "STATIC" ? "정적" : "카테고리"}
+                  {qrCode.type === "STATIC" ? "정적" : "체크인"}
                 </p>
               </div>
 
@@ -267,6 +232,17 @@ export default function QRCodeDetailPage({
                     : "무제한"}
                 </p>
               </div>
+
+              {qrCode?.type === "CHECK_IN" && (
+                <div>
+                  <Label className="text-sm font-medium text-muted-foreground">
+                    생성 유저
+                  </Label>
+                  <p className="text-lg font-semibold mt-1">
+                    {qrCode?.user?.nickname} {qrCode?.user?._id}
+                  </p>
+                </div>
+              )}
             </div>
           </CardContent>
         </Card>

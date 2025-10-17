@@ -7,7 +7,7 @@ export const getQRCodes = async ({
   params,
   jsonWebToken,
 }: {
-  params: {
+  params?: {
     __skip?: number;
     __limit?: number;
     category?: "ALBUM" | "CONCERT" | "OFFLINE_SPOT" | "GOODS";
@@ -151,7 +151,7 @@ export const getQRCodeHashes = async ({
   jsonWebToken,
 }: {
   qrCodeId: string;
-  params: {
+  params?: {
     __skip?: number;
     __limit?: number;
   };
@@ -180,7 +180,7 @@ export const getQRCodeCheckIns = async ({
   params,
   jsonWebToken,
 }: {
-  params: {
+  params?: {
     __skip?: number;
     __limit?: number;
   };
@@ -326,9 +326,10 @@ export const getQRCodeVerifications = async ({
   jsonWebToken,
 }: {
   qrCodeCheckInId: string;
-  params: {
+  params?: {
     __skip?: number;
     __limit?: number;
+    userId?: string; // 새로 추가된 userId 필터
   };
   jsonWebToken: string;
 }) => {

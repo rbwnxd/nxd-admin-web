@@ -102,11 +102,11 @@ export default function QRCodesPage() {
     setTotalQRCount,
   ]);
 
-  const getQRCodeTypeLabel = (type: "STATIC" | "CATEGORY") => {
-    return type === "STATIC" ? "정적" : "카테고리";
+  const getQRCodeTypeLabel = (type: "STATIC" | "CHECK_IN") => {
+    return type === "STATIC" ? "정적" : "체크인";
   };
 
-  const getQRCodeTypeVariant = (type: "STATIC" | "CATEGORY") => {
+  const getQRCodeTypeVariant = (type: "STATIC" | "CHECK_IN") => {
     return type === "STATIC" ? "default" : "secondary";
   };
 
@@ -188,9 +188,9 @@ export default function QRCodesPage() {
                       }}
                     >
                       <div className="flex items-center gap-2 mb-2">
-                        {/* <Badge variant={getQRCodeTypeVariant(qrCode?.type)}>
+                        <Badge variant={getQRCodeTypeVariant(qrCode?.type)}>
                           {getQRCodeTypeLabel(qrCode?.type)}
-                        </Badge> */}
+                        </Badge>
                         <Badge variant="default">
                           {getCategoryLabel(qrCode?.category || "")}
                         </Badge>

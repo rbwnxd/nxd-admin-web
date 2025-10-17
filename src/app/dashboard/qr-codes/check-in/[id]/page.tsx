@@ -43,6 +43,7 @@ import {
   MoreHorizontal,
   Trash2,
   Edit3,
+  Loader2,
 } from "lucide-react";
 import {
   getQRCodeVerifications,
@@ -99,6 +100,9 @@ export default function CheckInDetailPage({
   const [isCheckInDeleting, setIsCheckInDeleting] = useState(false);
   const [isCheckInDeleteDialogOpen, setIsCheckInDeleteDialogOpen] =
     useState(false);
+  const [searchUserId, setSearchUserId] = useState("");
+  const [actualSearchUserId, setActualSearchUserId] = useState(""); // 실제 검색에 사용될 userId
+  const [isSearching, setIsSearching] = useState(false);
 
   const checkIn = findCheckInById(resolvedParams.id);
 
@@ -113,6 +117,7 @@ export default function CheckInDetailPage({
           params: {
             __skip: (currentVerificationPage - 1) * verificationItemsPerPage,
             __limit: verificationItemsPerPage,
+            ...(actualSearchUserId && { userId: actualSearchUserId }),
           },
           jsonWebToken,
         });
@@ -135,10 +140,24 @@ export default function CheckInDetailPage({
     resolvedParams.id,
     currentVerificationPage,
     verificationItemsPerPage,
+    actualSearchUserId,
   ]);
 
   const handleVerificationPageChange = (page: number) => {
     setCurrentVerificationPage(page);
+  };
+
+  const handleSearch = async (userId: string) => {
+    setIsSearching(true);
+    setActualSearchUserId(userId.trim()); // 실제 검색 실행
+    setCurrentVerificationPage(1); // 검색 시 첫 페이지로 이동
+    setIsSearching(false);
+  };
+
+  const handleClearSearch = () => {
+    setSearchUserId("");
+    setActualSearchUserId(""); // 실제 검색 상태도 초기화
+    setCurrentVerificationPage(1);
   };
 
   const handleDeleteClick = (verificationId: string) => {
@@ -387,11 +406,51 @@ export default function CheckInDetailPage({
               <Search className="w-5 h-5" />
               검증 기록 ({totalVerificationCount})
             </CardTitle>
+            {/* 사용자 ID 검색 */}
+            <div className="flex gap-2 mt-4">
+              <div className="relative flex-1">
+                <Input
+                  type="text"
+                  placeholder="사용자 ID로 검색..."
+                  value={searchUserId}
+                  onChange={(e) => setSearchUserId(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      handleSearch(searchUserId);
+                    }
+                  }}
+                  className="pr-10"
+                />
+              </div>
+              <Button
+                onClick={() => handleSearch(searchUserId)}
+                disabled={isSearching}
+                variant="outline"
+              >
+                {isSearching ? (
+                  <RefreshCw className="w-4 h-4 animate-spin" />
+                ) : (
+                  <Search className="w-4 h-4" />
+                )}
+              </Button>
+              {actualSearchUserId && (
+                <Button onClick={handleClearSearch} variant="outline" size="sm">
+                  초기화
+                </Button>
+              )}
+            </div>
+            {actualSearchUserId && (
+              <p className="text-sm text-muted-foreground mt-2">
+                검색어: &ldquo;
+                <span className="font-medium">{actualSearchUserId}</span>&rdquo; 에
+                대한 결과
+              </p>
+            )}
           </CardHeader>
           <CardContent>
             {verificationLoading ? (
               <div className="flex items-center justify-center h-32">
-                <div className="text-muted-foreground">로딩 중...</div>
+                <Loader2 className="w-8 h-8 animate-spin" />
               </div>
             ) : verifications.length === 0 ? (
               <div className="flex flex-col items-center justify-center h-32 text-muted-foreground">

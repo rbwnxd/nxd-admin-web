@@ -154,7 +154,7 @@ export type QRCodeCategory = "ALBUM" | "CONCERT" | "OFFLINE_SPOT" | "GOODS";
 
 export interface QRCode {
   _id: string;
-  type: "STATIC" | "CATEGORY";
+  type: "STATIC" | "CHECK_IN";
   category: QRCodeCategory;
   imageList: QRCodeImage[];
   point: number;
@@ -169,6 +169,13 @@ export interface QRCode {
   createdAt: string;
   updatedAt: string;
   deletedAt: string | null;
+  userId?: string;
+  user?: {
+    _id: string;
+    nickname: string;
+    imageList: QRCodeImage[];
+  };
+  isHashReusable?: boolean; // 해시 재활용 가능 여부
 }
 
 export interface QRCodeHash {
