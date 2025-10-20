@@ -363,3 +363,78 @@ export interface PointModificationDetailResponse {
 export interface CreatePointModificationResponse {
   adminPointModification: PointModification;
 }
+
+// === 특전 관련 타입들 ===
+
+export type BenefitStatus =
+  | "PENDING"
+  | "SCHEDULED"
+  | "PROCESSING"
+  | "COMPLETED"
+  | "CANCELED"
+  | "FAILED";
+
+export type BenefitFilterType = "TOP_RANKING" | "USER_CREATED_AT";
+
+export interface BenefitFilter {
+  type: BenefitFilterType;
+  topRanking?: number;
+  userCreatedAtFrom?: string;
+  userCreatedAtTo?: string;
+}
+
+export interface BenefitEmail {
+  subject: string;
+  content: string;
+  attachments?: Array<{
+    name: string;
+    path: string;
+  }>;
+}
+
+export interface BenefitPushNotification {
+  title: string;
+  body: string;
+}
+
+export interface BenefitUser {
+  _id: string;
+  nickname: string;
+  imageList: UserImage[];
+  createdAt: string;
+}
+
+export interface Benefit {
+  _id: string;
+  status: BenefitStatus;
+  filter: BenefitFilter;
+  email: BenefitEmail;
+  pushNotification: BenefitPushNotification;
+  userIds: string[];
+  users: BenefitUser[];
+  createdAt: string;
+  updatedAt: string;
+  title: string;
+}
+
+// 특전 생성 폼 타입
+export interface CreateBenefitForm {
+  title: string;
+  filter: BenefitFilter;
+  email: BenefitEmail;
+  pushNotification: BenefitPushNotification;
+}
+
+// 특전 API 응답 타입들
+export interface BenefitsResponse {
+  count: number;
+  benefits: Benefit[];
+}
+
+export interface BenefitDetailResponse {
+  benefit: Benefit;
+}
+
+export interface CreateBenefitResponse {
+  benefit: Benefit;
+}
