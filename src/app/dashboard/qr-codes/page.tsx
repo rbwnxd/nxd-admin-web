@@ -223,6 +223,16 @@ export default function QRCodesPage() {
                         생성일:{" "}
                         {moment(qrCode?.createdAt).format("YYYY-MM-DD HH:mm")}
                       </p>
+                      <p className="text-sm text-muted-foreground mt-1">
+                        만료일:{" "}
+                        {moment(qrCode?.expiresAt).format("YYYY-MM-DD HH:mm")}
+                      </p>
+                      {qrCode?.deletedAt && (
+                        <p className="text-sm text-muted-foreground mt-1">
+                          삭제일:{" "}
+                          {moment(qrCode?.deletedAt).format("YYYY-MM-DD HH:mm")}
+                        </p>
+                      )}
                     </div>
 
                     {/* 액션 버튼 */}

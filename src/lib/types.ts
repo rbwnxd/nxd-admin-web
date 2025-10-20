@@ -169,6 +169,7 @@ export interface QRCode {
   createdAt: string;
   updatedAt: string;
   deletedAt: string | null;
+  expiresAt: string | null;
   userId?: string;
   user?: {
     _id: string;

@@ -489,6 +489,15 @@ export default function QRCodeDetailPage({
                 </p>
               </div>
 
+              <div>
+                <Label className="text-sm font-medium text-muted-foreground">
+                  만료일
+                </Label>
+                <p className="font-medium mt-1">
+                  {moment(qrCode.expiresAt).format("YYYY년 MM월 DD일 HH:mm")}
+                </p>
+              </div>
+
               {qrCode.deletedAt && (
                 <div>
                   <Label className="text-sm font-medium text-muted-foreground">
