@@ -16,7 +16,14 @@ import {
   Row,
   OnChangeFn,
 } from "@tanstack/react-table";
-import { ArrowUpDown, ChevronDown, MoreHorizontal, ArrowUp, ArrowDown, Loader2 } from "lucide-react";
+import {
+  ArrowUpDown,
+  ChevronDown,
+  MoreHorizontal,
+  ArrowUp,
+  ArrowDown,
+  Loader2,
+} from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -35,6 +42,14 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import {
+  Pagination,
+  PaginationContent,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from "@/components/ui/pagination";
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
@@ -49,6 +64,7 @@ interface DataTableProps<TData, TValue> {
   onSortingChange?: OnChangeFn<SortingState>;
   sorting?: SortingState;
   loading?: boolean;
+  enableRowSelection?: boolean;
 }
 
 export function DataTable<TData, TValue>({
@@ -64,14 +80,22 @@ export function DataTable<TData, TValue>({
   onSortingChange,
   sorting: externalSorting,
   loading = false,
+  enableRowSelection = false,
 }: DataTableProps<TData, TValue>) {
-  const [internalSorting, setInternalSorting] = React.useState<SortingState>([]);
-  const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([]);
-  const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>({});
+  const [internalSorting, setInternalSorting] = React.useState<SortingState>(
+    []
+  );
+  const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
+    []
+  );
+  const [columnVisibility, setColumnVisibility] =
+    React.useState<VisibilityState>({});
   const [rowSelection, setRowSelection] = React.useState({});
 
-  const sorting = serverSide ? (externalSorting || []) : internalSorting;
-  const setSorting = serverSide ? (onSortingChange || (() => {})) : setInternalSorting;
+  const sorting = serverSide ? externalSorting || [] : internalSorting;
+  const setSorting = serverSide
+    ? onSortingChange || (() => {})
+    : setInternalSorting;
 
   const table = useReactTable({
     data,
@@ -84,6 +108,7 @@ export function DataTable<TData, TValue>({
     getFilteredRowModel: getFilteredRowModel(),
     onColumnVisibilityChange: setColumnVisibility,
     onRowSelectionChange: setRowSelection,
+    enableRowSelection,
     manualSorting: serverSide,
     initialState: {
       pagination: {
@@ -106,7 +131,9 @@ export function DataTable<TData, TValue>({
           {searchKey && (
             <Input
               placeholder={searchPlaceholder}
-              value={(table.getColumn(searchKey)?.getFilterValue() as string) ?? ""}
+              value={
+                (table.getColumn(searchKey)?.getFilterValue() as string) ?? ""
+              }
               onChange={(event) =>
                 table.getColumn(searchKey)?.setFilterValue(event.target.value)
               }
@@ -114,7 +141,7 @@ export function DataTable<TData, TValue>({
             />
           )}
         </div>
-        
+
         {showColumnToggle && (
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
@@ -153,11 +180,14 @@ export function DataTable<TData, TValue>({
               <TableRow key={headerGroup.id}>
                 {headerGroup.headers.map((header) => {
                   return (
-                    <TableHead 
+                    <TableHead
                       key={header.id}
                       className="text-center"
                       style={{
-                        width: header.getSize() !== 150 ? header.getSize() : undefined,
+                        width:
+                          header.getSize() !== 150
+                            ? header.getSize()
+                            : undefined,
                       }}
                     >
                       {header.isPlaceholder
@@ -189,14 +219,19 @@ export function DataTable<TData, TValue>({
                 <TableRow
                   key={row.id}
                   data-state={row.getIsSelected() && "selected"}
-                  className={onRowClick ? "cursor-pointer hover:bg-muted/50" : ""}
+                  className={
+                    onRowClick ? "cursor-pointer hover:bg-muted/50" : ""
+                  }
                   onClick={() => onRowClick && onRowClick(row.original)}
                 >
                   {row.getVisibleCells().map((cell) => (
-                    <TableCell 
+                    <TableCell
                       key={cell.id}
                       style={{
-                        width: cell.column.getSize() !== 150 ? cell.column.getSize() : undefined,
+                        width:
+                          cell.column.getSize() !== 150
+                            ? cell.column.getSize()
+                            : undefined,
                       }}
                     >
                       {flexRender(
@@ -222,30 +257,62 @@ export function DataTable<TData, TValue>({
       </div>
 
       {/* 페이지네이션 */}
-      {showPagination && (
-        <div className="flex items-center justify-end space-x-2 py-4">
-          <div className="flex-1 text-sm text-muted-foreground">
-            {table.getFilteredSelectedRowModel().rows.length}개 중{" "}
-            {table.getFilteredRowModel().rows.length}개 선택됨
-          </div>
-          <div className="space-x-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => table.previousPage()}
-              disabled={!table.getCanPreviousPage()}
-            >
-              이전
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => table.nextPage()}
-              disabled={!table.getCanNextPage()}
-            >
-              다음
-            </Button>
-          </div>
+      {showPagination && table.getFilteredRowModel().rows.length > 0 && (
+        <div className="flex items-center justify-between py-4">
+          {/* 행 선택 기능이 활성화된 경우에만 선택된 행 수 표시 */}
+          {enableRowSelection && (
+            <div className="flex-1 text-sm text-muted-foreground">
+              {table.getFilteredSelectedRowModel().rows.length}개 중{" "}
+              {table.getFilteredRowModel().rows.length}개 선택됨
+            </div>
+          )}
+
+          <Pagination>
+            <PaginationContent>
+              <PaginationPrevious
+                onClick={() => table.previousPage()}
+                className={
+                  !table.getCanPreviousPage()
+                    ? "pointer-events-none opacity-50"
+                    : "cursor-pointer"
+                }
+              />
+
+              {Array.from(
+                {
+                  length: Math.min(5, table.getPageCount()),
+                },
+                (_, i) => {
+                  const currentPage = table.getState().pagination.pageIndex + 1;
+                  const totalPages = table.getPageCount();
+                  const pageNumber =
+                    Math.max(1, Math.min(totalPages - 4, currentPage - 2)) + i;
+                  if (pageNumber > totalPages) return null;
+
+                  return (
+                    <PaginationItem key={pageNumber}>
+                      <PaginationLink
+                        onClick={() => table.setPageIndex(pageNumber - 1)}
+                        isActive={currentPage === pageNumber}
+                        className="cursor-pointer"
+                      >
+                        {pageNumber}
+                      </PaginationLink>
+                    </PaginationItem>
+                  );
+                }
+              )}
+
+              <PaginationNext
+                onClick={() => table.nextPage()}
+                className={
+                  !table.getCanNextPage()
+                    ? "pointer-events-none opacity-50"
+                    : "cursor-pointer"
+                }
+              />
+            </PaginationContent>
+          </Pagination>
         </div>
       )}
     </div>
@@ -253,7 +320,8 @@ export function DataTable<TData, TValue>({
 }
 
 // 정렬 가능한 컬럼 헤더 컴포넌트
-interface DataTableColumnHeaderProps<TData, TValue> extends React.HTMLAttributes<HTMLDivElement> {
+interface DataTableColumnHeaderProps<TData, TValue>
+  extends React.HTMLAttributes<HTMLDivElement> {
   column: Column<TData, TValue>;
   title: string;
 }
@@ -268,16 +336,18 @@ export function DataTableColumnHeader<TData, TValue>({
   }
 
   const sortedState = column.getIsSorted();
-  
+
   return (
     <div className={className}>
       <Button
         variant="ghost"
         size="sm"
-        className={`-ml-3 h-8 data-[state=open]:bg-accent ${sortedState ? 'bg-accent/50 font-medium' : ''}`}
+        className={`-ml-3 h-8 data-[state=open]:bg-accent ${
+          sortedState ? "bg-accent/50 font-medium" : ""
+        }`}
         onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
       >
-        <span className={sortedState ? 'font-medium' : ''}>{title}</span>
+        <span className={sortedState ? "font-medium" : ""}>{title}</span>
         {sortedState === "desc" ? (
           <ArrowDown className="ml-2 h-4 w-4" />
         ) : sortedState === "asc" ? (

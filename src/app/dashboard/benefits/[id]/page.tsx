@@ -22,6 +22,8 @@ import {
   File,
   Download,
   BookAlert,
+  Loader2,
+  User2,
 } from "lucide-react";
 import { getBenefitDetail } from "../actions";
 import { toast } from "sonner";
@@ -123,7 +125,7 @@ const createUserColumns = (): ColumnDef<User>[] => [
       const user = row.original;
       return (
         <div className="flex items-center justify-center">
-          <div className="w-10 h-10 rounded-full overflow-hidden bg-gray-100 flex items-center justify-center">
+          <div className="w-10 h-10 rounded-full overflow-hidden bg-muted flex items-center justify-center">
             {user.imageList && user.imageList.length > 0 ? (
               <Image
                 src={`${STORAGE_URL}/${user.imageList[0].image64Path}`}
@@ -133,7 +135,7 @@ const createUserColumns = (): ColumnDef<User>[] => [
                 className="w-full h-full object-cover"
               />
             ) : (
-              <Users className="w-5 h-5 text-gray-400" />
+              <User2 className="w-5 h-5" />
             )}
           </div>
         </div>
@@ -172,7 +174,7 @@ const createUserColumns = (): ColumnDef<User>[] => [
     cell: ({ row }) => (
       <div className="flex items-center justify-center gap-2">
         <Calendar className="w-4 h-4" />
-        {moment(row.getValue("createdAt")).format("YYYY-MM-DD")}
+        {moment(row.getValue("createdAt")).format("YYYY-MM-DD HH:mm")}
       </div>
     ),
     size: 120,
@@ -221,7 +223,7 @@ export default function BenefitDetailPage({
     return (
       <div className="container mx-auto">
         <div className="flex items-center justify-center h-64">
-          <RefreshCw className="w-8 h-8 animate-spin" />
+          <Loader2 className="w-8 h-8 animate-spin" />
         </div>
       </div>
     );
