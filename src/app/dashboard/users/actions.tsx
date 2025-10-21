@@ -52,3 +52,61 @@ export const getUserDetail = async ({
     throw error;
   }
 };
+
+// 관리자용 사용자 계정 차단
+export const banUser = async ({
+  userId,
+  reason,
+  jsonWebToken,
+}: {
+  userId: string;
+  reason: string;
+  jsonWebToken: string;
+}) => {
+  try {
+    const { data } = await axiosApi(
+      `/admin/users/${userId}/ban`,
+      "post",
+      { reason },
+      {
+        headers: {
+          Authorization: `jwt ${jsonWebToken}`,
+        },
+      }
+    );
+    return (data && data["data"]) || null;
+  } catch (error) {
+    console.warn("banUser error", error);
+    throw error;
+  }
+};
+
+// 관리자용 사용자 계정 제한 (활동정지)
+export const restrictUser = async ({
+  userId,
+  reason,
+  restrictDurationInDays,
+  jsonWebToken,
+}: {
+  userId: string;
+  reason: string;
+  restrictDurationInDays: number;
+  jsonWebToken: string;
+}) => {
+  try {
+    const { data } = await axiosApi(
+      `/admin/users/${userId}/restrict`,
+      "post",
+      { reason, restrictDurationInDays },
+      {
+        headers: {
+          Authorization: `jwt ${jsonWebToken}`,
+        },
+      }
+    );
+    return (data && data["data"]) || null;
+  } catch (error) {
+    console.warn("restrictUser error", error);
+    throw error;
+  }
+};

@@ -42,11 +42,11 @@ import {
 import { useTheme } from "next-themes";
 
 const menuItems = [
-  // {
-  //   title: "사용자 관리",
-  //   href: "/dashboard/users",
-  //   icon: User2,
-  // },
+  {
+    title: "사용자 관리",
+    href: "/dashboard/users",
+    icon: User2,
+  },
   {
     title: "앱 관리자",
     href: "/dashboard/app-admin",

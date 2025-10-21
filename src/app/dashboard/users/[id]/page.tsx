@@ -21,12 +21,24 @@ import {
   Ban,
   UserCheck,
   User2,
+  UserX,
+  AlertTriangle,
 } from "lucide-react";
-import { getUserDetail } from "../actions";
+import { getUserDetail, banUser, restrictUser } from "../actions";
 import { toast } from "sonner";
 import moment from "moment";
 import { STORAGE_URL } from "@/lib/api";
 import { User } from "@/lib/types";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 
 export default function UserDetailPage({
   params,
@@ -39,6 +51,16 @@ export default function UserDetailPage({
 
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(false);
+
+  // 다이얼로그 상태
+  const [banDialogOpen, setBanDialogOpen] = useState(false);
+  const [restrictDialogOpen, setRestrictDialogOpen] = useState(false);
+  const [actionLoading, setActionLoading] = useState(false);
+
+  // 폼 상태
+  const [banReason, setBanReason] = useState("");
+  const [restrictReason, setRestrictReason] = useState("");
+  const [restrictDuration, setRestrictDuration] = useState(7);
 
   useEffect(() => {
     if (!jsonWebToken || !resolvedParams.id) return;
@@ -68,6 +90,83 @@ export default function UserDetailPage({
 
     fetchUserDetail();
   }, [jsonWebToken, resolvedParams.id, router]);
+
+  // 차단 처리
+  const handleBanUser = async () => {
+    if (!banReason.trim()) {
+      toast.error("차단 사유를 입력해주세요.");
+      return;
+    }
+
+    setActionLoading(true);
+    try {
+      await banUser({
+        userId: resolvedParams.id,
+        reason: banReason.trim(),
+        jsonWebToken: jsonWebToken!,
+      });
+
+      toast.success("사용자가 성공적으로 차단되었습니다.");
+      setBanDialogOpen(false);
+      setBanReason("");
+
+      // 사용자 정보 다시 불러오기
+      const result = await getUserDetail({
+        userId: resolvedParams.id,
+        jsonWebToken: jsonWebToken!,
+      });
+      if (result?.user) {
+        setUser(result.user);
+      }
+    } catch (error) {
+      console.error("사용자 차단 오류:", error);
+      toast.error("사용자 차단에 실패했습니다.");
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  // 활동정지 처리
+  const handleRestrictUser = async () => {
+    if (!restrictReason.trim()) {
+      toast.error("활동정지 사유를 입력해주세요.");
+      return;
+    }
+
+    if (restrictDuration < 1) {
+      toast.error("활동정지 기간은 최소 1일 이상이어야 합니다.");
+      return;
+    }
+
+    setActionLoading(true);
+    try {
+      await restrictUser({
+        userId: resolvedParams.id,
+        reason: restrictReason.trim(),
+        restrictDurationInDays: restrictDuration,
+        jsonWebToken: jsonWebToken!,
+      });
+
+      toast.success(`사용자가 ${restrictDuration}일간 활동정지되었습니다.`);
+      setRestrictDialogOpen(false);
+      setRestrictReason("");
+      setRestrictDuration(7);
+
+      // 사용자 정보 다시 불러오기
+      const result = await getUserDetail({
+        userId: resolvedParams.id,
+        jsonWebToken: jsonWebToken!,
+      });
+      if (result?.user) {
+        setUser(result.user);
+      }
+    } catch (error) {
+      console.error("사용자 활동정지 오류:", error);
+      toast.error("사용자 활동정지에 실패했습니다.");
+    } finally {
+      setActionLoading(false);
+    }
+  };
 
   const getPlatformLabel = (platform: string) => {
     const platformMap: { [key: string]: string } = {
@@ -141,6 +240,34 @@ export default function UserDetailPage({
           <ArrowLeft className="w-4 h-4" />
           돌아가기
         </Button>
+
+        {/* 관리 액션 버튼들 */}
+        <div className="flex items-center gap-2">
+          {!user?.restrictionInfo?.isRestricted && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setRestrictDialogOpen(true)}
+              className="flex items-center gap-2 text-orange-500 hover:text-orange-600 hover:bg-orange-50"
+              disabled={loading || actionLoading}
+            >
+              <AlertTriangle className="w-4 h-4" />
+              활동정지
+            </Button>
+          )}
+          {!user?.banInfo?.isBanned && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setBanDialogOpen(true)}
+              className="flex items-center gap-2 text-red-600 hover:text-red-700 hover:bg-red-50"
+              disabled={loading || actionLoading}
+            >
+              <UserX className="w-4 h-4 " />
+              계정차단
+            </Button>
+          )}
+        </div>
       </div>
 
       {/* 헤더 */}
@@ -323,17 +450,17 @@ export default function UserDetailPage({
         {(user.restrictionInfo.isRestricted || user.banInfo.isBanned) && (
           <Card>
             <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-red-600">
+              <CardTitle className="flex items-center gap-2">
                 <Shield className="w-5 h-5" />
                 제재 정보
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               {user.restrictionInfo.isRestricted && (
-                <div className="p-4 bg-red-50 border border-red-200 rounded-lg">
+                <div className="p-4 border rounded-lg">
                   <div className="flex items-center gap-2 mb-2">
-                    <Shield className="w-4 h-4 text-red-600" />
-                    <h4 className="font-medium text-red-800">이용 제한</h4>
+                    <Shield className="w-4 h-4" />
+                    <h4 className="font-medium">이용 제한</h4>
                   </div>
                   <div className="space-y-2 text-sm">
                     <p>
@@ -361,10 +488,10 @@ export default function UserDetailPage({
               )}
 
               {user.banInfo.isBanned && (
-                <div className="p-4 bg-red-100 border border-red-300 rounded-lg">
+                <div className="p-4 border rounded-lg">
                   <div className="flex items-center gap-2 mb-2">
-                    <Ban className="w-4 h-4 text-red-700" />
-                    <h4 className="font-medium text-red-900">계정 차단</h4>
+                    <Ban className="w-4 h-4" />
+                    <h4 className="font-medium">계정 차단</h4>
                   </div>
                   <div className="space-y-2 text-sm">
                     <p>
@@ -463,6 +590,138 @@ export default function UserDetailPage({
           </CardContent>
         </Card>
       </div>
+
+      {/* 차단 다이얼로그 */}
+      <Dialog open={banDialogOpen} onOpenChange={setBanDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <UserX className="w-5 h-5" />
+              사용자 계정 차단
+            </DialogTitle>
+            <DialogDescription>
+              {user?.profile?.nickname}님의 계정을 영구적으로 차단합니다. 차단된
+              계정은 모든 서비스 이용이 제한됩니다.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-4">
+            <div>
+              <Label className="text-sm font-medium">차단 사유</Label>
+              <Textarea
+                placeholder="차단 사유를 입력해주세요..."
+                value={banReason}
+                onChange={(e) => setBanReason(e.target.value)}
+                className="mt-1"
+                rows={3}
+              />
+            </div>
+          </div>
+
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => {
+                setBanDialogOpen(false);
+                setBanReason("");
+              }}
+              disabled={actionLoading}
+            >
+              취소
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={handleBanUser}
+              disabled={actionLoading || !banReason.trim()}
+              className="bg-red-600 hover:bg-red-700"
+            >
+              {actionLoading ? (
+                <>
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  처리중...
+                </>
+              ) : (
+                "계정 차단"
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* 활동정지 다이얼로그 */}
+      <Dialog open={restrictDialogOpen} onOpenChange={setRestrictDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <AlertTriangle className="w-5 h-5 " />
+              사용자 활동정지
+            </DialogTitle>
+            <DialogDescription>
+              {user?.profile.nickname}님의 계정을 일정 기간 동안 활동정지합니다.
+              활동정지 기간 동안 일부 서비스 이용이 제한됩니다.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-4">
+            <div>
+              <Label className="text-sm font-medium">활동정지 사유</Label>
+              <Textarea
+                placeholder="활동정지 사유를 입력해주세요..."
+                value={restrictReason}
+                onChange={(e) => setRestrictReason(e.target.value)}
+                className="mt-1"
+                rows={3}
+              />
+            </div>
+
+            <div>
+              <Label className="text-sm font-medium">활동정지 기간 (일)</Label>
+              <Input
+                type="number"
+                min="1"
+                value={restrictDuration}
+                onChange={(e) => setRestrictDuration(Number(e.target.value))}
+                className="mt-1"
+                placeholder="7"
+              />
+              <p className="text-xs text-muted-foreground mt-1">
+                1일 이상으로 설정 가능합니다
+              </p>
+            </div>
+          </div>
+
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => {
+                setRestrictDialogOpen(false);
+                setRestrictReason("");
+                setRestrictDuration(7);
+              }}
+              disabled={actionLoading}
+            >
+              취소
+            </Button>
+            <Button
+              onClick={handleRestrictUser}
+              disabled={
+                actionLoading || !restrictReason.trim() || restrictDuration < 1
+              }
+              variant="destructive"
+              className="cursor-pointer"
+            >
+              {actionLoading ? (
+                <>
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  처리중...
+                </>
+              ) : (
+                `${restrictDuration}일 활동정지`
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
