@@ -362,14 +362,14 @@ export default function UserDetailPage({
                     </div>
                   </div>
 
-                  <div>
+                  {/* <div>
                     <Label className="text-sm font-medium text-muted-foreground">
                       전화번호
                     </Label>
                     <div className="flex items-center gap-2 mt-1">
                       <p className="font-medium">{user.profile.phoneNumber}</p>
                     </div>
-                  </div>
+                  </div> */}
 
                   <div>
                     <Label className="text-sm font-medium text-muted-foreground">
