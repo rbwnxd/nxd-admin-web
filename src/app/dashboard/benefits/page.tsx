@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { useAuthStore } from "@/store/authStore";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -209,11 +209,26 @@ export default function BenefitsPage() {
 
   // 검색 및 필터 상태
   const [searchTitle, setSearchTitle] = useState("");
+  const [searchTitleInput, setSearchTitleInput] = useState(""); // 실제 입력값
   const [createdAtFrom, setCreatedAtFrom] = useState("");
   const [createdAtTo, setCreatedAtTo] = useState("");
+  
+  // 디바운스를 위한 ref
+  const debounceTimerRef = useRef<NodeJS.Timeout | null>(null);
 
   // 정렬 상태
   const [sorting, setSorting] = useState<SortingState>([]);
+
+  // 디바운스된 검색 함수
+  const debouncedSearch = useCallback((value: string) => {
+    if (debounceTimerRef.current) {
+      clearTimeout(debounceTimerRef.current);
+    }
+    
+    debounceTimerRef.current = setTimeout(() => {
+      setSearchTitle(value);
+    }, 500); // 500ms 디바운스
+  }, []);
 
   // 컬럼 정의
   const columns = createColumns(router);
@@ -294,21 +309,36 @@ export default function BenefitsPage() {
     itemsPerPage,
   ]);
 
+  // 컴포넌트 언마운트 시 타이머 정리
+  useEffect(() => {
+    return () => {
+      if (debounceTimerRef.current) {
+        clearTimeout(debounceTimerRef.current);
+      }
+    };
+  }, []);
+
   const handleSearch = () => {
     setCurrentPage(1); // 검색 시 첫 페이지로 이동
   };
 
   const handleReset = () => {
     setSearchTitle("");
+    setSearchTitleInput("");
     setCreatedAtFrom("");
     setCreatedAtTo("");
-    setCurrentPage(1); // 초기화 시 첫 페이지로 이동
+    setCurrentPage(1);
+    
+    // 디바운스 타이머도 클리어
+    if (debounceTimerRef.current) {
+      clearTimeout(debounceTimerRef.current);
+      debounceTimerRef.current = null;
+    }
   };
 
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
   };
-
   return (
     <div className="container mx-auto">
       {/* 상단 헤더 */}
@@ -346,8 +376,12 @@ export default function BenefitsPage() {
                 <Input
                   type="text"
                   placeholder="특전 제목으로 검색..."
-                  value={searchTitle}
-                  onChange={(e) => setSearchTitle(e.target.value)}
+                  value={searchTitleInput}
+                  onChange={(e) => {
+                    const value = e.target.value;
+                    setSearchTitleInput(value);
+                    debouncedSearch(value);
+                  }}
                   onKeyDown={(e) => {
                     if (e.key === "Enter") {
                       handleSearch();
