@@ -52,10 +52,14 @@ export default function CreateCheckInPage({
   const isUpdateMode = resolvedSearchParams.isUpdate === "true";
   const checkInId = resolvedSearchParams.id;
   const jsonWebToken = useAuthStore((state) => state.token);
-  const { findCheckInById, updateCheckIn, addCheckIn } = useQRCodeStore();
+  const { findCheckInById, updateCheckIn } = useQRCodeStore();
 
   const [loading, setLoading] = useState(false);
   const [dataLoading, setDataLoading] = useState(isUpdateMode);
+  const [isMounted, setIsMounted] = useState(false);
+  const [retryCount, setRetryCount] = useState(0);
+  const MAX_RETRY = 3;
+  const RETRY_DELAY = 1000; // 1초
   // 현재 날짜와 시간을 기본값으로 설정
   const getCurrentDateTime = () => {
     const now = new Date();
@@ -83,10 +87,15 @@ export default function CreateCheckInPage({
   >([]);
   const [isAdminSearchOpen, setIsAdminSearchOpen] = useState(false);
 
-  // 수정 모드일 때 데이터 로드
+  // Hydration 완료 감지
   useEffect(() => {
-    const loadData = () => {
-      if (!isUpdateMode || !checkInId) return;
+    setIsMounted(true);
+  }, []);
+
+  // 수정 모드일 때 데이터 로드 (hydration 완료 후)
+  useEffect(() => {
+    const loadData = async () => {
+      if (!isUpdateMode || !checkInId || !isMounted) return;
 
       setDataLoading(true);
 
@@ -127,17 +136,28 @@ export default function CreateCheckInPage({
         setAdmins(adminsList);
 
         setDataLoading(false);
+        setRetryCount(0); // 성공 시 재시도 횟수 리셋
       } else {
-        // store에 데이터가 없으면 리스트로 돌아가기
-        toast.error(
-          "체크인 정보를 찾을 수 없습니다. 리스트에서 다시 시도해주세요."
-        );
-        router.replace("/dashboard/qr-codes/check-in");
+        // 데이터가 없으면 재시도 또는 오류 처리
+        if (retryCount < MAX_RETRY) {
+          setRetryCount((prev) => prev + 1);
+
+          // 지연 후 재시도
+          setTimeout(() => {
+            loadData();
+          }, RETRY_DELAY * (retryCount + 1)); // 재시도할 때마다 지연시간 증가
+        } else {
+          // 최대 재시도 횟수 초과 시
+          setDataLoading(false);
+          toast.error(
+            "체크인 정보를 찾을 수 없습니다. 페이지를 새로고침하거나 리스트에서 다시 시도해주세요."
+          );
+        }
       }
     };
 
     loadData();
-  }, [isUpdateMode, checkInId, findCheckInById, router]);
+  }, [isUpdateMode, checkInId, isMounted, retryCount, findCheckInById]);
 
   const handleAdminSelect = (
     selectedUsers: { _id: string; name: string; account: string }[]
@@ -265,15 +285,19 @@ export default function CreateCheckInPage({
     }
   };
 
-  // 데이터 로딩 중일 때
-  if (dataLoading) {
+  // Hydration이 완료되지 않았거나 데이터 로딩 중일 때 로딩 표시
+  if (!isMounted || (isUpdateMode && dataLoading)) {
     return (
-      <div className="container mx-auto max-w-4xl">
-        <div className="flex items-center justify-center min-h-[50vh]">
-          <div className="text-center">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 mx-auto mb-4"></div>
+      <div className="container mx-auto py-6">
+        <div className="flex items-center justify-center min-h-[400px]">
+          <div className="text-center space-y-4">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
             <p className="text-muted-foreground">
-              체크인 정보를 불러오는 중...
+              {!isMounted
+                ? "페이지를 준비하고 있습니다..."
+                : `체크인 정보를 불러오는 중입니다... ${
+                    retryCount > 0 ? `(${retryCount}/${MAX_RETRY})` : ""
+                  }`}
             </p>
           </div>
         </div>
@@ -282,17 +306,30 @@ export default function CreateCheckInPage({
   }
 
   return (
-    <div className="container mx-auto max-w-4xl">
+    <div className="container mx-auto py-6 space-y-6">
       {/* 상단 네비게이션 */}
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex items-center justify-between">
         <Button
           variant="ghost"
           onClick={() => router.back()}
+          disabled={loading}
           className="flex items-center gap-2"
         >
           <ArrowLeft className="w-4 h-4" />
           돌아가기
         </Button>
+
+        <div className="flex items-center gap-2">
+          <Button
+            type="submit"
+            form="checkin-form"
+            disabled={loading || !formData.category || !formData.title}
+            className="flex items-center gap-2"
+          >
+            <Save className="w-4 h-4" />
+            {loading ? "저장 중..." : isUpdateMode ? "수정" : "생성"}
+          </Button>
+        </div>
       </div>
 
       {/* 헤더 */}
@@ -314,7 +351,7 @@ export default function CreateCheckInPage({
         </div>
       </div>
 
-      <form onSubmit={handleSubmit}>
+      <form id="checkin-form" onSubmit={handleSubmit}>
         <div className="grid gap-6">
           {/* 기본 정보 */}
           <Card>
