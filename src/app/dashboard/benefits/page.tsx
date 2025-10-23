@@ -33,6 +33,7 @@ import { getBenefits } from "./actions";
 import { toast } from "sonner";
 import { Benefit, BenefitStatus } from "@/lib/types";
 import moment from "moment";
+import { Label } from "@radix-ui/react-dropdown-menu";
 
 const STATUS_LABELS: Record<BenefitStatus, string> = {
   PENDING: "대기중",
@@ -212,7 +213,7 @@ export default function BenefitsPage() {
   const [searchTitleInput, setSearchTitleInput] = useState(""); // 실제 입력값
   const [createdAtFrom, setCreatedAtFrom] = useState("");
   const [createdAtTo, setCreatedAtTo] = useState("");
-  
+
   // 디바운스를 위한 ref
   const debounceTimerRef = useRef<NodeJS.Timeout | null>(null);
 
@@ -224,7 +225,7 @@ export default function BenefitsPage() {
     if (debounceTimerRef.current) {
       clearTimeout(debounceTimerRef.current);
     }
-    
+
     debounceTimerRef.current = setTimeout(() => {
       setSearchTitle(value);
     }, 500); // 500ms 디바운스
@@ -272,11 +273,11 @@ export default function BenefitsPage() {
         if (searchTitle) {
           params.title = searchTitle;
         }
-        
+
         if (createdAtFrom) {
           params.createdAtFrom = formatToISO(createdAtFrom);
         }
-        
+
         if (createdAtTo) {
           params.createdAtTo = formatToISO(createdAtTo);
         }
@@ -328,7 +329,7 @@ export default function BenefitsPage() {
     setCreatedAtFrom("");
     setCreatedAtTo("");
     setCurrentPage(1);
-    
+
     // 디바운스 타이머도 클리어
     if (debounceTimerRef.current) {
       clearTimeout(debounceTimerRef.current);
@@ -372,7 +373,8 @@ export default function BenefitsPage() {
           </CardHeader>
           <CardContent>
             <div className="flex flex-col lg:flex-row gap-4">
-              <div className="flex-1">
+              <div className="flex flex-col flex-1 gap-2">
+                <Label>특전 제목</Label>
                 <Input
                   type="text"
                   placeholder="특전 제목으로 검색..."
@@ -389,7 +391,8 @@ export default function BenefitsPage() {
                   }}
                 />
               </div>
-              <div>
+              <div className="flex flex-col gap-2">
+                <Label>생성일 시작</Label>
                 <Input
                   type="datetime-local"
                   placeholder="생성일 시작"
@@ -397,7 +400,8 @@ export default function BenefitsPage() {
                   onChange={(e) => setCreatedAtFrom(e.target.value)}
                 />
               </div>
-              <div>
+              <div className="flex flex-col gap-2">
+                <Label>생성일 끝</Label>
                 <Input
                   type="datetime-local"
                   placeholder="생성일 종료"
