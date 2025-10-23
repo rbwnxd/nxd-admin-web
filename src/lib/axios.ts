@@ -125,7 +125,10 @@ export async function axiosApi(
       return res;
     }
   } catch (error) {
-    console.log("axiosApi error", error);
+    const consoleData = `axios error\nmethod:${method}\nurl:${url}\noptions:${JSON.stringify(
+      options
+    )}\data:${data || ""}`;
+    console.log(consoleData, "\n", error);
     throw error;
   }
 }
