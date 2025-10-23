@@ -10,7 +10,6 @@ interface VersionInfo {
 }
 
 export function useVersionCheck(checkInterval = 10 * 60 * 1000) {
-  // 15분마다 체크 (비용 최적화)
   const [currentVersion, setCurrentVersion] = useState<string | null>(null);
   const [hasUpdate, setHasUpdate] = useState(false);
   const [isChecking, setIsChecking] = useState(false);
@@ -27,7 +26,7 @@ export function useVersionCheck(checkInterval = 10 * 60 * 1000) {
     // 마지막 체크 시간으로 불필요한 호출 방지 (비용 최적화)
     const lastCheck = localStorage.getItem("lastVersionCheck");
     const now = Date.now();
-    if (lastCheck && now - parseInt(lastCheck) < actualInterval * 0.8) {
+    if (lastCheck && now - parseInt(lastCheck) < actualInterval * 0.3) {
       return;
     }
 
