@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Progress } from "@/components/ui/progress";
-import { ArrowLeft, Save, X, Upload, Trash2, Eye } from "lucide-react";
+import { ArrowLeft, Save, X, Upload, Trash2, Eye, Loader2 } from "lucide-react";
 import { postArtist, patchArtist, getArtist } from "../actions";
 import { uploadImageFile } from "@/app/actions";
 import { STORAGE_URL } from "@/lib/api";
@@ -32,7 +32,8 @@ export default function ArtistCreatePage() {
     nameEn: "",
   });
 
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(false); // 저장 로딩
+  const [dataLoading, setDataLoading] = useState(false); // 데이터 로딩
   const [images, setImages] = useState<UploadedImage[]>([]);
   const [isDragging, setIsDragging] = useState(false);
 
@@ -40,7 +41,7 @@ export default function ArtistCreatePage() {
   useEffect(() => {
     if (isUpdateMode && artistId && jsonWebToken) {
       const fetchArtistData = async () => {
-        setIsLoading(true);
+        setDataLoading(true);
         try {
           const artistData: Artist | null = await getArtist({
             id: artistId,
@@ -71,7 +72,7 @@ export default function ArtistCreatePage() {
           console.error("Failed to fetch artist data:", error);
           toast.error("아티스트 정보를 불러오는데 실패했습니다.");
         } finally {
-          setIsLoading(false);
+          setDataLoading(false);
         }
       };
 
@@ -215,6 +216,22 @@ export default function ArtistCreatePage() {
       setIsLoading(false);
     }
   };
+
+  // 수정 모드에서 데이터 로딩 중일 때 로딩 화면 표시
+  if (isUpdateMode && dataLoading) {
+    return (
+      <div className="container mx-auto">
+        <div className="flex items-center justify-center min-h-[400px]">
+          <div className="flex flex-col items-center gap-3">
+            <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+            <p className="text-muted-foreground">
+              아티스트 정보를 불러오는 중입니다...
+            </p>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="container mx-auto">

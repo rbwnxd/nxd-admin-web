@@ -9,7 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Progress } from "@/components/ui/progress";
-import { ArrowLeft, Save, X, Upload, Trash2, Eye } from "lucide-react";
+import { ArrowLeft, Save, X, Upload, Trash2, Eye, Loader2 } from "lucide-react";
 import moment from "moment";
 import { postAnnouncement, putAnnouncement, getAnnouncement } from "../actions";
 import { uploadImageFile } from "@/app/actions";
@@ -38,7 +38,8 @@ export default function AnnouncementCreatePage() {
     externalLink: "",
   });
 
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(false); // 저장 로딩
+  const [dataLoading, setDataLoading] = useState(false); // 데이터 로딩
   const [images, setImages] = useState<UploadedImage[]>([]);
   const [isDragging, setIsDragging] = useState(false);
 
@@ -46,7 +47,7 @@ export default function AnnouncementCreatePage() {
   useEffect(() => {
     if (isUpdateMode && announcementId && jsonWebToken) {
       const fetchAnnouncementData = async () => {
-        setIsLoading(true);
+        setDataLoading(true);
         try {
           const announcementData: Announcement | null = await getAnnouncement({
             id: announcementId,
@@ -83,7 +84,7 @@ export default function AnnouncementCreatePage() {
           console.error("Failed to fetch announcement data:", error);
           toast.error("공지사항 정보를 불러오는데 실패했습니다.");
         } finally {
-          setIsLoading(false);
+          setDataLoading(false);
         }
       };
 
@@ -235,6 +236,22 @@ export default function AnnouncementCreatePage() {
       setIsLoading(false);
     }
   };
+
+  // 수정 모드에서 데이터 로딩 중일 때 로딩 화면 표시
+  if (isUpdateMode && dataLoading) {
+    return (
+      <div className="container mx-auto">
+        <div className="flex items-center justify-center min-h-[400px]">
+          <div className="flex flex-col items-center gap-3">
+            <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+            <p className="text-muted-foreground">
+              공지사항 정보를 불러오는 중입니다...
+            </p>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="container mx-auto">

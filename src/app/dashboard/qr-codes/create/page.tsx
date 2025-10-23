@@ -14,7 +14,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { ArrowLeft, QrCode, Save, Plus, X, Upload, Trash2 } from "lucide-react";
+import { ArrowLeft, QrCode, Save, Plus, X, Upload, Trash2, Loader2 } from "lucide-react";
 import { createQRCode, updateQRCode, getQRCodeDetail } from "../actions";
 import { toast } from "sonner";
 import { CATEGORY_OPTIONS } from "@/lib/consts";
@@ -39,7 +39,8 @@ export default function CreateQRCodePage() {
 
   const jsonWebToken = useAuthStore((state) => state.token);
 
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(false); // 저장 로딩
+  const [dataLoading, setDataLoading] = useState(false); // 데이터 로딩
   const [formData, setFormData] = useState<QRCodeFormData>({
     category: "",
     point: 0,
@@ -70,7 +71,7 @@ export default function CreateQRCodePage() {
     const loadExistingData = async () => {
       if (isUpdateMode && qrCodeId && jsonWebToken) {
         try {
-          setLoading(true);
+          setDataLoading(true);
           const existingQRCode = await getQRCodeDetail({
             qrCodeId,
             jsonWebToken,
@@ -154,7 +155,7 @@ export default function CreateQRCodePage() {
           console.error("Failed to load QR code data:", error);
           toast.error("QR 코드 데이터 로드에 실패했습니다.");
         } finally {
-          setLoading(false);
+          setDataLoading(false);
         }
       }
     };
@@ -447,6 +448,22 @@ export default function CreateQRCodePage() {
       ))}
     </div>
   );
+
+  // 수정 모드에서 데이터 로딩 중일 때 로딩 화면 표시
+  if (isUpdateMode && dataLoading) {
+    return (
+      <div className="container mx-auto">
+        <div className="flex items-center justify-center min-h-[400px]">
+          <div className="flex flex-col items-center gap-3">
+            <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+            <p className="text-muted-foreground">
+              QR 코드 정보를 불러오는 중입니다...
+            </p>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="container mx-auto max-w-4xl">

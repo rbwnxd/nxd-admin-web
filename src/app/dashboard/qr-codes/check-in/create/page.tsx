@@ -24,6 +24,7 @@ import {
   Edit3,
   Search,
   X,
+  Loader2,
 } from "lucide-react";
 import { createQRCodeCheckIn, updateQRCodeCheckIn } from "../../actions";
 import { AdminSearchDialog } from "@/components/dialog/AdminSearchDialog";
@@ -282,8 +283,8 @@ export default function CreateCheckInPage() {
     return (
       <div className="container mx-auto py-6">
         <div className="flex items-center justify-center min-h-[400px]">
-          <div className="text-center space-y-4">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
+          <div className="flex flex-col items-center gap-3">
+            <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
             <p className="text-muted-foreground">
               {!isMounted
                 ? "페이지를 준비하고 있습니다..."
