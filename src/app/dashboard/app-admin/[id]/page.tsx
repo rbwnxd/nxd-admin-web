@@ -25,6 +25,7 @@ import {
 } from "../actions";
 import { toast } from "sonner";
 import moment from "moment";
+import { ConfirmDialog } from "@/components/dialog/ConfirmDialog";
 
 export default function AppAdminDetailPage({
   params,
@@ -37,6 +38,12 @@ export default function AppAdminDetailPage({
 
   const [appAdminUser, setAppAdminUser] = useState<AppAdminUser | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+
+  // 삭제 확인 다이얼로그 상태
+  const [deleteDialog, setDeleteDialog] = useState({
+    open: false,
+    isLoading: false,
+  });
 
   useEffect(() => {
     if (!jsonWebToken || !resolvedParams.id) return;
@@ -83,6 +90,8 @@ export default function AppAdminDetailPage({
   const handleDeleteUser = async () => {
     if (!jsonWebToken || !appAdminUser) return;
 
+    setDeleteDialog((prev) => ({ ...prev, isLoading: true }));
+
     try {
       await deleteAppAdminUser({
         appAdminUserId: appAdminUser._id,
@@ -94,7 +103,15 @@ export default function AppAdminDetailPage({
     } catch (error) {
       console.error("Delete user error:", error);
       toast.error("사용자 삭제에 실패했습니다.");
+      setDeleteDialog((prev) => ({ ...prev, isLoading: false }));
     }
+  };
+
+  const openDeleteDialog = () => {
+    setDeleteDialog({
+      open: true,
+      isLoading: false,
+    });
   };
 
   if (isLoading) {
@@ -164,7 +181,7 @@ export default function AppAdminDetailPage({
           {!appAdminUser.deletedAt && (
             <Button
               variant="destructive"
-              onClick={handleDeleteUser}
+              onClick={openDeleteDialog}
               className="flex items-center gap-2"
             >
               <Trash2 className="w-4 h-4" />
@@ -312,6 +329,26 @@ export default function AppAdminDetailPage({
           </CardContent>
         </Card>
       </div>
+
+      {/* 삭제 확인 다이얼로그 */}
+      <ConfirmDialog
+        open={deleteDialog.open}
+        onOpenChange={(open) => {
+          if (!open) {
+            setDeleteDialog({
+              open: false,
+              isLoading: false,
+            });
+          }
+        }}
+        title="앱 관리자 삭제"
+        description={`정말로 "${appAdminUser?.name}" 앱 관리자를 삭제하시겠습니까?\n이 작업은 되돌릴 수 없습니다.`}
+        confirmText="삭제"
+        cancelText="취소"
+        variant="destructive"
+        onConfirm={handleDeleteUser}
+        isLoading={deleteDialog.isLoading}
+      />
     </div>
   );
 }

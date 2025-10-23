@@ -39,6 +39,7 @@ import {
 } from "./actions";
 import { toast } from "sonner";
 import moment from "moment";
+import { ConfirmDialog } from "@/components/dialog/ConfirmDialog";
 
 export default function AppAdminPage() {
   const router = useRouter();
@@ -48,6 +49,19 @@ export default function AppAdminPage() {
   const [totalCount, setTotalCount] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
+
+  // 삭제 확인 다이얼로그 상태
+  const [deleteDialog, setDeleteDialog] = useState<{
+    open: boolean;
+    userId: string;
+    userName: string;
+    isLoading: boolean;
+  }>({
+    open: false,
+    userId: "",
+    userName: "",
+    isLoading: false,
+  });
 
   const itemsPerPage = 10;
 
@@ -102,12 +116,14 @@ export default function AppAdminPage() {
     }
   };
 
-  const handleDeleteUser = async (userId: string) => {
-    if (!jsonWebToken) return;
+  const handleDeleteUser = async () => {
+    if (!jsonWebToken || !deleteDialog.userId) return;
+
+    setDeleteDialog((prev) => ({ ...prev, isLoading: true }));
 
     try {
       await deleteAppAdminUser({
-        appAdminUserId: userId,
+        appAdminUserId: deleteDialog.userId,
         jsonWebToken,
       });
 
@@ -115,15 +131,33 @@ export default function AppAdminPage() {
       // 목록 새로고침
       setAppAdminUsers((prev) =>
         prev.map((user) =>
-          user._id === userId
+          user._id === deleteDialog.userId
             ? { ...user, deletedAt: new Date().toISOString() }
             : user
         )
       );
+
+      // 다이얼로그 닫기
+      setDeleteDialog({
+        open: false,
+        userId: "",
+        userName: "",
+        isLoading: false,
+      });
     } catch (error) {
       console.error("Delete user error:", error);
       toast.error("사용자 삭제에 실패했습니다.");
+      setDeleteDialog((prev) => ({ ...prev, isLoading: false }));
     }
+  };
+
+  const openDeleteDialog = (userId: string, userName: string) => {
+    setDeleteDialog({
+      open: true,
+      userId,
+      userName,
+      isLoading: false,
+    });
   };
 
   const handlePageChange = (page: number) => {
@@ -271,7 +305,7 @@ export default function AppAdminPage() {
                           <DropdownMenuItem
                             onClick={(e) => {
                               e.stopPropagation();
-                              handleDeleteUser(user._id);
+                              openDeleteDialog(user._id, user.name);
                             }}
                             className="text-red-600"
                           >
@@ -334,6 +368,28 @@ export default function AppAdminPage() {
           )}
         </CardContent>
       </Card>
+
+      {/* 삭제 확인 다이얼로그 */}
+      <ConfirmDialog
+        open={deleteDialog.open}
+        onOpenChange={(open) => {
+          if (!open) {
+            setDeleteDialog({
+              open: false,
+              userId: "",
+              userName: "",
+              isLoading: false,
+            });
+          }
+        }}
+        title="앱 관리자 삭제"
+        description={`정말로 "${deleteDialog.userName}" 앱 관리자를 삭제하시겠습니까?\n이 작업은 되돌릴 수 없습니다.`}
+        confirmText="삭제"
+        cancelText="취소"
+        variant="destructive"
+        onConfirm={handleDeleteUser}
+        isLoading={deleteDialog.isLoading}
+      />
     </div>
   );
 }
