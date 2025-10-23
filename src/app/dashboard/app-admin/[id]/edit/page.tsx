@@ -7,10 +7,13 @@ import { AppAdminUser, AppAdminUserUpdateForm } from "@/lib/types";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
+import { Loader2, Shield, ArrowLeft, Edit, Save } from "lucide-react";
+import { getAppAdminUser, updateAppAdminUser } from "../../actions";
+import { toast } from "sonner";
 
-const AVAILABLE_PERMISSIONS = [
-  "CANCEL_QR_CODE_VERIFICATION",
-];
+const AVAILABLE_PERMISSIONS = ["CANCEL_QR_CODE_VERIFICATION"];
 
 export default function EditAppAdminUserPage() {
   const params = useParams<{ id: string }>();
@@ -56,7 +59,10 @@ export default function EditAppAdminUserPage() {
     fetchAppAdminUser();
   }, [jsonWebToken, params.id]);
 
-  const handleInputChange = (field: keyof AppAdminUserUpdateForm, value: string) => {
+  const handleInputChange = (
+    field: keyof AppAdminUserUpdateForm,
+    value: string
+  ) => {
     setForm((prev) => ({
       ...prev,
       [field]: value,
@@ -83,22 +89,25 @@ export default function EditAppAdminUserPage() {
       return;
     }
 
-    if (form.password && (form.password.length < 8 || form.password.length > 20)) {
+    if (
+      form.password &&
+      (form.password.length < 8 || form.password.length > 20)
+    ) {
       toast.error("비밀번호는 8-20자 사이여야 합니다.");
       return;
     }
 
     // 변경된 필드만 전송
     const updateData: AppAdminUserUpdateForm = {};
-    
+
     if (form.password && form.password.trim()) {
       updateData.password = form.password.trim();
     }
-    
+
     if (form.name && form.name.trim() !== appAdminUser.name) {
       updateData.name = form.name.trim();
     }
-    
+
     if (form.permissions) {
       updateData.permissions = form.permissions;
     }
@@ -254,11 +263,11 @@ export default function EditAppAdminUserPage() {
               </Label>
               <div className="space-y-2">
                 {AVAILABLE_PERMISSIONS.map((permission) => (
-                  <div key={permission} className="flex items-center justify-between">
-                    <Label
-                      htmlFor={permission}
-                      className="text-sm font-normal"
-                    >
+                  <div
+                    key={permission}
+                    className="flex items-center justify-between"
+                  >
+                    <Label htmlFor={permission} className="text-sm font-normal">
                       {permission}
                     </Label>
                     <Switch

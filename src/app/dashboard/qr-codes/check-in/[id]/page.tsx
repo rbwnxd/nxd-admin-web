@@ -4,9 +4,66 @@ import { useRouter, useParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useQRCodeStore } from "@/store/qrCodeStore";
 import { useAuthStore } from "@/store/authStore";
+import { QRCodeCategory, QRCodeVerification } from "@/lib/types";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import {
+  Pagination,
+  PaginationContent,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from "@/components/ui/pagination";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
+  Users,
+  ArrowLeft,
+  Edit3,
+  Trash2,
+  User,
+  Search,
+  RefreshCw,
+  Loader2,
+  MoreHorizontal,
+} from "lucide-react";
+import {
+  getQRCodeVerifications,
+  deleteQRCodeVerification,
+  deleteQRCodeCheckIn,
+} from "../../actions";
+import { toast } from "sonner";
+import moment from "moment";
+import { ConfirmDialog } from "@/components/dialog/ConfirmDialog";
+
+const CATEGORY_LABELS: Record<QRCodeCategory, string> = {
+  ALBUM: "앨범",
+  CONCERT: "콘서트",
+  OFFLINE_SPOT: "오프라인 스팟",
+  GOODS: "굿즈",
+};
+
+interface Admin {
+  _id: string;
+  name: string;
+  account: string;
+}
 
 interface CheckIn {
   _id: string;
@@ -379,8 +436,8 @@ export default function QRCodeCheckInDetailPage() {
             {actualSearchUserId && (
               <p className="text-sm text-muted-foreground mt-2">
                 검색어: &ldquo;
-                <span className="font-medium">{actualSearchUserId}</span>&rdquo; 에
-                대한 결과
+                <span className="font-medium">{actualSearchUserId}</span>&rdquo;
+                에 대한 결과
               </p>
             )}
           </CardHeader>

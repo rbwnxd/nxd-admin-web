@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter, useParams } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import Image from "next/image";
 import moment from "moment";
 import { useAuthStore } from "@/store/authStore";
@@ -15,13 +15,11 @@ import { getChartRanking } from "../actions";
 import { toast } from "sonner";
 import { STORAGE_URL } from "@/lib/api";
 
-
-
 export default function ChartDetailPage() {
   const params = useParams<{ id: string }>();
   const router = useRouter();
   const jsonWebToken = useAuthStore((state) => state.token);
-  
+
   // Chart Store에서 차트 정보 가져오기
   const { findChartById } = useChartStore();
 
@@ -108,7 +106,7 @@ export default function ChartDetailPage() {
 
   // Chart Store에서 차트 정보 가져오기
   const chartInfo = findChartById(params.id);
-  
+
   // 차트 정보가 없으면 기본값 사용 (차트 목록을 먼저 방문하지 않은 경우)
   const defaultChartInfo: ChartItem = {
     _id: params.id,
@@ -121,7 +119,7 @@ export default function ChartDetailPage() {
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
   };
-  
+
   const currentChartInfo = chartInfo || defaultChartInfo;
 
   return (
@@ -153,7 +151,9 @@ export default function ChartDetailPage() {
               <Badge variant={getChartTypeVariant(currentChartInfo.type)}>
                 {getChartTypeLabel(currentChartInfo.type)}
               </Badge>
-              <Badge variant={currentChartInfo.isActivated ? "default" : "secondary"}>
+              <Badge
+                variant={currentChartInfo.isActivated ? "default" : "secondary"}
+              >
                 {currentChartInfo.isActivated ? "활성화" : "비활성화"}
               </Badge>
             </div>
@@ -164,16 +164,19 @@ export default function ChartDetailPage() {
             <div className="flex items-center gap-4 text-sm text-muted-foreground">
               <div className="flex items-center gap-1">
                 <Calendar className="w-4 h-4" />
-                시작: {moment(currentChartInfo.season.startedAt).format("YYYY-MM-DD")}
+                시작:{" "}
+                {moment(currentChartInfo.season.startedAt).format("YYYY-MM-DD")}
               </div>
               <div className="flex items-center gap-1">
                 <Calendar className="w-4 h-4" />
-                종료: {moment(currentChartInfo.season.endedAt).format("YYYY-MM-DD")}
+                종료:{" "}
+                {moment(currentChartInfo.season.endedAt).format("YYYY-MM-DD")}
               </div>
             </div>
           )}
           <div className="text-xs text-muted-foreground mt-2">
-            생성일: {moment(currentChartInfo.createdAt).format("YYYY-MM-DD HH:mm")}
+            생성일:{" "}
+            {moment(currentChartInfo.createdAt).format("YYYY-MM-DD HH:mm")}
           </div>
           <div className="flex items-center gap-4 text-sm text-muted-foreground mt-2">
             <span>총 참가자: {totalCount}명</span>

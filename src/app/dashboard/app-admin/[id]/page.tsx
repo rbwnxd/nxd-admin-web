@@ -7,6 +7,18 @@ import { AppAdminUser } from "@/lib/types";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Label } from "@/components/ui/label";
+import {
+  Loader2,
+  User,
+  ArrowLeft,
+  Edit,
+  UserMinus,
+  Trash2,
+  Shield,
+  Copy,
+  Calendar,
+} from "lucide-react";
 import {
   getAppAdminUser,
   deleteAppAdminUser,
@@ -380,12 +392,3 @@ export default function AppAdminUserDetailPage() {
   );
 }
 
-function Label({
-  children,
-  className,
-}: {
-  children: React.ReactNode;
-  className?: string;
-}) {
-  return <label className={className}>{children}</label>;
-}
