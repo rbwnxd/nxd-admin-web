@@ -2,7 +2,6 @@
 
 import { useRouter } from "next/navigation";
 import { useEffect, useState, use } from "react";
-import { useAnnouncementStore } from "@/store/announcementStore";
 import { useAuthStore } from "@/store/authStore";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -12,29 +11,13 @@ import { Textarea } from "@/components/ui/textarea";
 import { Progress } from "@/components/ui/progress";
 import { ArrowLeft, Save, X, Upload, Trash2, Eye } from "lucide-react";
 import moment from "moment";
-import { postAnnouncement, putAnnouncement } from "../actions";
+import { postAnnouncement, putAnnouncement, getAnnouncement } from "../actions";
 import { uploadImageFile } from "@/app/actions";
 import { STORAGE_URL } from "@/lib/api";
 import Image from "next/image";
+import { toast } from "sonner";
+import { Announcement, UploadedImage, AnnouncementFormData } from "@/lib/types";
 
-interface FormData {
-  titleKo: string;
-  titleEn: string;
-  contentKo: string;
-  contentEn: string;
-  publishedAt: string;
-  externalLink: string;
-}
-
-interface UploadedImage {
-  id: string;
-  file: File | null; // 기존 업로드된 이미지의 경우 null일 수 있음
-  path?: string;
-  progress: number;
-  isUploading: boolean;
-  error?: string;
-  preview?: string; // 미리보기 URL 추가
-}
 
 export default function AnnouncementCreatePage({
   searchParams,
@@ -46,10 +29,9 @@ export default function AnnouncementCreatePage({
   const isUpdateMode = resolvedSearchParams.isUpdate === "true";
   const announcementId = resolvedSearchParams.id;
 
-  const announcements = useAnnouncementStore((state) => state.announcements);
   const jsonWebToken = useAuthStore((state) => state.token);
 
-  const [formData, setFormData] = useState<FormData>({
+  const [formData, setFormData] = useState<AnnouncementFormData>({
     titleKo: "",
     titleEn: "",
     contentKo: "",
@@ -64,38 +46,53 @@ export default function AnnouncementCreatePage({
 
   // 수정 모드인 경우 기존 데이터 로드
   useEffect(() => {
-    if (isUpdateMode && announcementId && announcements.length > 0) {
-      const existingAnnouncement = announcements.find(
-        (announcement) => announcement._id === announcementId
-      );
+    if (isUpdateMode && announcementId && jsonWebToken) {
+      const fetchAnnouncementData = async () => {
+        setIsLoading(true);
+        try {
+          const announcementData: Announcement | null = await getAnnouncement({
+            id: announcementId,
+            jsonWebToken,
+          });
 
-      if (existingAnnouncement) {
-        setFormData({
-          titleKo: existingAnnouncement.titleList[0]?.ko || "",
-          titleEn: existingAnnouncement.titleList[0]?.en || "",
-          contentKo: existingAnnouncement.contentList[0]?.ko || "",
-          contentEn: existingAnnouncement.contentList[0]?.en || "",
-          publishedAt: moment(existingAnnouncement.publishedAt).format(
-            "YYYY-MM-DDTHH:mm"
-          ),
-          externalLink: existingAnnouncement.externalLink || "",
-        });
+          if (announcementData) {
+            setFormData({
+              titleKo: announcementData.titleList[0]?.ko || "",
+              titleEn: announcementData.titleList[0]?.en || "",
+              contentKo: announcementData.contentList[0]?.ko || "",
+              contentEn: announcementData.contentList[0]?.en || "",
+              publishedAt: moment(announcementData.publishedAt).format(
+                "YYYY-MM-DDTHH:mm"
+              ),
+              externalLink: announcementData.externalLink || "",
+            });
 
-        // 기존 이미지들을 UploadedImage 형태로 변환
-        setImages(
-          existingAnnouncement.imageList.map((image, index) => ({
-            id: Date.now().toString() + index + Math.random().toString(36),
-            file: null, // 이미 업로드된 파일이므로 null
-            progress: 100, // 완료된 상태
-            isUploading: false,
-            path: image.imageOriginalPath, // 기존 이미지 경로
-            preview: `${STORAGE_URL}/${image.image256Path}`, // 미리보기용 URL
-          }))
-        );
-      }
+            // 기존 이미지들을 UploadedImage 형태로 변환
+            setImages(
+              announcementData.imageList.map((image, index: number) => ({
+                id: Date.now().toString() + index + Math.random().toString(36),
+                file: null, // 이미 업로드된 파일이므로 null
+                progress: 100, // 완료된 상태
+                isUploading: false,
+                path: image.imageOriginalPath, // 기존 이미지 경로
+                preview: `${STORAGE_URL}/${image.image256Path}`, // 미리보기용 URL
+              }))
+            );
+          } else {
+            toast.error("공지사항 정보를 찾을 수 없습니다.");
+          }
+        } catch (error) {
+          console.error("Failed to fetch announcement data:", error);
+          toast.error("공지사항 정보를 불러오는데 실패했습니다.");
+        } finally {
+          setIsLoading(false);
+        }
+      };
+
+      fetchAnnouncementData();
     }
-  }, [isUpdateMode, announcementId, announcements]);
-  const handleInputChange = (field: keyof FormData, value: string) => {
+  }, [isUpdateMode, announcementId, jsonWebToken]);
+  const handleInputChange = (field: keyof AnnouncementFormData, value: string) => {
     setFormData((prev) => ({
       ...prev,
       [field]: value,
@@ -235,7 +232,7 @@ export default function AnnouncementCreatePage({
       }
     } catch (error) {
       console.error("공지사항 저장 오류:", error);
-      alert("공지사항 저장 중 오류가 발생했습니다.");
+      toast.error("공지사항 저장 중 오류가 발생했습니다.");
     } finally {
       setIsLoading(false);
     }

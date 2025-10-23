@@ -458,3 +458,15 @@ export interface ArtistFormData {
   nameKo: string;
   nameEn: string;
 }
+
+// === 공지사항 폼 관련 타입들 ===
+
+// 공지사항 폼 데이터
+export interface AnnouncementFormData {
+  titleKo: string;
+  titleEn: string;
+  contentKo: string;
+  contentEn: string;
+  publishedAt: string;
+  externalLink: string;
+}
