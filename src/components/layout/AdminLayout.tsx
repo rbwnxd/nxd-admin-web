@@ -6,6 +6,7 @@ import { useAuthStore } from "@/store/authStore";
 import { CustomSidebar } from "./CustomSidebar";
 import { SidebarProvider, SidebarTrigger } from "../ui/sidebar";
 import { Toaster } from "../ui/sonner";
+import { UpdateBanner } from "../update-banner";
 
 interface AdminLayoutProps {
   children: React.ReactNode;
@@ -58,6 +59,7 @@ export function AdminLayout({ children }: AdminLayoutProps) {
           <SidebarTrigger className="-ml-1" />
           <h1 className="text-lg font-semibold">NXD Admin</h1>
         </header>
+        <UpdateBanner variant="banner" />
         <div className="flex-1 overflow-auto p-6">
           <div className="container mx-auto">{children}</div>
         </div>
