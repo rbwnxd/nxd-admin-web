@@ -48,7 +48,7 @@ export function useVersionCheck(checkInterval = 10 * 60 * 1000) {
         const versionInfo: VersionInfo = await response.json();
         const newBuildId = versionInfo.buildId;
 
-        console.log("version check", newBuildId);
+        console.log("version check", currentVersion, newBuildId);
 
         // 초기 로드시에는 현재 버전만 설정
         if (currentVersion === null) {
