@@ -1,23 +1,12 @@
 "use client";
 
-import { useRouter } from "next/navigation";
-import { use, useEffect, useState } from "react";
+import { useRouter, useParams } from "next/navigation";
+import { useEffect, useState } from "react";
 import { useAuthStore } from "@/store/authStore";
 import { AppAdminUser } from "@/lib/types";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import {
-  ArrowLeft,
-  Edit,
-  User,
-  Calendar,
-  Shield,
-  UserMinus,
-  Trash2,
-  Loader2,
-  Copy,
-} from "lucide-react";
 import {
   getAppAdminUser,
   deleteAppAdminUser,
@@ -27,12 +16,8 @@ import { toast } from "sonner";
 import moment from "moment";
 import { ConfirmDialog } from "@/components/dialog/ConfirmDialog";
 
-export default function AppAdminDetailPage({
-  params,
-}: {
-  params: Promise<{ id: string }>;
-}) {
-  const resolvedParams = use(params);
+export default function AppAdminUserDetailPage() {
+  const params = useParams<{ id: string }>();
   const router = useRouter();
   const jsonWebToken = useAuthStore((state) => state.token);
 
@@ -52,13 +37,13 @@ export default function AppAdminDetailPage({
   });
 
   useEffect(() => {
-    if (!jsonWebToken || !resolvedParams.id) return;
+    if (!jsonWebToken || !params.id) return;
 
     const fetchAppAdminUser = async () => {
       setIsLoading(true);
       try {
         const result = await getAppAdminUser({
-          appAdminUserId: resolvedParams.id,
+          appAdminUserId: params.id,
           jsonWebToken,
         });
 
@@ -74,7 +59,7 @@ export default function AppAdminDetailPage({
     };
 
     fetchAppAdminUser();
-  }, [jsonWebToken, resolvedParams.id]);
+  }, [jsonWebToken, params.id]);
 
   const handleDisableUser = async () => {
     if (!jsonWebToken || !appAdminUser) return;

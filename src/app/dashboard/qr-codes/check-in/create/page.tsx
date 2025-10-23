@@ -1,7 +1,7 @@
 "use client";
 
-import { useRouter } from "next/navigation";
-import { useState, useEffect, use } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { useState, useEffect } from "react";
 import { useAuthStore } from "@/store/authStore";
 import { useQRCodeStore } from "@/store/qrCodeStore";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -28,6 +28,7 @@ import {
 import { createQRCodeCheckIn, updateQRCodeCheckIn } from "../../actions";
 import { AdminSearchDialog } from "@/components/dialog/AdminSearchDialog";
 import { toast } from "sonner";
+import { QRCodeCheckInAdmin, QRCodeCheckInFormData } from "@/lib/types";
 
 const CATEGORY_OPTIONS = [
   { value: "ALBUM", label: "앨범" },
@@ -36,21 +37,14 @@ const CATEGORY_OPTIONS = [
   { value: "GOODS", label: "굿즈" },
 ];
 
-interface Admin {
-  _id: string;
-  name: string;
-  account: string;
-}
 
-export default function CreateCheckInPage({
-  searchParams,
-}: {
-  searchParams: Promise<{ id?: string; isUpdate?: string }>;
-}) {
+export default function CreateCheckInPage() {
   const router = useRouter();
-  const resolvedSearchParams = use(searchParams);
-  const isUpdateMode = resolvedSearchParams.isUpdate === "true";
-  const checkInId = resolvedSearchParams.id;
+  const searchParams = useSearchParams();
+  
+  // Next.js 15 권장: useSearchParams hook 사용
+  const isUpdateMode = searchParams.get("isUpdate") === "true";
+  const checkInId = searchParams.get("id");
   const jsonWebToken = useAuthStore((state) => state.token);
   const { findCheckInById, updateCheckIn } = useQRCodeStore();
 
@@ -74,17 +68,15 @@ export default function CreateCheckInPage({
     return now.toISOString().slice(0, 16);
   };
 
-  const [formData, setFormData] = useState({
-    category: "" as "ALBUM" | "CONCERT" | "OFFLINE_SPOT" | "GOODS" | "",
+  const [formData, setFormData] = useState<QRCodeCheckInFormData>({
+    category: "",
     title: "",
     startAt: getCurrentDateTime(),
     endAt: getEndDateTime(),
     memo: "",
   });
 
-  const [admins, setAdmins] = useState<
-    { _id: string; name: string; account: string }[]
-  >([]);
+  const [admins, setAdmins] = useState<QRCodeCheckInAdmin[]>([]);
   const [isAdminSearchOpen, setIsAdminSearchOpen] = useState(false);
 
   // Hydration 완료 감지
@@ -127,8 +119,8 @@ export default function CreateCheckInPage({
         });
 
         // 관리자 정보 설정
-        const adminsList =
-          data.admins?.map((admin: Admin) => ({
+        const adminsList: QRCodeCheckInAdmin[] =
+          data.admins?.map((admin: QRCodeCheckInAdmin) => ({
             _id: admin._id,
             name: admin.name,
             account: admin.account,
@@ -160,7 +152,7 @@ export default function CreateCheckInPage({
   }, [isUpdateMode, checkInId, isMounted, retryCount, findCheckInById]);
 
   const handleAdminSelect = (
-    selectedUsers: { _id: string; name: string; account: string }[]
+    selectedUsers: QRCodeCheckInAdmin[]
   ) => {
     setAdmins(selectedUsers);
     toast.success(`${selectedUsers.length}명의 관리자가 선택되었습니다.`);

@@ -1,7 +1,7 @@
 "use client";
 
-import { useRouter } from "next/navigation";
-import { use, useEffect } from "react";
+import { useRouter, useParams } from "next/navigation";
+import { useEffect, useState } from "react";
 import { useQRCodeStore } from "@/store/qrCodeStore";
 import { useAuthStore } from "@/store/authStore";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -25,12 +25,8 @@ import moment from "moment";
  * 해시 코드 목록, QR코드 아이디 뽑는기능 추가,
  */
 
-export default function QRCodeHashesPage({
-  params,
-}: {
-  params: Promise<{ id: string }>;
-}) {
-  const resolvedParams = use(params);
+export default function QRCodeHashesPage() {
+  const params = useParams<{ id: string }>();
   const router = useRouter();
   const jsonWebToken = useAuthStore((state) => state.token);
 
@@ -47,16 +43,16 @@ export default function QRCodeHashesPage({
     findQRCodeById,
   } = useQRCodeStore();
 
-  const qrCode = findQRCodeById(resolvedParams.id);
+  const qrCode = findQRCodeById(params.id);
 
   useEffect(() => {
-    if (!jsonWebToken || !resolvedParams.id) return;
+    if (!jsonWebToken || !params.id) return;
 
     const fetchHashes = async () => {
       setHashLoading(true);
       try {
         const result = await getQRCodeHashes({
-          qrCodeId: resolvedParams.id,
+          qrCodeId: params.id,
           params: {
             __skip: (currentHashPage - 1) * hashItemsPerPage,
             __limit: hashItemsPerPage,
@@ -79,7 +75,7 @@ export default function QRCodeHashesPage({
     fetchHashes();
   }, [
     jsonWebToken,
-    resolvedParams.id,
+    params.id,
     currentHashPage,
     hashItemsPerPage,
     setQRHashes,

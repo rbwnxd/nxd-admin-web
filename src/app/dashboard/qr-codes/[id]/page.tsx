@@ -1,7 +1,7 @@
 "use client";
 
-import { useRouter } from "next/navigation";
-import { use, useEffect, useState } from "react";
+import { useRouter, useParams } from "next/navigation";
+import { useEffect, useState } from "react";
 import { useAuthStore } from "@/store/authStore";
 import { useQRCodeStore } from "@/store/qrCodeStore";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -27,12 +27,8 @@ import { STORAGE_URL } from "@/lib/api";
 import Image from "next/image";
 import { QRCode } from "@/lib/types";
 
-export default function QRCodeDetailPage({
-  params,
-}: {
-  params: Promise<{ id: string }>;
-}) {
-  const resolvedParams = use(params);
+export default function QRCodeDetailPage() {
+  const params = useParams<{ id: string }>();
   const router = useRouter();
   const jsonWebToken = useAuthStore((state) => state.token);
   const removeQRCode = useQRCodeStore((state) => state.removeQRCode);
@@ -43,13 +39,13 @@ export default function QRCodeDetailPage({
   const [isDeleting, setIsDeleting] = useState(false);
 
   useEffect(() => {
-    if (!jsonWebToken || !resolvedParams.id) return;
+    if (!jsonWebToken || !params.id) return;
 
     const fetchQRCodeDetail = async () => {
       setLoading(true);
       try {
         const result = await getQRCodeDetail({
-          qrCodeId: resolvedParams.id,
+          qrCodeId: params.id,
           jsonWebToken,
         });
 
@@ -67,7 +63,7 @@ export default function QRCodeDetailPage({
     };
 
     fetchQRCodeDetail();
-  }, [jsonWebToken, resolvedParams.id]);
+  }, [jsonWebToken, params.id]);
 
   if (loading) {
     return (

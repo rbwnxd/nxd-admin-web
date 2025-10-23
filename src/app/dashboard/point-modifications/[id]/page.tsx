@@ -1,7 +1,7 @@
 "use client";
 
-import { useRouter } from "next/navigation";
-import { use, useEffect, useState } from "react";
+import { useRouter, useParams } from "next/navigation";
+import { useEffect, useState } from "react";
 import { useAuthStore } from "@/store/authStore";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -26,12 +26,8 @@ import moment from "moment";
 import { STORAGE_URL } from "@/lib/api";
 import { PointModification } from "@/lib/types";
 
-export default function PointModificationDetailPage({
-  params,
-}: {
-  params: Promise<{ id: string }>;
-}) {
-  const resolvedParams = use(params);
+export default function PointModificationDetailPage() {
+  const params = useParams<{ id: string }>();
   const router = useRouter();
   const jsonWebToken = useAuthStore((state) => state.token);
 
@@ -40,13 +36,13 @@ export default function PointModificationDetailPage({
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    if (!jsonWebToken || !resolvedParams.id) return;
+    if (!jsonWebToken || !params.id) return;
 
     const fetchPointModificationDetail = async () => {
       setLoading(true);
       try {
         const result = await getPointModificationDetail({
-          pointModificationId: resolvedParams.id,
+          pointModificationId: params.id,
           jsonWebToken,
         });
 
@@ -66,7 +62,7 @@ export default function PointModificationDetailPage({
     };
 
     fetchPointModificationDetail();
-  }, [jsonWebToken, resolvedParams.id, router]);
+  }, [jsonWebToken, params.id, router]);
 
   const getStatusBadge = (status: string) => {
     switch (status) {

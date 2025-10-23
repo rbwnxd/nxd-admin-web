@@ -1,7 +1,7 @@
 "use client";
 
-import { useRouter } from "next/navigation";
-import { use, useCallback, useEffect, useState } from "react";
+import { useRouter, useParams } from "next/navigation";
+import { useEffect, useState } from "react";
 import Image from "next/image";
 import moment from "moment";
 import { useAuthStore } from "@/store/authStore";
@@ -17,12 +17,8 @@ import { STORAGE_URL } from "@/lib/api";
 
 
 
-export default function ChartDetailPage({
-  params,
-}: {
-  params: Promise<{ id: string }>;
-}) {
-  const resolvedParams = use(params);
+export default function ChartDetailPage() {
+  const params = useParams<{ id: string }>();
   const router = useRouter();
   const jsonWebToken = useAuthStore((state) => state.token);
   
@@ -43,7 +39,7 @@ export default function ChartDetailPage({
   // 랭킹 데이터 가져오기
   const fetchRankings = useCallback(
     async (skip = 0, reset = false) => {
-      if (!jsonWebToken || !resolvedParams.id) {
+      if (!jsonWebToken || !params.id) {
         toast.error("인증 토큰이나 차트 ID가 없습니다.");
         return;
       }
@@ -51,7 +47,7 @@ export default function ChartDetailPage({
       setIsFetching(true);
       try {
         const result = await getChartRanking({
-          chartId: resolvedParams.id,
+          chartId: params.id,
           params: {
             __skip: skip,
             __limit: 20,
@@ -76,7 +72,7 @@ export default function ChartDetailPage({
         setIsFetching(false);
       }
     },
-    [jsonWebToken, resolvedParams.id]
+    [jsonWebToken, params.id]
   );
 
   useEffect(() => {
@@ -111,11 +107,11 @@ export default function ChartDetailPage({
   };
 
   // Chart Store에서 차트 정보 가져오기
-  const chartInfo = findChartById(resolvedParams.id);
+  const chartInfo = findChartById(params.id);
   
   // 차트 정보가 없으면 기본값 사용 (차트 목록을 먼저 방문하지 않은 경우)
   const defaultChartInfo: ChartItem = {
-    _id: resolvedParams.id,
+    _id: params.id,
     nameList: [{ ko: "차트 랭킹", en: "Chart Ranking" }],
     descriptionList: [
       { ko: "사용자 랭킹 정보", en: "User ranking information" },

@@ -1,7 +1,7 @@
 "use client";
 
-import { useRouter } from "next/navigation";
-import { useEffect, useState, use } from "react";
+import { useRouter, useParams } from "next/navigation";
+import { useEffect, useState } from "react";
 import { deleteArtist, getArtist } from "../actions";
 import { Artist } from "@/lib/types";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -14,12 +14,8 @@ import { useAuthStore } from "@/store/authStore";
 import { toast } from "sonner";
 import { ConfirmDialog } from "@/components/dialog";
 
-export default function ArtistDetailPage({
-  params,
-}: {
-  params: Promise<{ id: string }>;
-}) {
-  const resolvedParams = use(params);
+export default function ArtistDetailPage() {
+  const params = useParams<{ id: string }>();
   const router = useRouter();
 
   const [currentArtist, setCurrentArtist] = useState<Artist | null>(null);
@@ -34,16 +30,16 @@ export default function ArtistDetailPage({
   useEffect(() => {
     const fetchArtist = async () => {
       const artist = await getArtist({
-        id: resolvedParams.id,
+        id: params.id,
         jsonWebToken,
       });
       setCurrentArtist(artist);
     };
 
-    if (!jsonWebToken || !resolvedParams.id) return;
+    if (!jsonWebToken || !params.id) return;
 
     fetchArtist();
-  }, [resolvedParams.id, setCurrentArtist, jsonWebToken]);
+  }, [params.id, jsonWebToken]);
 
   const handleDelete = (id: string) => {
     setSelectedArtistId(id);
@@ -119,7 +115,7 @@ export default function ArtistDetailPage({
               variant="outline"
               onClick={() =>
                 router.push(
-                  `/dashboard/artists/create?isUpdate=true&id=${resolvedParams.id}`
+                  `/dashboard/artists/create?isUpdate=true&id=${params.id}`
                 )
               }
               className="flex items-center gap-2"
@@ -130,7 +126,7 @@ export default function ArtistDetailPage({
 
             <Button
               variant="destructive"
-              onClick={() => handleDelete(resolvedParams.id)}
+              onClick={() => handleDelete(params.id)}
               className="flex items-center gap-2"
             >
               <Trash2 className="w-4 h-4" />

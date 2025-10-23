@@ -470,3 +470,49 @@ export interface AnnouncementFormData {
   publishedAt: string;
   externalLink: string;
 }
+
+// === QR 코드 관련 타입들 ===
+
+// 다국어 텍스트
+export interface MultiLanguageText {
+  ko: string;
+  en: string;
+  [key: string]: string;
+}
+
+// QR 코드 폼 데이터
+export interface QRCodeFormData {
+  category: "ALBUM" | "CONCERT" | "OFFLINE_SPOT" | "GOODS" | "";
+  point: number;
+  expireMinutes: number;
+  issuedCount: number;
+  hashCount: number;
+  isHashReusable: boolean;
+  isEnabled: boolean;
+}
+
+// QR 코드용 업로드된 이미지
+export interface QRCodeUploadedImage {
+  id: string;
+  file: File | null;
+  path?: string;
+  progress?: number;
+  isUploading: boolean;
+  error?: string;
+}
+
+// QR 코드 체크인 관리자
+export interface QRCodeCheckInAdmin {
+  _id: string;
+  name: string;
+  account: string;
+}
+
+// QR 코드 체크인 폼 데이터
+export interface QRCodeCheckInFormData {
+  category: "ALBUM" | "CONCERT" | "OFFLINE_SPOT" | "GOODS" | "";
+  title: string;
+  startAt: string;
+  endAt: string;
+  memo: string;
+}

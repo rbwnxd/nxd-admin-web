@@ -1,7 +1,7 @@
 "use client";
 
-import { use, useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
+import { useRouter, useParams } from "next/navigation";
 import { useAuthStore } from "@/store/authStore";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -182,12 +182,8 @@ const createUserColumns = (): ColumnDef<User>[] => [
   },
 ];
 
-export default function BenefitDetailPage({
-  params,
-}: {
-  params: Promise<{ id: string }>;
-}) {
-  const resolvedParams = use(params);
+export default function BenefitDetailPage() {
+  const params = useParams<{ id: string }>();
   const router = useRouter();
   const jsonWebToken = useAuthStore((state) => state.token);
 
@@ -195,13 +191,13 @@ export default function BenefitDetailPage({
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    if (!jsonWebToken || !resolvedParams.id) return;
+    if (!jsonWebToken || !params.id) return;
 
     const fetchBenefit = async () => {
       setLoading(true);
       try {
         const result = await getBenefitDetail({
-          benefitId: resolvedParams.id,
+          benefitId: params.id,
           jsonWebToken,
         });
 
@@ -217,7 +213,7 @@ export default function BenefitDetailPage({
     };
 
     fetchBenefit();
-  }, [jsonWebToken, resolvedParams.id]);
+  }, [jsonWebToken, params.id]);
 
   if (loading) {
     return (

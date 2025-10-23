@@ -1,71 +1,12 @@
 "use client";
 
-import { useRouter } from "next/navigation";
-import { use, useEffect, useState } from "react";
+import { useRouter, useParams } from "next/navigation";
+import { useEffect, useState } from "react";
 import { useQRCodeStore } from "@/store/qrCodeStore";
 import { useAuthStore } from "@/store/authStore";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { ConfirmDialog } from "@/components/dialog/ConfirmDialog";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import {
-  Pagination,
-  PaginationContent,
-  PaginationItem,
-  PaginationLink,
-  PaginationNext,
-  PaginationPrevious,
-} from "@/components/ui/pagination";
-import {
-  ArrowLeft,
-  Users,
-  User,
-  QrCode,
-  CheckCircle,
-  RefreshCw,
-  Search,
-  MoreHorizontal,
-  Trash2,
-  Edit3,
-  Loader2,
-} from "lucide-react";
-import {
-  getQRCodeVerifications,
-  deleteQRCodeVerification,
-  deleteQRCodeCheckIn,
-} from "../../actions";
-import { toast } from "sonner";
-import moment from "moment";
-import { QRCodeVerification, QRCodeCategory } from "@/lib/types";
-
-const CATEGORY_LABELS: Record<QRCodeCategory, string> = {
-  ALBUM: "앨범",
-  CONCERT: "콘서트",
-  OFFLINE_SPOT: "오프라인 스팟",
-  GOODS: "굿즈",
-};
-
-interface Admin {
-  name?: string;
-  account?: string;
-  _id?: string;
-}
 
 interface CheckIn {
   _id: string;
@@ -77,12 +18,8 @@ interface CheckIn {
   admins?: Admin[];
 }
 
-export default function CheckInDetailPage({
-  params,
-}: {
-  params: Promise<{ id: string }>;
-}) {
-  const resolvedParams = use(params);
+export default function QRCodeCheckInDetailPage() {
+  const params = useParams<{ id: string }>();
   const router = useRouter();
   const jsonWebToken = useAuthStore((state) => state.token);
   const { findCheckInById, removeCheckIn } = useQRCodeStore();
@@ -104,16 +41,16 @@ export default function CheckInDetailPage({
   const [actualSearchUserId, setActualSearchUserId] = useState(""); // 실제 검색에 사용될 userId
   const [isSearching, setIsSearching] = useState(false);
 
-  const checkIn = findCheckInById(resolvedParams.id);
+  const checkIn = findCheckInById(params.id);
 
   useEffect(() => {
-    if (!jsonWebToken || !resolvedParams.id) return;
+    if (!jsonWebToken || !params.id) return;
 
     const fetchVerifications = async () => {
       setVerificationLoading(true);
       try {
         const result = await getQRCodeVerifications({
-          qrCodeCheckInId: resolvedParams.id,
+          qrCodeCheckInId: params.id,
           params: {
             __skip: (currentVerificationPage - 1) * verificationItemsPerPage,
             __limit: verificationItemsPerPage,
@@ -137,7 +74,7 @@ export default function CheckInDetailPage({
     fetchVerifications();
   }, [
     jsonWebToken,
-    resolvedParams.id,
+    params.id,
     currentVerificationPage,
     verificationItemsPerPage,
     actualSearchUserId,
@@ -174,7 +111,7 @@ export default function CheckInDetailPage({
     setIsDeleting(true);
     try {
       await deleteQRCodeVerification({
-        qrCodeCheckInId: resolvedParams.id,
+        qrCodeCheckInId: params.id,
         qrCodeVerificationId: verificationToDelete,
         jsonWebToken,
       });
@@ -183,7 +120,7 @@ export default function CheckInDetailPage({
 
       // 검증 목록 새로고침
       const result = await getQRCodeVerifications({
-        qrCodeCheckInId: resolvedParams.id,
+        qrCodeCheckInId: params.id,
         params: {
           __skip: (currentVerificationPage - 1) * verificationItemsPerPage,
           __limit: verificationItemsPerPage,

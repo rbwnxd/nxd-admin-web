@@ -1,7 +1,7 @@
 "use client";
 
-import { useRouter } from "next/navigation";
-import { useState, useEffect, use } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { useState, useEffect } from "react";
 import { useAuthStore } from "@/store/authStore";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -21,38 +21,27 @@ import { CATEGORY_OPTIONS } from "@/lib/consts";
 import { uploadImageFile } from "@/app/actions";
 import { STORAGE_URL } from "@/lib/api";
 import Image from "next/image";
+import { 
+  MultiLanguageText, 
+  QRCodeFormData, 
+  QRCodeUploadedImage 
+} from "@/lib/types";
 
 // 썸네일 이미지 추가, 적립태그 추가
 
-interface MultiLanguageText {
-  ko: string;
-  en: string;
-  [key: string]: string;
-}
-
-interface UploadedImage {
-  id: string;
-  file: File | null;
-  path?: string;
-  isUploading: boolean;
-  error?: string;
-}
-
-export default function CreateQRCodePage({
-  searchParams,
-}: {
-  searchParams: Promise<{ id?: string; isUpdate?: string }>;
-}) {
+export default function CreateQRCodePage() {
   const router = useRouter();
-  const resolvedSearchParams = use(searchParams);
-  const isUpdateMode = resolvedSearchParams.isUpdate === "true";
-  const qrCodeId = resolvedSearchParams.id;
+  const searchParams = useSearchParams();
+  
+  // Next.js 15 권장: useSearchParams hook 사용
+  const isUpdateMode = searchParams.get("isUpdate") === "true";
+  const qrCodeId = searchParams.get("id");
 
   const jsonWebToken = useAuthStore((state) => state.token);
 
   const [loading, setLoading] = useState(false);
-  const [formData, setFormData] = useState({
-    category: "" as "ALBUM" | "CONCERT" | "OFFLINE_SPOT" | "GOODS" | "",
+  const [formData, setFormData] = useState<QRCodeFormData>({
+    category: "",
     point: 0,
     expireMinutes: 1440,
     issuedCount: 1, // 인증가능한 횟수
@@ -73,7 +62,7 @@ export default function CreateQRCodePage({
     { ko: "", en: "" },
   ]);
 
-  const [image, setImage] = useState<UploadedImage | null>(null);
+  const [image, setImage] = useState<QRCodeUploadedImage | null>(null);
   const [isDragging, setIsDragging] = useState(false);
 
   // 수정 모드인 경우 기존 데이터 로드
@@ -156,6 +145,7 @@ export default function CreateQRCodePage({
                 id: Date.now().toString(),
                 file: null, // 이미 업로드된 파일이므로 null
                 path: existingImage.image256Path,
+                progress: 100,
                 isUploading: false,
               });
             }
@@ -210,9 +200,10 @@ export default function CreateQRCodePage({
     }
 
     try {
-      const newImage: UploadedImage = {
+      const newImage: QRCodeUploadedImage = {
         id: Date.now().toString(),
         file,
+        progress: 0,
         isUploading: true,
       };
 

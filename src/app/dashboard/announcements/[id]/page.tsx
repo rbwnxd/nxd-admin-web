@@ -1,7 +1,7 @@
 "use client";
 
-import { useRouter } from "next/navigation";
-import { useEffect, useState, use } from "react";
+import { useRouter, useParams } from "next/navigation";
+import { useEffect, useState } from "react";
 import { deleteAnnouncement, getAnnouncement } from "../actions";
 import { Announcement } from "@/lib/types";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -21,12 +21,8 @@ import { useAuthStore } from "@/store/authStore";
 import { toast } from "sonner";
 import { ConfirmDialog } from "@/components/dialog";
 
-export default function AnnouncementDetailPage({
-  params,
-}: {
-  params: Promise<{ id: string }>;
-}) {
-  const resolvedParams = use(params);
+export default function AnnouncementDetailPage() {
+  const params = useParams<{ id: string }>();
   const router = useRouter();
 
   const [currentAnnouncement, setCurrentAnnouncement] =
@@ -43,16 +39,16 @@ export default function AnnouncementDetailPage({
   useEffect(() => {
     const fetchAnnouncement = async () => {
       const announcement = await getAnnouncement({
-        id: resolvedParams.id,
+        id: params.id,
         jsonWebToken,
       });
       setCurrentAnnouncement(announcement);
     };
 
-    if (!jsonWebToken || !resolvedParams.id) return;
+    if (!jsonWebToken || !params.id) return;
 
     fetchAnnouncement();
-  }, [resolvedParams.id, setCurrentAnnouncement, jsonWebToken]);
+  }, [params.id, jsonWebToken]);
 
   const handleDelete = (id: string) => {
     setSelectedAnnouncementId(id);
@@ -145,7 +141,7 @@ export default function AnnouncementDetailPage({
               variant="outline"
               onClick={() =>
                 router.push(
-                  `/dashboard/announcements/create?isUpdate=true&id=${resolvedParams.id}`
+                  `/dashboard/announcements/create?isUpdate=true&id=${params.id}`
                 )
               }
               className="flex items-center gap-2"
@@ -156,7 +152,7 @@ export default function AnnouncementDetailPage({
 
             <Button
               variant="destructive"
-              onClick={() => handleDelete(resolvedParams.id)}
+              onClick={() => handleDelete(params.id)}
               className="flex items-center gap-2"
             >
               <Trash2 className="w-4 h-4" />

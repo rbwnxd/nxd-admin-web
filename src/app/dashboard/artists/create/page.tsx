@@ -1,7 +1,7 @@
 "use client";
 
-import { useRouter } from "next/navigation";
-import { useEffect, useState, use } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { useEffect, useState } from "react";
 import { useAuthStore } from "@/store/authStore";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -17,15 +17,13 @@ import { toast } from "sonner";
 import { Artist, UploadedImage, ArtistFormData } from "@/lib/types";
 
 
-export default function ArtistCreatePage({
-  searchParams,
-}: {
-  searchParams: Promise<{ id?: string; isUpdate?: string }>;
-}) {
+export default function ArtistCreatePage() {
   const router = useRouter();
-  const resolvedSearchParams = use(searchParams);
-  const isUpdateMode = resolvedSearchParams.isUpdate === "true";
-  const artistId = resolvedSearchParams.id;
+  const searchParams = useSearchParams();
+  
+  // Next.js 15 권장: useSearchParams hook 사용
+  const isUpdateMode = searchParams.get("isUpdate") === "true";
+  const artistId = searchParams.get("id");
 
   const jsonWebToken = useAuthStore((state) => state.token);
 

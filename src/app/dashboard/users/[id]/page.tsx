@@ -1,7 +1,7 @@
 "use client";
 
-import { useRouter } from "next/navigation";
-import { use, useEffect, useState } from "react";
+import { useRouter, useParams } from "next/navigation";
+import { useEffect, useState } from "react";
 import { useAuthStore } from "@/store/authStore";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -40,12 +40,8 @@ import {
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 
-export default function UserDetailPage({
-  params,
-}: {
-  params: Promise<{ id: string }>;
-}) {
-  const resolvedParams = use(params);
+export default function UserDetailPage() {
+  const params = useParams<{ id: string }>();
   const router = useRouter();
   const jsonWebToken = useAuthStore((state) => state.token);
 
@@ -63,13 +59,13 @@ export default function UserDetailPage({
   const [restrictDuration, setRestrictDuration] = useState(7);
 
   useEffect(() => {
-    if (!jsonWebToken || !resolvedParams.id) return;
+    if (!jsonWebToken || !params.id) return;
 
     const fetchUserDetail = async () => {
       setLoading(true);
       try {
         const result = await getUserDetail({
-          userId: resolvedParams.id,
+          userId: params.id,
           jsonWebToken,
         });
 
@@ -89,7 +85,7 @@ export default function UserDetailPage({
     };
 
     fetchUserDetail();
-  }, [jsonWebToken, resolvedParams.id, router]);
+  }, [jsonWebToken, params.id, router]);
 
   // 차단 처리
   const handleBanUser = async () => {
@@ -101,7 +97,7 @@ export default function UserDetailPage({
     setActionLoading(true);
     try {
       await banUser({
-        userId: resolvedParams.id,
+        userId: params.id,
         reason: banReason.trim(),
         jsonWebToken: jsonWebToken!,
       });
@@ -112,7 +108,7 @@ export default function UserDetailPage({
 
       // 사용자 정보 다시 불러오기
       const result = await getUserDetail({
-        userId: resolvedParams.id,
+        userId: params.id,
         jsonWebToken: jsonWebToken!,
       });
       if (result?.user) {
@@ -141,7 +137,7 @@ export default function UserDetailPage({
     setActionLoading(true);
     try {
       await restrictUser({
-        userId: resolvedParams.id,
+        userId: params.id,
         reason: restrictReason.trim(),
         restrictDurationInDays: restrictDuration,
         jsonWebToken: jsonWebToken!,
@@ -154,7 +150,7 @@ export default function UserDetailPage({
 
       // 사용자 정보 다시 불러오기
       const result = await getUserDetail({
-        userId: resolvedParams.id,
+        userId: params.id,
         jsonWebToken: jsonWebToken!,
       });
       if (result?.user) {

@@ -1,37 +1,19 @@
 "use client";
 
-import { useRouter } from "next/navigation";
-import { use, useEffect, useState } from "react";
+import { useRouter, useParams } from "next/navigation";
+import { useEffect, useState } from "react";
 import { useAuthStore } from "@/store/authStore";
 import { AppAdminUser, AppAdminUserUpdateForm } from "@/lib/types";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Switch } from "@/components/ui/switch";
-import {
-  ArrowLeft,
-  Save,
-  Edit,
-  Shield,
-  Loader2,
-} from "lucide-react";
-import {
-  getAppAdminUser,
-  updateAppAdminUser,
-} from "../../actions";
-import { toast } from "sonner";
 
 const AVAILABLE_PERMISSIONS = [
   "CANCEL_QR_CODE_VERIFICATION",
 ];
 
-export default function EditAppAdminPage({
-  params,
-}: {
-  params: Promise<{ id: string }>;
-}) {
-  const resolvedParams = use(params);
+export default function EditAppAdminUserPage() {
+  const params = useParams<{ id: string }>();
   const router = useRouter();
   const jsonWebToken = useAuthStore((state) => state.token);
 
@@ -45,13 +27,13 @@ export default function EditAppAdminPage({
   const [isFetching, setIsFetching] = useState(false);
 
   useEffect(() => {
-    if (!jsonWebToken || !resolvedParams.id) return;
+    if (!jsonWebToken || !params.id) return;
 
     const fetchAppAdminUser = async () => {
       setIsFetching(true);
       try {
         const result = await getAppAdminUser({
-          appAdminUserId: resolvedParams.id,
+          appAdminUserId: params.id,
           jsonWebToken,
         });
 
@@ -72,7 +54,7 @@ export default function EditAppAdminPage({
     };
 
     fetchAppAdminUser();
-  }, [jsonWebToken, resolvedParams.id]);
+  }, [jsonWebToken, params.id]);
 
   const handleInputChange = (field: keyof AppAdminUserUpdateForm, value: string) => {
     setForm((prev) => ({
