@@ -26,9 +26,9 @@ export function useVersionCheck(checkInterval = 10 * 60 * 1000) {
     // 마지막 체크 시간으로 불필요한 호출 방지 (비용 최적화)
     const lastCheck = localStorage.getItem("lastVersionCheck");
     const now = Date.now();
-    // if (lastCheck && now - parseInt(lastCheck) < actualInterval * 0.3) {
-    //   return;
-    // }
+    if (lastCheck && now - parseInt(lastCheck) < 1000 * 60 * 3) {
+      return;
+    }
 
     checkingRef.current = true;
     setIsChecking(true);
@@ -47,8 +47,6 @@ export function useVersionCheck(checkInterval = 10 * 60 * 1000) {
       if (response.ok) {
         const versionInfo: VersionInfo = await response.json();
         const newBuildId = versionInfo.buildId;
-
-        console.log("version check", currentVersion, newBuildId);
 
         // 초기 로드시에는 현재 버전만 설정
         if (currentVersion === null) {
