@@ -9,26 +9,13 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Progress } from "@/components/ui/progress";
 import { ArrowLeft, Save, X, Upload, Trash2, Eye } from "lucide-react";
-import { postArtist, patchArtist } from "../actions";
+import { postArtist, patchArtist, getArtist } from "../actions";
 import { uploadImageFile } from "@/app/actions";
 import { STORAGE_URL } from "@/lib/api";
 import Image from "next/image";
-import { useArtistStore } from "@/store/artistStore";
+import { toast } from "sonner";
+import { Artist, UploadedImage, ArtistFormData } from "@/lib/types";
 
-interface FormData {
-  nameKo: string;
-  nameEn: string;
-}
-
-interface UploadedImage {
-  id: string;
-  file: File | null; // 기존 업로드된 이미지의 경우 null일 수 있음
-  path?: string;
-  progress: number;
-  isUploading: boolean;
-  error?: string;
-  preview?: string; // 미리보기 URL 추가
-}
 
 export default function ArtistCreatePage({
   searchParams,
@@ -40,10 +27,9 @@ export default function ArtistCreatePage({
   const isUpdateMode = resolvedSearchParams.isUpdate === "true";
   const artistId = resolvedSearchParams.id;
 
-  const artists = useArtistStore((state) => state.artists);
   const jsonWebToken = useAuthStore((state) => state.token);
 
-  const [formData, setFormData] = useState<FormData>({
+  const [formData, setFormData] = useState<ArtistFormData>({
     nameKo: "",
     nameEn: "",
   });
@@ -54,30 +40,47 @@ export default function ArtistCreatePage({
 
   // 수정 모드인 경우 기존 데이터 로드
   useEffect(() => {
-    if (isUpdateMode && artistId && artists.length > 0) {
-      const existingArtist = artists.find((artist) => artist._id === artistId);
+    if (isUpdateMode && artistId && jsonWebToken) {
+      const fetchArtistData = async () => {
+        setIsLoading(true);
+        try {
+          const artistData: Artist | null = await getArtist({
+            id: artistId,
+            jsonWebToken,
+          });
 
-      if (existingArtist) {
-        setFormData({
-          nameKo: existingArtist.nameList[0]?.ko || "",
-          nameEn: existingArtist.nameList[0]?.en || "",
-        });
+          if (artistData) {
+            setFormData({
+              nameKo: artistData.nameList[0]?.ko || "",
+              nameEn: artistData.nameList[0]?.en || "",
+            });
 
-        // 기존 이미지들을 UploadedImage 형태로 변환
-        setImages(
-          existingArtist.imageList.map((image, index) => ({
-            id: Date.now().toString() + index + Math.random().toString(36),
-            file: null, // 이미 업로드된 파일이므로 null
-            progress: 100, // 완료된 상태
-            isUploading: false,
-            path: image.imageOriginalPath, // 기존 이미지 경로
-            preview: `${STORAGE_URL}/${image.image256Path}`, // 미리보기용 URL
-          }))
-        );
-      }
+            // 기존 이미지들을 UploadedImage 형태로 변환
+            setImages(
+              artistData.imageList.map((image, index: number) => ({
+                id: Date.now().toString() + index + Math.random().toString(36),
+                file: null, // 이미 업로드된 파일이므로 null
+                progress: 100, // 완료된 상태
+                isUploading: false,
+                path: image.imageOriginalPath, // 기존 이미지 경로
+                preview: `${STORAGE_URL}/${image.image256Path}`, // 미리보기용 URL
+              }))
+            );
+          } else {
+            toast.error("아티스트 정보를 찾을 수 없습니다.");
+          }
+        } catch (error) {
+          console.error("Failed to fetch artist data:", error);
+          toast.error("아티스트 정보를 불러오는데 실패했습니다.");
+        } finally {
+          setIsLoading(false);
+        }
+      };
+
+      fetchArtistData();
     }
-  }, [isUpdateMode, artistId, artists]);
-  const handleInputChange = (field: keyof FormData, value: string) => {
+  }, [isUpdateMode, artistId]);
+  const handleInputChange = (field: keyof ArtistFormData, value: string) => {
     setFormData((prev) => ({
       ...prev,
       [field]: value,

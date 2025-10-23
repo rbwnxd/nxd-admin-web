@@ -439,3 +439,22 @@ export interface BenefitDetailResponse {
 export interface CreateBenefitResponse {
   benefit: Benefit;
 }
+
+// === 아티스트 폼 관련 타입들 ===
+
+// 업로드된 이미지 (폼에서 사용)
+export interface UploadedImage {
+  id: string;
+  file: File | null; // 기존 업로드된 이미지의 경우 null일 수 있음
+  path?: string;
+  progress: number;
+  isUploading: boolean;
+  error?: string;
+  preview?: string; // 미리보기 URL 추가
+}
+
+// 아티스트 폼 데이터
+export interface ArtistFormData {
+  nameKo: string;
+  nameEn: string;
+}
