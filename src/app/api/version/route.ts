@@ -16,5 +16,6 @@ export async function GET() {
     timestamp: new Date().toISOString(),
   };
 
+  console.log("versionData", returnData);
   return NextResponse.json(returnData);
 }
