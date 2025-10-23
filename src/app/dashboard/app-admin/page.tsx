@@ -63,6 +63,19 @@ export default function AppAdminPage() {
     isLoading: false,
   });
 
+  // 비활성화 확인 다이얼로그 상태
+  const [disableDialog, setDisableDialog] = useState<{
+    open: boolean;
+    userId: string;
+    userName: string;
+    isLoading: boolean;
+  }>({
+    open: false,
+    userId: "",
+    userName: "",
+    isLoading: false,
+  });
+
   const itemsPerPage = 10;
 
   useEffect(() => {
@@ -94,12 +107,14 @@ export default function AppAdminPage() {
     fetchAppAdminUsers();
   }, [jsonWebToken, currentPage, itemsPerPage]);
 
-  const handleDisableUser = async (userId: string) => {
-    if (!jsonWebToken) return;
+  const handleDisableUser = async () => {
+    if (!jsonWebToken || !disableDialog.userId) return;
+
+    setDisableDialog((prev) => ({ ...prev, isLoading: true }));
 
     try {
       await disableAppAdminUser({
-        appAdminUserId: userId,
+        appAdminUserId: disableDialog.userId,
         jsonWebToken,
       });
 
@@ -107,12 +122,21 @@ export default function AppAdminPage() {
       // 목록 새로고침
       setAppAdminUsers((prev) =>
         prev.map((user) =>
-          user._id === userId ? { ...user, isEnabled: false } : user
+          user._id === disableDialog.userId ? { ...user, isEnabled: false } : user
         )
       );
+
+      // 다이얼로그 닫기
+      setDisableDialog({
+        open: false,
+        userId: "",
+        userName: "",
+        isLoading: false,
+      });
     } catch (error) {
       console.error("Disable user error:", error);
       toast.error("사용자 비활성화에 실패했습니다.");
+      setDisableDialog((prev) => ({ ...prev, isLoading: false }));
     }
   };
 
@@ -153,6 +177,15 @@ export default function AppAdminPage() {
 
   const openDeleteDialog = (userId: string, userName: string) => {
     setDeleteDialog({
+      open: true,
+      userId,
+      userName,
+      isLoading: false,
+    });
+  };
+
+  const openDisableDialog = (userId: string, userName: string) => {
+    setDisableDialog({
       open: true,
       userId,
       userName,
@@ -292,7 +325,7 @@ export default function AppAdminPage() {
                             <DropdownMenuItem
                               onClick={(e) => {
                                 e.stopPropagation();
-                                handleDisableUser(user._id);
+                                openDisableDialog(user._id, user.name);
                               }}
                               className="text-orange-600"
                             >
@@ -389,6 +422,28 @@ export default function AppAdminPage() {
         variant="destructive"
         onConfirm={handleDeleteUser}
         isLoading={deleteDialog.isLoading}
+      />
+
+      {/* 비활성화 확인 다이얼로그 */}
+      <ConfirmDialog
+        open={disableDialog.open}
+        onOpenChange={(open) => {
+          if (!open) {
+            setDisableDialog({
+              open: false,
+              userId: "",
+              userName: "",
+              isLoading: false,
+            });
+          }
+        }}
+        title="앱 관리자 비활성화"
+        description={`"${disableDialog.userName}" 앱 관리자를 비활성화하시겠습니까?\n비활성화된 관리자는 로그인할 수 없습니다.`}
+        confirmText="비활성화"
+        cancelText="취소"
+        variant="destructive"
+        onConfirm={handleDisableUser}
+        isLoading={disableDialog.isLoading}
       />
     </div>
   );

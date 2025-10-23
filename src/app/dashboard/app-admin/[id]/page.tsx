@@ -45,6 +45,12 @@ export default function AppAdminDetailPage({
     isLoading: false,
   });
 
+  // 비활성화 확인 다이얼로그 상태
+  const [disableDialog, setDisableDialog] = useState({
+    open: false,
+    isLoading: false,
+  });
+
   useEffect(() => {
     if (!jsonWebToken || !resolvedParams.id) return;
 
@@ -73,6 +79,8 @@ export default function AppAdminDetailPage({
   const handleDisableUser = async () => {
     if (!jsonWebToken || !appAdminUser) return;
 
+    setDisableDialog((prev) => ({ ...prev, isLoading: true }));
+
     try {
       await disableAppAdminUser({
         appAdminUserId: appAdminUser._id,
@@ -81,9 +89,16 @@ export default function AppAdminDetailPage({
 
       toast.success("앱 관리자가 비활성화되었습니다.");
       setAppAdminUser({ ...appAdminUser, isEnabled: false });
+      
+      // 다이얼로그 닫기
+      setDisableDialog({
+        open: false,
+        isLoading: false,
+      });
     } catch (error) {
       console.error("Disable user error:", error);
       toast.error("사용자 비활성화에 실패했습니다.");
+      setDisableDialog((prev) => ({ ...prev, isLoading: false }));
     }
   };
 
@@ -109,6 +124,13 @@ export default function AppAdminDetailPage({
 
   const openDeleteDialog = () => {
     setDeleteDialog({
+      open: true,
+      isLoading: false,
+    });
+  };
+
+  const openDisableDialog = () => {
+    setDisableDialog({
       open: true,
       isLoading: false,
     });
@@ -170,7 +192,7 @@ export default function AppAdminDetailPage({
           {appAdminUser.isEnabled && !appAdminUser.deletedAt && (
             <Button
               variant="outline"
-              onClick={handleDisableUser}
+              onClick={openDisableDialog}
               className="flex items-center gap-2 text-orange-600 hover:text-orange-700"
             >
               <UserMinus className="w-4 h-4" />
@@ -348,6 +370,26 @@ export default function AppAdminDetailPage({
         variant="destructive"
         onConfirm={handleDeleteUser}
         isLoading={deleteDialog.isLoading}
+      />
+
+      {/* 비활성화 확인 다이얼로그 */}
+      <ConfirmDialog
+        open={disableDialog.open}
+        onOpenChange={(open) => {
+          if (!open) {
+            setDisableDialog({
+              open: false,
+              isLoading: false,
+            });
+          }
+        }}
+        title="앱 관리자 비활성화"
+        description={`"${appAdminUser?.name}" 앱 관리자를 비활성화하시겠습니까?\n비활성화된 관리자는 로그인할 수 없습니다.`}
+        confirmText="비활성화"
+        cancelText="취소"
+        variant="destructive"
+        onConfirm={handleDisableUser}
+        isLoading={disableDialog.isLoading}
       />
     </div>
   );
