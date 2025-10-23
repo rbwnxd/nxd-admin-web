@@ -301,10 +301,10 @@ export default function CreateQRCodePage({
     const validDisplayTextList = displayTextList.filter(
       (item) => item.ko.trim() || item.en.trim()
     );
-    if (validDisplayTextList.length === 0) {
-      toast.error("설명 텍스트를 최소 하나는 입력해주세요.");
-      return;
-    }
+    // if (validDisplayTextList.length === 0) {
+    //   toast.error("설명 텍스트를 최소 하나는 입력해주세요.");
+    //   return;
+    // }
 
     // 이미지 업로드 상태 검증
     if (image?.isUploading) {
@@ -779,8 +779,7 @@ export default function CreateQRCodePage({
               {renderLanguageFields(
                 "설명 텍스트",
                 displayTextList,
-                setDisplayTextList,
-                true
+                setDisplayTextList
               )}
             </CardContent>
           </Card>
