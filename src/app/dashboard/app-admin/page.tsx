@@ -134,18 +134,6 @@ export default function AppAdminPage() {
 
   return (
     <div className="container mx-auto">
-      {/* 상단 헤더 */}
-      <div className="flex items-center justify-between mb-6">
-        <Button
-          variant="ghost"
-          onClick={() => router.back()}
-          className="flex items-center gap-2"
-        >
-          <ArrowLeft className="w-4 h-4" />
-          돌아가기
-        </Button>
-      </div>
-
       <div className="flex md:flex-row flex-col md:items-center justify-between mb-6">
         <div className="flex items-center gap-3">
           <Users className="w-8 h-8" />
