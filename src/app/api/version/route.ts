@@ -5,14 +5,17 @@ const BUILD_ID =
   process.env.VERCEL_DEPLOYMENT_ID ||
   process.env.VERCEL_GIT_COMMIT_SHA ||
   Date.now().toString();
-const BUILD_VERSION = process.env.npm_package_version || "1.0.0";
+const BUILD_VERSION = process.env.NEXT_PUBLIC_APP_VERSION || "1.0.0";
 
 export async function GET() {
-  return NextResponse.json({
+  const returnData = {
     version: BUILD_VERSION,
     buildId: BUILD_ID,
     deploymentId: process.env.VERCEL_DEPLOYMENT_ID || "local",
     commitSha: process.env.VERCEL_GIT_COMMIT_SHA || "unknown",
     timestamp: new Date().toISOString(),
-  });
+  };
+
+  console.log("versionData", returnData);
+  return NextResponse.json(returnData);
 }
