@@ -19,7 +19,7 @@ interface AuthState {
 interface AuthActions {
   login: (credentials: { account: string; password: string }) => Promise<void>;
   logout: () => Promise<void>;
-  checkAuth: () => Promise<void>;
+  checkAuth: () => void;
   setLoading: (loading: boolean) => void;
   setHasHydrated: (hasHydrated: boolean) => void;
 }
@@ -51,6 +51,9 @@ export const useAuthStore = create<AuthStore>()(
           // localStorage에 토큰 저장 (axios 인터셉터에서 사용)
           localStorage.setItem("auth-token", jsonWebToken);
 
+          // 🍪 미들웨어에서 확인할 수 있도록 쿠키에도 저장
+          document.cookie = `adminToken=${jsonWebToken}; path=/; secure; samesite=strict; max-age=86400`; // 24시간
+
           set({
             user: webAdminUser,
             token: jsonWebToken,
@@ -66,6 +69,11 @@ export const useAuthStore = create<AuthStore>()(
       // 로그아웃
       logout: async () => {
         localStorage.removeItem("auth-token");
+
+        // 🍪 쿠키도 함께 삭제
+        document.cookie =
+          "adminToken=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT;";
+
         set({
           user: null,
           token: null,
@@ -74,14 +82,15 @@ export const useAuthStore = create<AuthStore>()(
         });
       },
 
-      // 인증 상태 확인 (페이지 로드시)
-      checkAuth: async () => {
+      // 🔄 미들웨어를 통과했다면 인증된 상태로 설정
+      checkAuth: () => {
         const { token, user } = get();
-
-        if (!token || !user) {
-          console.log("ws", token, user);
+        
+        // localStorage에 토큰과 사용자 정보가 있으면 인증됨으로 설정
+        if (token && user) {
+          set({ isAuthenticated: true });
+        } else {
           set({ isAuthenticated: false });
-          return;
         }
       },
       setHasHydrated: (hasHydrated) => set({ hasHydrated }),

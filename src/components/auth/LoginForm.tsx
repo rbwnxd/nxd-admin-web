@@ -19,6 +19,7 @@ import {
 } from "@/components/ui/card";
 import { useAuthStore } from "@/store/authStore";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
+import { AxiosError } from "axios";
 
 const loginSchema = z.object({
   account: z.string().min(1, "아이디를 입력해주세요"),
@@ -51,7 +52,7 @@ export function LoginForm() {
         password: data.password,
       });
       router.push("/dashboard");
-    } catch (error: unknown) {
+    } catch (error: unknown | AxiosError) {
       const errorMessage =
         error instanceof Error
           ? error.message
@@ -59,7 +60,12 @@ export function LoginForm() {
           ? (error as { response: { data: { message: string } } })?.response
               ?.data?.message || "로그인에 실패했습니다"
           : "로그인에 실패했습니다";
-      setError(errorMessage);
+
+      if ((error as AxiosError).response?.status === 400) {
+        setError("로그인 정보가 일치하지 않습니다");
+      } else {
+        setError(errorMessage);
+      }
     }
   };
 

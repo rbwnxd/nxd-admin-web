@@ -1,7 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
-import { useRouter, usePathname } from "next/navigation";
+import { usePathname } from "next/navigation";
 import { useAuthStore } from "@/store/authStore";
 import { CustomSidebar } from "./CustomSidebar";
 import { SidebarProvider, SidebarTrigger } from "../ui/sidebar";
@@ -13,30 +12,18 @@ interface AdminLayoutProps {
 }
 
 export function AdminLayout({ children }: AdminLayoutProps) {
-  const { isAuthenticated, isLoading, checkAuth, hasHydrated } = useAuthStore();
-  const router = useRouter();
+  const { hasHydrated } = useAuthStore();
   const pathname = usePathname();
 
   const isLoginPage = pathname === "/login";
-
-  useEffect(() => {
-    if (!isLoginPage && hasHydrated) {
-      checkAuth();
-    }
-  }, [checkAuth, isLoginPage, hasHydrated]);
-
-  useEffect(() => {
-    if (!isLoginPage && !isLoading && !isAuthenticated && hasHydrated) {
-      router.push("/login");
-    }
-  }, [isAuthenticated, isLoading, router, isLoginPage, hasHydrated]);
 
   // 로그인 페이지면 children만 렌더링
   if (isLoginPage) {
     return <>{children}</>;
   }
 
-  if (isLoading) {
+  // 🚀 미들웨어를 통과했으므로 Hydration 완료만 대기
+  if (!hasHydrated) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="flex items-center gap-2">
@@ -45,10 +32,6 @@ export function AdminLayout({ children }: AdminLayoutProps) {
         </div>
       </div>
     );
-  }
-
-  if (!isAuthenticated) {
-    return null;
   }
 
   return (
