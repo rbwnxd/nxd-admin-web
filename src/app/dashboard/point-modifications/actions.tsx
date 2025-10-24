@@ -16,7 +16,7 @@ export const getPointModifications = async ({
   jsonWebToken,
 }: {
   params?: {
-    type: "GRANT" | "REVOKE";
+    type: "GRANT" | "REVOKE" | null;
     title?: string;
     __skip?: number;
     __limit?: number;

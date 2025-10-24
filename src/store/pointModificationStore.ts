@@ -7,7 +7,7 @@ interface PointModificationState {
   loading: boolean;
   currentPage: number;
   itemsPerPage: number;
-  selectedType: "GRANT" | "REVOKE";
+  selectedType: "ALL" | "GRANT" | "REVOKE";
   searchTitle: string;
 
   // Actions
@@ -15,7 +15,7 @@ interface PointModificationState {
   setTotalCount: (count: number) => void;
   setLoading: (loading: boolean) => void;
   setCurrentPage: (page: number) => void;
-  setSelectedType: (type: "GRANT" | "REVOKE") => void;
+  setSelectedType: (type: "ALL" | "GRANT" | "REVOKE") => void;
   setSearchTitle: (title: string) => void;
   addPointModification: (pointModification: PointModification) => void;
   findPointModificationById: (id: string) => PointModification | null;
@@ -28,7 +28,7 @@ export const usePointModificationStore = create<PointModificationState>(
     loading: false,
     currentPage: 1,
     itemsPerPage: 10,
-    selectedType: "GRANT",
+    selectedType: "ALL",
     searchTitle: "",
 
     setPointModifications: (pointModifications) => set({ pointModifications }),

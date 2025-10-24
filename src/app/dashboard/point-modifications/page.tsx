@@ -72,7 +72,7 @@ export default function PointModificationsPage() {
       try {
         const result = await getPointModifications({
           params: {
-            type: selectedType,
+            type: selectedType === "ALL" ? null : selectedType,
             __skip: (currentPage - 1) * itemsPerPage,
             __limit: itemsPerPage,
             ...(searchTitle && { title: searchTitle }),
@@ -186,7 +186,7 @@ export default function PointModificationsPage() {
           <div className="flex flex-col sm:flex-row gap-4 mb-6">
             <Select
               value={selectedType}
-              onValueChange={(value: "GRANT" | "REVOKE") => {
+              onValueChange={(value: "ALL" | "GRANT" | "REVOKE") => {
                 setSelectedType(value);
                 setCurrentPage(1);
               }}
@@ -195,6 +195,7 @@ export default function PointModificationsPage() {
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
+                <SelectItem value="ALL">전체</SelectItem>
                 <SelectItem value="GRANT">포인트 지급</SelectItem>
                 <SelectItem value="REVOKE">포인트 차감</SelectItem>
               </SelectContent>
