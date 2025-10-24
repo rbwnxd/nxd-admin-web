@@ -20,6 +20,7 @@ import {
   Gift,
   Shield,
   Coins,
+  Users2,
 } from "lucide-react";
 
 import { useAuthStore } from "@/store/authStore";
@@ -45,7 +46,7 @@ const menuItems = [
   {
     title: "사용자 관리",
     href: "/dashboard/users",
-    icon: User2,
+    icon: Users2,
   },
   {
     title: "앱 관리자",
@@ -109,17 +110,19 @@ export function CustomSidebar({ className }: SidebarProps) {
       <SidebarHeader>
         <SidebarMenu>
           <SidebarMenuItem>
-            <SidebarMenuButton size="lg" asChild>
-              <div>
-                <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-blue-900 text-sidebar-primary-foreground">
-                  <span className="text-center font-bold text-lg">N</span>
+            <Link href="/dashboard">
+              <SidebarMenuButton size="lg" asChild>
+                <div>
+                  <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-blue-900 text-sidebar-primary-foreground">
+                    <span className="text-center font-bold text-lg">N</span>
+                  </div>
+                  <div className="grid flex-1 text-left text-sm leading-tight">
+                    <span className="truncate font-semibold">NXD Admin</span>
+                    <span className="truncate text-xs">관리자 대시보드</span>
+                  </div>
                 </div>
-                <div className="grid flex-1 text-left text-sm leading-tight">
-                  <span className="truncate font-semibold">NXD Admin</span>
-                  <span className="truncate text-xs">관리자 대시보드</span>
-                </div>
-              </div>
-            </SidebarMenuButton>
+              </SidebarMenuButton>
+            </Link>
           </SidebarMenuItem>
         </SidebarMenu>
       </SidebarHeader>
