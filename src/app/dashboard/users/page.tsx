@@ -298,6 +298,12 @@ export default function UsersPage() {
                           가입일:{" "}
                           {moment(user.createdAt).format("YYYY-MM-DD HH:mm")}
                         </p>
+                        {user.deletedAt && (
+                          <p className="text-xs text-muted-foreground truncate">
+                            탈퇴일:{" "}
+                            {moment(user.deletedAt).format("YYYY-MM-DD HH:mm")}
+                          </p>
+                        )}
                       </div>
                     </div>
                   </div>
