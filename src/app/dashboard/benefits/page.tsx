@@ -265,7 +265,7 @@ export default function BenefitsPage() {
           createdAtFrom?: string;
           createdAtTo?: string;
         } = {
-          __skip: currentPage - 1,
+          __skip: (currentPage - 1) * itemsPerPage,
           __limit: itemsPerPage,
           sort: sortParam,
         };

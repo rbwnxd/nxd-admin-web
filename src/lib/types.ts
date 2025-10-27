@@ -516,3 +516,19 @@ export interface QRCodeCheckInFormData {
   endAt: string;
   memo: string;
 }
+
+export interface AnniversaryRewardPolicyFormData {
+  year: number;
+  pointAmount: number;
+  isEnabled: boolean;
+}
+
+export interface AnniversaryRewardPolicy {
+  _id: string;
+  year: number;
+  pointAmount: number;
+  isEnabled: boolean;
+  createdAt: string;
+  updatedAt: string;
+  deletedAt: string | null;
+}

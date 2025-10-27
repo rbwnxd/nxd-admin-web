@@ -21,6 +21,7 @@ import {
   Shield,
   Coins,
   Users2,
+  CalendarHeart,
 } from "lucide-react";
 
 import { useAuthStore } from "@/store/authStore";
@@ -83,6 +84,11 @@ const menuItems = [
     title: "포인트 지급 관리",
     href: "/dashboard/point-modifications",
     icon: Coins,
+  },
+  {
+    title: "기념 리워드 정책 관리",
+    href: "/dashboard/anniversary-reward-policies",
+    icon: CalendarHeart,
   },
 ];
 
