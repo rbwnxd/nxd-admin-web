@@ -11,6 +11,8 @@ export const getQRCodes = async ({
     __skip?: number;
     __limit?: number;
     category?: "ALBUM" | "CONCERT" | "OFFLINE_SPOT" | "GOODS";
+    __includeDeleted?: boolean;
+    __includeDisabled?: boolean;
   };
   jsonWebToken: string;
 }) => {
@@ -154,6 +156,7 @@ export const getQRCodeHashes = async ({
   params?: {
     __skip?: number;
     __limit?: number;
+    __includeDeleted?: boolean;
   };
   jsonWebToken: string;
 }) => {
@@ -183,6 +186,7 @@ export const getQRCodeCheckIns = async ({
   params?: {
     __skip?: number;
     __limit?: number;
+    __includeDeleted?: boolean;
   };
   jsonWebToken: string;
 }) => {

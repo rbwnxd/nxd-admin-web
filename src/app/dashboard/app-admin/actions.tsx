@@ -10,6 +10,8 @@ export const getAppAdminUsers = async ({
   params?: {
     __skip?: number;
     __limit?: number;
+    __includeDisabled?: boolean;
+    __includeDeleted?: boolean;
   };
   jsonWebToken: string;
 }) => {

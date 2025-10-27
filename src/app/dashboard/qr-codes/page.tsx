@@ -35,7 +35,16 @@ import { getQRCodes, deleteQRCode } from "./actions";
 import { ConfirmDialog } from "@/components/dialog/ConfirmDialog";
 import { toast } from "sonner";
 import moment from "moment";
-import { getCategoryLabel } from "@/lib/consts";
+import { CATEGORY_OPTIONS, getCategoryLabel } from "@/lib/consts";
+import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 export default function QRCodesPage() {
   const router = useRouter();
@@ -48,6 +57,10 @@ export default function QRCodesPage() {
     qrItemsPerPage,
     selectedCategory,
     setSelectedCategory,
+    includeDeleted,
+    includeDisabled,
+    setIncludeDeleted,
+    setIncludeDisabled,
     setQRCodes,
     setTotalQRCount,
     setQRLoading,
@@ -68,13 +81,16 @@ export default function QRCodesPage() {
           params: {
             __skip: (currentQRPage - 1) * qrItemsPerPage,
             __limit: qrItemsPerPage,
-            ...(selectedCategory && {
-              category: selectedCategory as
-                | "ALBUM"
-                | "CONCERT"
-                | "OFFLINE_SPOT"
-                | "GOODS",
-            }),
+            __includeDeleted: includeDeleted,
+            __includeDisabled: includeDisabled,
+            ...(selectedCategory &&
+              selectedCategory !== "ALL" && {
+                category: selectedCategory as
+                  | "ALBUM"
+                  | "CONCERT"
+                  | "OFFLINE_SPOT"
+                  | "GOODS",
+              }),
           },
           jsonWebToken,
         });
@@ -97,9 +113,14 @@ export default function QRCodesPage() {
     currentQRPage,
     qrItemsPerPage,
     selectedCategory,
+    includeDeleted,
+    includeDisabled,
     setQRCodes,
     setQRLoading,
     setTotalQRCount,
+    setCurrentQRPage,
+    setIncludeDeleted,
+    setIncludeDisabled,
   ]);
 
   const getQRCodeTypeLabel = (type: "STATIC" | "CHECK_IN") => {
@@ -159,6 +180,63 @@ export default function QRCodesPage() {
       <Card>
         <CardHeader>
           <CardTitle>{`QR 코드 목록 (${totalQRCount})`}</CardTitle>
+          <div className="flex flex-col lg:flex-row w-full items-end justify-end lg:items-center mt-2 gap-4">
+            <Select
+              value={selectedCategory}
+              onValueChange={(
+                value: "ALL" | "ALBUM" | "CONCERT" | "OFFLINE_SPOT" | "GOODS"
+              ) => setSelectedCategory(value)}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="카테고리 선택" />
+              </SelectTrigger>
+              <SelectContent>
+                {[{ value: "ALL", label: "전체" }, ...CATEGORY_OPTIONS].map(
+                  (option) => (
+                    <SelectItem key={option.value} value={option.value}>
+                      {option.label}
+                    </SelectItem>
+                  )
+                )}
+              </SelectContent>
+            </Select>
+            <div className="space-y-2">
+              <div key={"includeDeleted"} className="flex items-center gap-2">
+                <Label
+                  htmlFor={"includeDeleted"}
+                  className="text-sm font-normal"
+                >
+                  {"삭제 QR 코드 포함"}
+                </Label>
+                <Switch
+                  id={"includeDeleted"}
+                  checked={includeDeleted}
+                  onCheckedChange={(checked: boolean) =>
+                    setIncludeDeleted(checked)
+                  }
+                  disabled={qrLoading}
+                />
+              </div>
+            </div>
+            <div className="space-y-2">
+              <div key={"includeDisabled"} className="flex items-center gap-2">
+                <Label
+                  htmlFor={"includeDisabled"}
+                  className="text-sm font-normal"
+                >
+                  {"비활성화 QR 코드 포함"}
+                </Label>
+                <Switch
+                  id={"includeDisabled"}
+                  checked={includeDisabled}
+                  onCheckedChange={(checked: boolean) =>
+                    setIncludeDisabled(checked)
+                  }
+                  disabled={qrLoading}
+                />
+              </div>
+            </div>
+          </div>
         </CardHeader>
         <CardContent>
           {qrLoading ? (

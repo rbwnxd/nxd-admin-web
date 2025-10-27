@@ -6,6 +6,7 @@ interface ArtistState {
   artists: Artist[];
   currentPage: number;
   totalCount: number;
+  includeDeleted: boolean;
 }
 
 interface ArtistActions {
@@ -13,6 +14,7 @@ interface ArtistActions {
   setCurrentPage: (page: number) => void;
   setTotalCount: (count: number) => void;
   resetPagination: () => void;
+  setIncludeDeleted: (includeDeleted: boolean) => void;
 }
 
 type ArtistStore = ArtistState & ArtistActions;
@@ -23,6 +25,8 @@ export const useArtistStore = create<ArtistStore>()(
       artists: [],
       currentPage: 1,
       totalCount: 0,
+      includeDeleted: false,
+
       setArtists: (artists: Artist[]) => {
         set({ artists });
       },
@@ -35,6 +39,9 @@ export const useArtistStore = create<ArtistStore>()(
       resetPagination: () => {
         set({ currentPage: 1, totalCount: 0 });
       },
+      setIncludeDeleted: (includeDeleted: boolean) => {
+        set({ includeDeleted });
+      },
     }),
     {
       name: "artist-storage",
@@ -42,6 +49,7 @@ export const useArtistStore = create<ArtistStore>()(
       partialize: (state) => ({
         currentPage: state.currentPage,
         totalCount: state.totalCount,
+        includeDeleted: state.includeDeleted,
       }),
     }
   )

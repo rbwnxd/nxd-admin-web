@@ -10,6 +10,8 @@ export const getCharts = async ({
   params?: {
     __skip?: number;
     __limit?: number;
+    __includeDeleted?: boolean;
+    __includeInactive?: boolean;
   };
   jsonWebToken: string | null;
 }) => {

@@ -54,6 +54,8 @@ export function AdminSearchDialog({
           params: {
             __skip: (page - 1) * itemsPerPage,
             __limit: itemsPerPage,
+            __includeDisabled: false,
+            __includeDeleted: false,
           },
           jsonWebToken,
         });

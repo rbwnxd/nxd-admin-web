@@ -19,6 +19,8 @@ import { ArrowLeft, Hash, RefreshCw } from "lucide-react";
 import { getQRCodeHashes } from "../../actions";
 import { toast } from "sonner";
 import moment from "moment";
+import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
 
 /**
  *
@@ -36,10 +38,12 @@ export default function QRCodeHashesPage() {
     hashLoading,
     currentHashPage,
     hashItemsPerPage,
+    hashIncludeDeleted,
     setQRHashes,
     setTotalHashCount,
     setHashLoading,
     setCurrentHashPage,
+    setHashIncludeDeleted,
     findQRCodeById,
   } = useQRCodeStore();
 
@@ -56,6 +60,7 @@ export default function QRCodeHashesPage() {
           params: {
             __skip: (currentHashPage - 1) * hashItemsPerPage,
             __limit: hashItemsPerPage,
+            __includeDeleted: hashIncludeDeleted,
           },
           jsonWebToken,
         });
@@ -78,6 +83,7 @@ export default function QRCodeHashesPage() {
     params.id,
     currentHashPage,
     hashItemsPerPage,
+    hashIncludeDeleted,
     setQRHashes,
     setTotalHashCount,
     setHashLoading,
@@ -133,6 +139,26 @@ export default function QRCodeHashesPage() {
       <Card>
         <CardHeader>
           <CardTitle>{`해시 목록 (${totalHashCount})`}</CardTitle>
+          <div className="flex flex-col lg:flex-row w-full items-end justify-end mt-2 gap-4">
+            <div className="space-y-2">
+              <div key={"includeDeleted"} className="flex items-center gap-2">
+                <Label
+                  htmlFor={"includeDeleted"}
+                  className="text-sm font-normal"
+                >
+                  {"삭제 해시 포함"}
+                </Label>
+                <Switch
+                  id={"includeDeleted"}
+                  checked={hashIncludeDeleted}
+                  onCheckedChange={(checked: boolean) =>
+                    setHashIncludeDeleted(checked)
+                  }
+                  disabled={hashLoading}
+                />
+              </div>
+            </div>
+          </div>
         </CardHeader>
         <CardContent>
           {hashLoading ? (

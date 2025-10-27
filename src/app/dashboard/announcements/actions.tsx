@@ -9,6 +9,8 @@ export const getAnnouncements = async ({
   params?: {
     __skip?: number;
     __limit?: number;
+    __includeDeleted?: boolean;
+    __includeUnpublished?: boolean;
   };
   jsonWebToken: string | null;
 }) => {

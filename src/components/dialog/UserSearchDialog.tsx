@@ -62,6 +62,7 @@ export function UserSearchDialog({
           ...(nickname && { nickname }),
           __limit: limit,
           __skip: offset,
+          __includeDeleted: false,
         },
         jsonWebToken,
       });

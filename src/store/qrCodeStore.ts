@@ -9,7 +9,9 @@ interface QRCodeStore {
   qrLoading: boolean;
   currentQRPage: number;
   qrItemsPerPage: number;
-  selectedCategory: string | null;
+  selectedCategory: string | undefined;
+  includeDeleted: boolean;
+  includeDisabled: boolean;
 
   // QR 해시 관련 상태
   qrHashes: QRCodeHash[];
@@ -17,6 +19,7 @@ interface QRCodeStore {
   hashLoading: boolean;
   currentHashPage: number;
   hashItemsPerPage: number;
+  hashIncludeDeleted: boolean;
 
   // 체크인 관련 상태
   checkIns: QRCodeCheckIn[];
@@ -24,25 +27,30 @@ interface QRCodeStore {
   checkInLoading: boolean;
   currentCheckInPage: number;
   checkInItemsPerPage: number;
+  checkInIncludeDeleted: boolean;
 
   // QR 코드 액션
   setQRCodes: (qrCodes: QRCode[]) => void;
   setTotalQRCount: (count: number) => void;
   setQRLoading: (loading: boolean) => void;
   setCurrentQRPage: (page: number) => void;
-  setSelectedCategory: (category: string | null) => void;
+  setSelectedCategory: (category: string | undefined) => void;
+  setIncludeDeleted: (includeDeleted: boolean) => void;
+  setIncludeDisabled: (includeDisabled: boolean) => void;
 
   // QR 해시 액션
   setQRHashes: (hashes: QRCodeHash[]) => void;
   setTotalHashCount: (count: number) => void;
   setHashLoading: (loading: boolean) => void;
   setCurrentHashPage: (page: number) => void;
+  setHashIncludeDeleted: (includeDeleted: boolean) => void;
 
   // 체크인 액션
   setCheckIns: (checkIns: QRCodeCheckIn[]) => void;
   setTotalCheckInCount: (count: number) => void;
   setCheckInLoading: (loading: boolean) => void;
   setCurrentCheckInPage: (page: number) => void;
+  setCheckInIncludeDeleted: (includeDeleted: boolean) => void;
 
   // 헬퍼 함수
   findQRCodeById: (id: string) => QRCode | undefined;
@@ -68,7 +76,9 @@ export const useQRCodeStore = create<QRCodeStore>()(
       qrLoading: false,
       currentQRPage: 1,
       qrItemsPerPage: 10,
-      selectedCategory: null,
+      selectedCategory: "ALL",
+      includeDeleted: false,
+      includeDisabled: false,
 
       // QR 해시 초기 상태
       qrHashes: [],
@@ -76,6 +86,7 @@ export const useQRCodeStore = create<QRCodeStore>()(
       hashLoading: false,
       currentHashPage: 1,
       hashItemsPerPage: 10,
+      hashIncludeDeleted: false,
 
       // 체크인 초기 상태
       checkIns: [],
@@ -83,6 +94,7 @@ export const useQRCodeStore = create<QRCodeStore>()(
       checkInLoading: false,
       currentCheckInPage: 1,
       checkInItemsPerPage: 10,
+      checkInIncludeDeleted: false,
 
       // QR 코드 액션
       setQRCodes: (qrCodes) => set({ qrCodes }),
@@ -90,12 +102,16 @@ export const useQRCodeStore = create<QRCodeStore>()(
       setQRLoading: (qrLoading) => set({ qrLoading }),
       setCurrentQRPage: (currentQRPage) => set({ currentQRPage }),
       setSelectedCategory: (selectedCategory) => set({ selectedCategory }),
+      setIncludeDeleted: (includeDeleted) => set({ includeDeleted }),
+      setIncludeDisabled: (includeDisabled) => set({ includeDisabled }),
 
       // QR 해시 액션
       setQRHashes: (qrHashes) => set({ qrHashes }),
       setTotalHashCount: (totalHashCount) => set({ totalHashCount }),
       setHashLoading: (hashLoading) => set({ hashLoading }),
       setCurrentHashPage: (currentHashPage) => set({ currentHashPage }),
+      setHashIncludeDeleted: (hashIncludeDeleted) =>
+        set({ hashIncludeDeleted }),
 
       // 체크인 액션
       setCheckIns: (checkIns) => set({ checkIns }),
@@ -103,6 +119,8 @@ export const useQRCodeStore = create<QRCodeStore>()(
       setCheckInLoading: (checkInLoading) => set({ checkInLoading }),
       setCurrentCheckInPage: (currentCheckInPage) =>
         set({ currentCheckInPage }),
+      setCheckInIncludeDeleted: (checkInIncludeDeleted) =>
+        set({ checkInIncludeDeleted }),
 
       // 헬퍼 함수
       findQRCodeById: (id) => {
@@ -164,7 +182,7 @@ export const useQRCodeStore = create<QRCodeStore>()(
           totalQRCount: 0,
           qrLoading: false,
           currentQRPage: 1,
-          selectedCategory: null,
+          selectedCategory: "ALL",
           qrHashes: [],
           totalHashCount: 0,
           hashLoading: false,
@@ -184,6 +202,8 @@ export const useQRCodeStore = create<QRCodeStore>()(
         currentQRPage: state.currentQRPage,
         qrItemsPerPage: state.qrItemsPerPage,
         selectedCategory: state.selectedCategory,
+        includeDeleted: state.includeDeleted,
+        includeDisabled: state.includeDisabled,
         checkIns: state.checkIns,
         totalCheckInCount: state.totalCheckInCount,
         currentCheckInPage: state.currentCheckInPage,

@@ -36,6 +36,8 @@ import { useArtistStore } from "@/store/artistStore";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
+import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
 
 export default function ArtistsPage() {
   const router = useRouter();
@@ -46,6 +48,8 @@ export default function ArtistsPage() {
   const setCurrentPage = useArtistStore((state) => state.setCurrentPage);
   const totalCount = useArtistStore((state) => state.totalCount);
   const setTotalCount = useArtistStore((state) => state.setTotalCount);
+  const includeDeleted = useArtistStore((state) => state.includeDeleted);
+  const setIncludeDeleted = useArtistStore((state) => state.setIncludeDeleted);
 
   const jsonWebToken = useAuthStore((state) => state.token);
 
@@ -71,6 +75,7 @@ export default function ArtistsPage() {
           params: {
             __skip: skip,
             __limit: itemsPerPage,
+            __includeDeleted: includeDeleted,
           },
           jsonWebToken,
         });
@@ -89,7 +94,14 @@ export default function ArtistsPage() {
     };
 
     fetchArtist();
-  }, [jsonWebToken, currentPage, itemsPerPage, setArtists, setTotalCount]);
+  }, [
+    jsonWebToken,
+    currentPage,
+    itemsPerPage,
+    includeDeleted,
+    setArtists,
+    setTotalCount,
+  ]);
 
   // 페이지 변경 핸들러
   const handlePageChange = (page: number) => {
@@ -167,6 +179,26 @@ export default function ArtistsPage() {
       <Card>
         <CardHeader>
           <CardTitle>{`아티스트 목록 (${totalCount})`}</CardTitle>
+          <div className="flex flex-col lg:flex-row w-full items-end justify-end mt-2 gap-4">
+            <div className="space-y-2">
+              <div key={"includeDeleted"} className="flex items-center gap-2">
+                <Label
+                  htmlFor={"includeDeleted"}
+                  className="text-sm font-normal"
+                >
+                  {"삭제 아티스트 포함"}
+                </Label>
+                <Switch
+                  id={"includeDeleted"}
+                  checked={includeDeleted}
+                  onCheckedChange={(checked: boolean) =>
+                    setIncludeDeleted(checked)
+                  }
+                  disabled={isLoading}
+                />
+              </div>
+            </div>
+          </div>
         </CardHeader>
         <CardContent>
           {isFetching ? (

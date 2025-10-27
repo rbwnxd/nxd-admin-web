@@ -36,6 +36,8 @@ import { getUsers } from "./actions";
 import { toast } from "sonner";
 import moment from "moment";
 import { STORAGE_URL } from "@/lib/api";
+import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
 
 export default function UsersPage() {
   const router = useRouter();
@@ -47,11 +49,13 @@ export default function UsersPage() {
     currentPage,
     itemsPerPage,
     searchNickname,
+    includeDeleted,
     setUsers,
     setTotalCount,
     setLoading,
     setCurrentPage,
     setSearchNickname,
+    setIncludeDeleted,
   } = useUserManagementStore();
 
   const [searchInput, setSearchInput] = useState(searchNickname);
@@ -66,6 +70,7 @@ export default function UsersPage() {
           params: {
             __skip: (currentPage - 1) * itemsPerPage,
             __limit: itemsPerPage,
+            __includeDeleted: includeDeleted,
             ...(searchNickname && { nickname: searchNickname }),
           },
           jsonWebToken,
@@ -89,9 +94,11 @@ export default function UsersPage() {
     currentPage,
     itemsPerPage,
     searchNickname,
+    includeDeleted,
     setUsers,
     setTotalCount,
     setLoading,
+    setIncludeDeleted,
   ]);
 
   const handlePageChange = (page: number) => {
@@ -193,6 +200,26 @@ export default function UsersPage() {
       <Card>
         <CardHeader>
           <CardTitle>사용자 목록</CardTitle>
+          <div className="flex flex-col lg:flex-row w-full items-end justify-end mt-2 gap-4">
+            <div className="space-y-2">
+              <div key={"includeDeleted"} className="flex items-center gap-2">
+                <Label
+                  htmlFor={"includeDeleted"}
+                  className="text-sm font-normal"
+                >
+                  {"탈퇴한 사용자 포함"}
+                </Label>
+                <Switch
+                  id={"includeDeleted"}
+                  checked={includeDeleted}
+                  onCheckedChange={(checked: boolean) =>
+                    setIncludeDeleted(checked)
+                  }
+                  disabled={loading}
+                />
+              </div>
+            </div>
+          </div>
         </CardHeader>
         <CardContent>
           {/* 검색 */}

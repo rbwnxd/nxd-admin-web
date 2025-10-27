@@ -36,6 +36,8 @@ import { getQRCodeCheckIns, deleteQRCodeCheckIn } from "../actions";
 import { toast } from "sonner";
 import moment from "moment";
 import { QRCodeCheckIn, QRCodeCategory } from "@/lib/types";
+import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
 const CATEGORY_LABELS: Record<QRCodeCategory, string> = {
   ALBUM: "앨범",
   CONCERT: "콘서트",
@@ -58,6 +60,8 @@ export default function QRCodeCheckInPage() {
     checkInLoading,
     currentCheckInPage,
     checkInItemsPerPage,
+    checkInIncludeDeleted,
+    setCheckInIncludeDeleted,
     setCheckIns,
     setTotalCheckInCount,
     setCheckInLoading,
@@ -74,6 +78,7 @@ export default function QRCodeCheckInPage() {
           params: {
             __skip: (currentCheckInPage - 1) * checkInItemsPerPage,
             __limit: checkInItemsPerPage,
+            __includeDeleted: checkInIncludeDeleted,
           },
           jsonWebToken,
         });
@@ -95,6 +100,7 @@ export default function QRCodeCheckInPage() {
     jsonWebToken,
     currentCheckInPage,
     checkInItemsPerPage,
+    checkInIncludeDeleted,
     setCheckIns,
     setTotalCheckInCount,
     setCheckInLoading,
@@ -160,6 +166,26 @@ export default function QRCodeCheckInPage() {
       <Card>
         <CardHeader>
           <CardTitle>{`체크인 목록 (${totalCheckInCount})`}</CardTitle>
+          <div className="flex flex-col lg:flex-row w-full items-end justify-end mt-2 gap-4">
+            <div className="space-y-2">
+              <div key={"includeDeleted"} className="flex items-center gap-2">
+                <Label
+                  htmlFor={"includeDeleted"}
+                  className="text-sm font-normal"
+                >
+                  {"삭제된 체크인 포함"}
+                </Label>
+                <Switch
+                  id={"includeDeleted"}
+                  checked={checkInIncludeDeleted}
+                  onCheckedChange={(checked: boolean) =>
+                    setCheckInIncludeDeleted(checked)
+                  }
+                  disabled={checkInLoading}
+                />
+              </div>
+            </div>
+          </div>
         </CardHeader>
         <CardContent>
           {checkInLoading ? (

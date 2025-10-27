@@ -6,6 +6,8 @@ interface AnnouncementState {
   announcements: Announcement[];
   currentPage: number;
   totalCount: number;
+  includeDeleted: boolean;
+  includeUnpublished: boolean;
 }
 
 interface AnnouncementActions {
@@ -13,6 +15,8 @@ interface AnnouncementActions {
   setCurrentPage: (page: number) => void;
   setTotalCount: (count: number) => void;
   resetPagination: () => void;
+  setIncludeDeleted: (includeDeleted: boolean) => void;
+  setIncludeUnpublished: (includeUnpublished: boolean) => void;
 }
 
 type AnnouncementStore = AnnouncementState & AnnouncementActions;
@@ -23,6 +27,8 @@ export const useAnnouncementStore = create<AnnouncementStore>()(
       announcements: [],
       currentPage: 1,
       totalCount: 0,
+      includeDeleted: false,
+      includeUnpublished: true,
       setAnnouncements: (announcements: Announcement[]) => {
         set({ announcements });
       },
@@ -35,6 +41,12 @@ export const useAnnouncementStore = create<AnnouncementStore>()(
       resetPagination: () => {
         set({ currentPage: 1, totalCount: 0 });
       },
+      setIncludeDeleted: (includeDeleted: boolean) => {
+        set({ includeDeleted });
+      },
+      setIncludeUnpublished: (includeUnpublished: boolean) => {
+        set({ includeUnpublished });
+      },
     }),
     {
       name: "announcement-storage",
@@ -43,6 +55,8 @@ export const useAnnouncementStore = create<AnnouncementStore>()(
         announcements: state.announcements,
         currentPage: state.currentPage,
         totalCount: state.totalCount,
+        includeDeleted: state.includeDeleted,
+        includeUnpublished: state.includeUnpublished,
       }),
     }
   )

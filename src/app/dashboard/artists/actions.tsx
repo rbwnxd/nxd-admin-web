@@ -9,6 +9,7 @@ export const getArtists = async ({
   params?: {
     __skip?: number;
     __limit?: number;
+    __includeDeleted?: boolean;
   };
   jsonWebToken: string | null;
 }) => {

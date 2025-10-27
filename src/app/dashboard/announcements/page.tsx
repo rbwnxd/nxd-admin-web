@@ -37,6 +37,8 @@ import { useAnnouncementStore } from "@/store/announcementStore";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
+import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
 
 export default function AnnouncementsPage() {
   const router = useRouter();
@@ -51,6 +53,16 @@ export default function AnnouncementsPage() {
   const setCurrentPage = useAnnouncementStore((state) => state.setCurrentPage);
   const totalCount = useAnnouncementStore((state) => state.totalCount);
   const setTotalCount = useAnnouncementStore((state) => state.setTotalCount);
+  const includeDeleted = useAnnouncementStore((state) => state.includeDeleted);
+  const setIncludeDeleted = useAnnouncementStore(
+    (state) => state.setIncludeDeleted
+  );
+  const includeUnpublished = useAnnouncementStore(
+    (state) => state.includeUnpublished
+  );
+  const setIncludeUnpublished = useAnnouncementStore(
+    (state) => state.setIncludeUnpublished
+  );
 
   const jsonWebToken = useAuthStore((state) => state.token);
 
@@ -77,6 +89,8 @@ export default function AnnouncementsPage() {
           params: {
             __skip: skip,
             __limit: itemsPerPage,
+            __includeDeleted: includeDeleted,
+            __includeUnpublished: includeUnpublished,
           },
           jsonWebToken,
         });
@@ -101,6 +115,8 @@ export default function AnnouncementsPage() {
     itemsPerPage,
     setAnnouncements,
     setTotalCount,
+    includeDeleted,
+    includeUnpublished,
   ]);
 
   // 페이지 변경 핸들러
@@ -164,21 +180,66 @@ export default function AnnouncementsPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between mb-6 gap-4 lg:gap-0">
         <div>
           <h2 className="text-3xl font-bold tracking-tight">공지사항 관리</h2>
           <p className="text-muted-foreground">
             게시될 공지사항을 관리할 수 있습니다.
           </p>
         </div>
-        <Button onClick={() => router.push("/dashboard/announcements/create")}>
-          <Plus className="mr-2 h-4 w-4" />새 공지사항 추가
-        </Button>
+        <div className="flex items-center self-end lg:self-auto">
+          <Button
+            onClick={() => router.push("/dashboard/announcements/create")}
+          >
+            <Plus className="mr-2 h-4 w-4 " />새 공지사항 추가
+          </Button>
+        </div>
       </div>
 
       <Card>
         <CardHeader>
           <CardTitle>{`공지사항 목록 (${totalCount})`}</CardTitle>
+          <div className="flex flex-col lg:flex-row w-full items-end justify-end mt-2 gap-4">
+            <div className="space-y-2">
+              <div key={"includeDeleted"} className="flex items-center gap-2">
+                <Label
+                  htmlFor={"includeDeleted"}
+                  className="text-sm font-normal"
+                >
+                  {"삭제 공지사항 포함"}
+                </Label>
+                <Switch
+                  id={"includeDeleted"}
+                  checked={includeDeleted}
+                  onCheckedChange={(checked: boolean) =>
+                    setIncludeDeleted(checked)
+                  }
+                  disabled={isLoading}
+                />
+              </div>
+            </div>
+            <div className="space-y-2">
+              <div
+                key={"includeUnpublished"}
+                className="flex items-center gap-2"
+              >
+                <Label
+                  htmlFor={"includeUnpublished"}
+                  className="text-sm font-normal"
+                >
+                  {"미게시 공지사항 포함"}
+                </Label>
+                <Switch
+                  id={"includeUnpublished"}
+                  checked={includeUnpublished}
+                  onCheckedChange={(checked: boolean) =>
+                    setIncludeUnpublished(checked)
+                  }
+                  disabled={isLoading}
+                />
+              </div>
+            </div>
+          </div>
         </CardHeader>
         <CardContent>
           {isFetching ? (

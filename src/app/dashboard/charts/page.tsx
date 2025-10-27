@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useAuthStore } from "@/store/authStore";
 import { useChartStore } from "@/store/chartStore";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -20,6 +20,8 @@ import {
 import moment from "moment";
 import { getCharts } from "./actions";
 import { toast } from "sonner";
+import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
 
 export default function ChartsPage() {
   const router = useRouter();
@@ -36,6 +38,10 @@ export default function ChartsPage() {
     setTotalCount,
     setLoading,
     setCurrentPage,
+    includeDeleted,
+    includeInactive,
+    setIncludeDeleted,
+    setIncludeInactive,
   } = useChartStore();
 
   // Persist 스토어 하이드레이션
@@ -55,6 +61,8 @@ export default function ChartsPage() {
           params: {
             __skip: skip,
             __limit: itemsPerPage,
+            __includeDeleted: includeDeleted,
+            __includeInactive: includeInactive,
           },
           jsonWebToken,
         });
@@ -79,6 +87,9 @@ export default function ChartsPage() {
     setCharts,
     setTotalCount,
     setLoading,
+    setCurrentPage,
+    includeDeleted,
+    includeInactive,
   ]);
 
   // 페이지 변경 핸들러
@@ -131,6 +142,47 @@ export default function ChartsPage() {
       <Card>
         <CardHeader>
           <CardTitle>{`차트 목록 (${totalCount})`}</CardTitle>
+          <div className="flex flex-col lg:flex-row w-full items-end justify-end mt-2 gap-4">
+            <div className="space-y-2">
+              <div key={"includeDeleted"} className="flex items-center gap-2">
+                <Label
+                  htmlFor={"includeDeleted"}
+                  className="text-sm font-normal"
+                >
+                  {"삭제 차트 포함"}
+                </Label>
+                <Switch
+                  id={"includeDeleted"}
+                  checked={includeDeleted}
+                  onCheckedChange={(checked: boolean) =>
+                    setIncludeDeleted(checked)
+                  }
+                  disabled={isLoading}
+                />
+              </div>
+            </div>
+            <div className="space-y-2">
+              <div
+                key={"includeUnpublished"}
+                className="flex items-center gap-2"
+              >
+                <Label
+                  htmlFor={"includeUnpublished"}
+                  className="text-sm font-normal"
+                >
+                  {"비활성화 차트 포함"}
+                </Label>
+                <Switch
+                  id={"includeInactive"}
+                  checked={includeInactive}
+                  onCheckedChange={(checked: boolean) =>
+                    setIncludeInactive(checked)
+                  }
+                  disabled={isLoading}
+                />
+              </div>
+            </div>
+          </div>
         </CardHeader>
         <CardContent>
           {isLoading ? (

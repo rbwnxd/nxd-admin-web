@@ -40,6 +40,8 @@ import {
 import { toast } from "sonner";
 import moment from "moment";
 import { ConfirmDialog } from "@/components/dialog/ConfirmDialog";
+import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
 
 export default function AppAdminPage() {
   const router = useRouter();
@@ -49,6 +51,9 @@ export default function AppAdminPage() {
   const [totalCount, setTotalCount] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
+
+  const [includeDisabled, setIncludeDisabled] = useState(false);
+  const [includeDeleted, setIncludeDeleted] = useState(false);
 
   // 삭제 확인 다이얼로그 상태
   const [deleteDialog, setDeleteDialog] = useState<{
@@ -88,6 +93,8 @@ export default function AppAdminPage() {
           params: {
             __skip: (currentPage - 1) * itemsPerPage,
             __limit: itemsPerPage,
+            __includeDisabled: includeDisabled,
+            __includeDeleted: includeDeleted,
           },
           jsonWebToken,
         });
@@ -105,7 +112,13 @@ export default function AppAdminPage() {
     };
 
     fetchAppAdminUsers();
-  }, [jsonWebToken, currentPage, itemsPerPage]);
+  }, [
+    jsonWebToken,
+    currentPage,
+    itemsPerPage,
+    includeDisabled,
+    includeDeleted,
+  ]);
 
   const handleDisableUser = async () => {
     if (!jsonWebToken || !disableDialog.userId) return;
@@ -122,7 +135,9 @@ export default function AppAdminPage() {
       // 목록 새로고침
       setAppAdminUsers((prev) =>
         prev.map((user) =>
-          user._id === disableDialog.userId ? { ...user, isEnabled: false } : user
+          user._id === disableDialog.userId
+            ? { ...user, isEnabled: false }
+            : user
         )
       );
 
@@ -223,6 +238,47 @@ export default function AppAdminPage() {
       <Card>
         <CardHeader>
           <CardTitle>앱 관리자 목록 ({totalCount})</CardTitle>
+          <div className="flex flex-col lg:flex-row w-full items-end justify-end mt-2 gap-4">
+            <div className="space-y-2">
+              <div key={"includeDeleted"} className="flex items-center gap-2">
+                <Label
+                  htmlFor={"includeDeleted"}
+                  className="text-sm font-normal"
+                >
+                  {"삭제 유저 포함"}
+                </Label>
+                <Switch
+                  id={"includeDeleted"}
+                  checked={includeDeleted}
+                  onCheckedChange={(checked: boolean) =>
+                    setIncludeDeleted(checked)
+                  }
+                  disabled={isLoading}
+                />
+              </div>
+            </div>
+            <div className="space-y-2">
+              <div
+                key={"includeUnpublished"}
+                className="flex items-center gap-2"
+              >
+                <Label
+                  htmlFor={"includeUnpublished"}
+                  className="text-sm font-normal"
+                >
+                  {"비활성화 유저 포함"}
+                </Label>
+                <Switch
+                  id={"includeDisabled"}
+                  checked={includeDisabled}
+                  onCheckedChange={(checked: boolean) =>
+                    setIncludeDisabled(checked)
+                  }
+                  disabled={isLoading}
+                />
+              </div>
+            </div>
+          </div>
         </CardHeader>
         <CardContent>
           {isLoading ? (

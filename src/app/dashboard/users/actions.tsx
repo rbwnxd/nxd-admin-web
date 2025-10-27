@@ -11,6 +11,7 @@ export const getUsers = async ({
     nickname?: string;
     __skip?: number;
     __limit?: number;
+    __includeDeleted?: boolean;
   };
   jsonWebToken: string;
 }) => {
