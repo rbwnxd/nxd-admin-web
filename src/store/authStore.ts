@@ -17,7 +17,11 @@ interface AuthState {
 }
 
 interface AuthActions {
-  login: (credentials: { account: string; password: string }) => Promise<void>;
+  login: (credentials: {
+    account: string;
+    password: string;
+    rememberMe: boolean;
+  }) => Promise<void>;
   logout: () => Promise<void>;
   checkAuth: () => void;
   setLoading: (loading: boolean) => void;
@@ -52,7 +56,11 @@ export const useAuthStore = create<AuthStore>()(
           localStorage.setItem("auth-token", jsonWebToken);
 
           // 🍪 미들웨어에서 확인할 수 있도록 쿠키에도 저장
-          document.cookie = `adminToken=${jsonWebToken}; path=/; secure; samesite=strict; max-age=86400`; // 24시간
+          if (credentials.rememberMe) {
+            document.cookie = `adminToken=${jsonWebToken}; path=/; secure; samesite=strict;`;
+          } else {
+            document.cookie = `adminToken=${jsonWebToken}; path=/; secure; samesite=strict; max-age=86400`; // 24시간
+          }
 
           set({
             user: webAdminUser,
@@ -85,7 +93,7 @@ export const useAuthStore = create<AuthStore>()(
       // 🔄 미들웨어를 통과했다면 인증된 상태로 설정
       checkAuth: () => {
         const { token, user } = get();
-        
+
         // localStorage에 토큰과 사용자 정보가 있으면 인증됨으로 설정
         if (token && user) {
           set({ isAuthenticated: true });

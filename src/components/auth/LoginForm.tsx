@@ -20,6 +20,7 @@ import {
 import { useAuthStore } from "@/store/authStore";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
 import { AxiosError } from "axios";
+import { Checkbox } from "@/components/ui/checkbox";
 
 const loginSchema = z.object({
   account: z.string().min(1, "아이디를 입력해주세요"),
@@ -50,6 +51,7 @@ export function LoginForm() {
       await login({
         account: data.account,
         password: data.password,
+        rememberMe: data.rememberMe,
       });
       router.push("/dashboard");
     } catch (error: unknown | AxiosError) {
@@ -133,6 +135,23 @@ export function LoginForm() {
                   {form.formState.errors.password.message}
                 </p>
               )}
+            </div>
+
+            <div className="flex items-center space-x-2 mt-2">
+              <Checkbox
+                id="rememberMe"
+                {...form.register("rememberMe")}
+                checked={form.watch("rememberMe")}
+                onCheckedChange={(checked) =>
+                  form.setValue("rememberMe", Boolean(checked))
+                }
+              />
+              <Label
+                htmlFor="rememberMe"
+                className="text-sm font-medium leading-none"
+              >
+                로그인 상태 유지
+              </Label>
             </div>
 
             {error && (
