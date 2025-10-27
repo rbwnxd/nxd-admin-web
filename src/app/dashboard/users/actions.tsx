@@ -111,3 +111,57 @@ export const restrictUser = async ({
     throw error;
   }
 };
+
+export const liftRestrictUser = async ({
+  userId,
+  reason,
+  jsonWebToken,
+}: {
+  userId: string;
+  reason: string;
+  jsonWebToken: string;
+}) => {
+  try {
+    const { data } = await axiosApi(
+      `/admin/users/${userId}/restriction/lift`,
+      "post",
+      { reason },
+      {
+        headers: {
+          Authorization: `jwt ${jsonWebToken}`,
+        },
+      }
+    );
+    return (data && data["data"]) || null;
+  } catch (error) {
+    console.warn("liftRestrictUser error", error);
+    throw error;
+  }
+};
+
+export const liftBanUser = async ({
+  userId,
+  reason,
+  jsonWebToken,
+}: {
+  userId: string;
+  reason: string;
+  jsonWebToken: string;
+}) => {
+  try {
+    const { data } = await axiosApi(
+      `/admin/users/${userId}/ban/lift`,
+      "post",
+      { reason },
+      {
+        headers: {
+          Authorization: `jwt ${jsonWebToken}`,
+        },
+      }
+    );
+    return (data && data["data"]) || null;
+  } catch (error) {
+    console.warn("liftBanUser error", error);
+    throw error;
+  }
+};

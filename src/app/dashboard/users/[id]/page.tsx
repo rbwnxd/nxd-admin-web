@@ -24,7 +24,13 @@ import {
   UserX,
   AlertTriangle,
 } from "lucide-react";
-import { getUserDetail, banUser, restrictUser } from "../actions";
+import {
+  getUserDetail,
+  banUser,
+  restrictUser,
+  liftBanUser,
+  liftRestrictUser,
+} from "../actions";
 import { toast } from "sonner";
 import moment from "moment";
 import { STORAGE_URL } from "@/lib/api";
@@ -50,12 +56,16 @@ export default function UserDetailPage() {
 
   // 다이얼로그 상태
   const [banDialogOpen, setBanDialogOpen] = useState(false);
+  const [unbanDialogOpen, setUnbanDialogOpen] = useState(false);
   const [restrictDialogOpen, setRestrictDialogOpen] = useState(false);
+  const [unrestrictDialogOpen, setUnrestrictDialogOpen] = useState(false);
   const [actionLoading, setActionLoading] = useState(false);
 
   // 폼 상태
   const [banReason, setBanReason] = useState("");
+  const [unbanReason, setUnbanReason] = useState("");
   const [restrictReason, setRestrictReason] = useState("");
+  const [unrestrictReason, setUnrestrictReason] = useState("");
   const [restrictDuration, setRestrictDuration] = useState(7);
 
   useEffect(() => {
@@ -164,6 +174,76 @@ export default function UserDetailPage() {
     }
   };
 
+  // 활동정지 해제 처리
+  const handleUnrestrictUser = async () => {
+    if (!unrestrictReason.trim()) {
+      toast.error("활동정지 해제 사유를 입력해주세요.");
+      return;
+    }
+
+    setActionLoading(true);
+    try {
+      await liftRestrictUser({
+        userId: params.id,
+        reason: unrestrictReason.trim(),
+        jsonWebToken: jsonWebToken!,
+      });
+
+      toast.success("사용자 활동정지가 해제되었습니다.");
+      setUnrestrictDialogOpen(false);
+      setUnrestrictReason("");
+
+      // 사용자 정보 다시 불러오기
+      const result = await getUserDetail({
+        userId: params.id,
+        jsonWebToken: jsonWebToken!,
+      });
+      if (result?.user) {
+        setUser(result.user);
+      }
+    } catch (error) {
+      console.error("활동정지 해제 오류:", error);
+      toast.error("활동정지 해제에 실패했습니다.");
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  // 차단 해제 처리
+  const handleUnbanUser = async () => {
+    if (!unbanReason.trim()) {
+      toast.error("차단 해제 사유를 입력해주세요.");
+      return;
+    }
+
+    setActionLoading(true);
+    try {
+      await liftBanUser({
+        userId: params.id,
+        reason: unbanReason.trim(),
+        jsonWebToken: jsonWebToken!,
+      });
+
+      toast.success("사용자 차단이 해제되었습니다.");
+      setUnbanDialogOpen(false);
+      setUnbanReason("");
+
+      // 사용자 정보 다시 불러오기
+      const result = await getUserDetail({
+        userId: params.id,
+        jsonWebToken: jsonWebToken!,
+      });
+      if (result?.user) {
+        setUser(result.user);
+      }
+    } catch (error) {
+      console.error("차단 해제 오류:", error);
+      toast.error("차단 해제에 실패했습니다.");
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
   const getPlatformLabel = (platform: string) => {
     const platformMap: { [key: string]: string } = {
       GOOGLE: "구글",
@@ -239,7 +319,18 @@ export default function UserDetailPage() {
 
         {/* 관리 액션 버튼들 */}
         <div className="flex items-center gap-2">
-          {!user?.restrictionInfo?.isRestricted && (
+          {user?.restrictionInfo?.isRestricted ? (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setUnrestrictDialogOpen(true)}
+              className="flex items-center gap-2 text-blue-500 hover:text-blue-600 hover:bg-blue-50"
+              disabled={loading || actionLoading}
+            >
+              <AlertTriangle className="w-4 h-4" />
+              정지 해제
+            </Button>
+          ) : (
             <Button
               variant="outline"
               size="sm"
@@ -251,7 +342,18 @@ export default function UserDetailPage() {
               활동정지
             </Button>
           )}
-          {!user?.banInfo?.isBanned && (
+          {user?.banInfo?.isBanned ? (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setUnbanDialogOpen(true)}
+              className="flex items-center gap-2 text-green-600 hover:text-green-700 hover:bg-green-50"
+              disabled={loading || actionLoading}
+            >
+              <UserCheck className="w-4 h-4" />
+              차단 해제
+            </Button>
+          ) : (
             <Button
               variant="outline"
               size="sm"
@@ -259,7 +361,7 @@ export default function UserDetailPage() {
               className="flex items-center gap-2 text-red-600 hover:text-red-700 hover:bg-red-50"
               disabled={loading || actionLoading}
             >
-              <UserX className="w-4 h-4 " />
+              <UserX className="w-4 h-4" />
               계정차단
             </Button>
           )}
@@ -595,9 +697,8 @@ export default function UserDetailPage() {
               <UserX className="w-5 h-5" />
               사용자 계정 차단
             </DialogTitle>
-            <DialogDescription>
-              {user?.profile?.nickname}님의 계정을 영구적으로 차단합니다. 차단된
-              계정은 모든 서비스 이용이 제한됩니다.
+            <DialogDescription className="whitespace-pre-line">
+              {`${user?.profile?.nickname}님의 계정을 영구적으로 차단합니다.\n차단된 계정은 모든 서비스 이용이 제한됩니다.`}
             </DialogDescription>
           </DialogHeader>
 
@@ -652,9 +753,8 @@ export default function UserDetailPage() {
               <AlertTriangle className="w-5 h-5 " />
               사용자 활동정지
             </DialogTitle>
-            <DialogDescription>
-              {user?.profile.nickname}님의 계정을 일정 기간 동안 활동정지합니다.
-              활동정지 기간 동안 일부 서비스 이용이 제한됩니다.
+            <DialogDescription className="whitespace-pre-line">
+              {`${user?.profile.nickname}님의 계정을 일정 기간 동안 활동정지합니다.\n활동정지 기간 동안 일부 서비스 이용이 제한됩니다.`}
             </DialogDescription>
           </DialogHeader>
 
@@ -713,6 +813,119 @@ export default function UserDetailPage() {
                 </>
               ) : (
                 `${restrictDuration}일 활동정지`
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* 차단 해제 다이얼로그 */}
+      <Dialog open={unbanDialogOpen} onOpenChange={setUnbanDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <UserCheck className="w-5 h-5" />
+              사용자 계정 차단 해제
+            </DialogTitle>
+            <DialogDescription className="whitespace-pre-line">
+              {`${user?.profile?.nickname}님의 계정 차단을 해제합니다.\n차단이 해제되면 정상적인 서비스 이용이 가능합니다.`}
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-4">
+            <div>
+              <Label className="text-sm font-medium">차단 해제 사유</Label>
+              <Textarea
+                placeholder="차단 해제 사유를 입력해주세요..."
+                value={unbanReason}
+                onChange={(e) => setUnbanReason(e.target.value)}
+                className="mt-1"
+                rows={3}
+              />
+            </div>
+          </div>
+
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => {
+                setUnbanDialogOpen(false);
+                setUnbanReason("");
+              }}
+              disabled={actionLoading}
+            >
+              취소
+            </Button>
+            <Button
+              variant="default"
+              onClick={handleUnbanUser}
+              disabled={actionLoading || !unbanReason.trim()}
+            >
+              {actionLoading ? (
+                <>
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  처리중...
+                </>
+              ) : (
+                "차단 해제"
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* 활동정지 해제 다이얼로그 */}
+      <Dialog
+        open={unrestrictDialogOpen}
+        onOpenChange={setUnrestrictDialogOpen}
+      >
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <AlertTriangle className="w-5 h-5" />
+              사용자 활동정지 해제
+            </DialogTitle>
+            <DialogDescription className="whitespace-pre-line">
+              {`${user?.profile?.nickname}님의 활동정지를 해제합니다.\n활동정지가 해제되면 정상적인 서비스 이용이 가능합니다.`}
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-4">
+            <div>
+              <Label className="text-sm font-medium">활동정지 해제 사유</Label>
+              <Textarea
+                placeholder="활동정지 해제 사유를 입력해주세요..."
+                value={unrestrictReason}
+                onChange={(e) => setUnrestrictReason(e.target.value)}
+                className="mt-1"
+                rows={3}
+              />
+            </div>
+          </div>
+
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => {
+                setUnrestrictDialogOpen(false);
+                setUnrestrictReason("");
+              }}
+              disabled={actionLoading}
+            >
+              취소
+            </Button>
+            <Button
+              variant="default"
+              onClick={handleUnrestrictUser}
+              disabled={actionLoading || !unrestrictReason.trim()}
+            >
+              {actionLoading ? (
+                <>
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  처리중...
+                </>
+              ) : (
+                "활동정지 해제"
               )}
             </Button>
           </DialogFooter>
