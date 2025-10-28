@@ -23,6 +23,7 @@ import {
   getAppAdminUser,
   deleteAppAdminUser,
   disableAppAdminUser,
+  enableAppAdminUser,
 } from "../actions";
 import { toast } from "sonner";
 import moment from "moment";
@@ -44,6 +45,12 @@ export default function AppAdminUserDetailPage() {
 
   // 비활성화 확인 다이얼로그 상태
   const [disableDialog, setDisableDialog] = useState({
+    open: false,
+    isLoading: false,
+  });
+
+  // 활성화 확인 다이얼로그 상태
+  const [enableDialog, setEnableDialog] = useState({
     open: false,
     isLoading: false,
   });
@@ -86,7 +93,7 @@ export default function AppAdminUserDetailPage() {
 
       toast.success("앱 관리자가 비활성화되었습니다.");
       setAppAdminUser({ ...appAdminUser, isEnabled: false });
-      
+
       // 다이얼로그 닫기
       setDisableDialog({
         open: false,
@@ -96,6 +103,32 @@ export default function AppAdminUserDetailPage() {
       console.error("Disable user error:", error);
       toast.error("사용자 비활성화에 실패했습니다.");
       setDisableDialog((prev) => ({ ...prev, isLoading: false }));
+    }
+  };
+
+  const handleEnableUser = async () => {
+    if (!jsonWebToken || !appAdminUser) return;
+
+    setEnableDialog((prev) => ({ ...prev, isLoading: true }));
+
+    try {
+      await enableAppAdminUser({
+        appAdminUserId: appAdminUser._id,
+        jsonWebToken,
+      });
+
+      toast.success("앱 관리자가 활성화되었습니다.");
+      setAppAdminUser({ ...appAdminUser, isEnabled: true });
+
+      // 다이얼로그 닫기
+      setEnableDialog({
+        open: false,
+        isLoading: false,
+      });
+    } catch (error) {
+      console.error("Enable user error:", error);
+      toast.error("사용자 활성화에 실패했습니다.");
+      setEnableDialog((prev) => ({ ...prev, isLoading: false }));
     }
   };
 
@@ -128,6 +161,13 @@ export default function AppAdminUserDetailPage() {
 
   const openDisableDialog = () => {
     setDisableDialog({
+      open: true,
+      isLoading: false,
+    });
+  };
+
+  const openEnableDialog = () => {
+    setEnableDialog({
       open: true,
       isLoading: false,
     });
@@ -194,6 +234,16 @@ export default function AppAdminUserDetailPage() {
             >
               <UserMinus className="w-4 h-4" />
               비활성화
+            </Button>
+          )}
+          {!appAdminUser.isEnabled && !appAdminUser.deletedAt && (
+            <Button
+              variant="outline"
+              onClick={openEnableDialog}
+              className="flex items-center gap-2 text-green-600 hover:text-green-700"
+            >
+              <UserMinus className="w-4 h-4" />
+              활성화
             </Button>
           )}
 
@@ -388,7 +438,25 @@ export default function AppAdminUserDetailPage() {
         onConfirm={handleDisableUser}
         isLoading={disableDialog.isLoading}
       />
+
+      {/* 활성화 확인 다이얼로그 */}
+      <ConfirmDialog
+        open={enableDialog.open}
+        onOpenChange={(open) => {
+          if (!open) {
+            setEnableDialog({
+              open: false,
+              isLoading: false,
+            });
+          }
+        }}
+        title="앱 관리자 활성화"
+        description={`"${appAdminUser?.name}" 앱 관리자를 활성화하시겠습니까?`}
+        confirmText="활성화"
+        cancelText="취소"
+        onConfirm={handleEnableUser}
+        isLoading={enableDialog.isLoading}
+      />
     </div>
   );
 }
-

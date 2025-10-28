@@ -162,3 +162,29 @@ export const disableAppAdminUser = async ({
     throw error;
   }
 };
+
+// 앱 관리자 활성화
+export const enableAppAdminUser = async ({
+  appAdminUserId,
+  jsonWebToken,
+}: {
+  appAdminUserId: string;
+  jsonWebToken: string;
+}) => {
+  try {
+    const { data } = await axiosApi(
+      `/admin/app-admin-users/${appAdminUserId}/enable`,
+      "post",
+      undefined,
+      {
+        headers: {
+          Authorization: `jwt ${jsonWebToken}`,
+        },
+      }
+    );
+    return data || null;
+  } catch (error) {
+    console.warn("AppAdminActions enableAppAdminUser error", error);
+    throw error;
+  }
+};

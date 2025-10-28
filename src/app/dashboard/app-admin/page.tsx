@@ -31,11 +31,13 @@ import {
   Trash2,
   Loader2,
   MoreHorizontal,
+  UserPlus,
 } from "lucide-react";
 import {
   getAppAdminUsers,
   deleteAppAdminUser,
   disableAppAdminUser,
+  enableAppAdminUser,
 } from "./actions";
 import { toast } from "sonner";
 import moment from "moment";
@@ -70,6 +72,19 @@ export default function AppAdminPage() {
 
   // 비활성화 확인 다이얼로그 상태
   const [disableDialog, setDisableDialog] = useState<{
+    open: boolean;
+    userId: string;
+    userName: string;
+    isLoading: boolean;
+  }>({
+    open: false,
+    userId: "",
+    userName: "",
+    isLoading: false,
+  });
+
+  // 활성화 확인 다이얼로그 상태
+  const [enableDialog, setEnableDialog] = useState<{
     open: boolean;
     userId: string;
     userName: string;
@@ -155,6 +170,39 @@ export default function AppAdminPage() {
     }
   };
 
+  const handleEnableUser = async () => {
+    if (!jsonWebToken || !enableDialog.userId) return;
+
+    setEnableDialog((prev) => ({ ...prev, isLoading: true }));
+
+    try {
+      await enableAppAdminUser({
+        appAdminUserId: enableDialog.userId,
+        jsonWebToken,
+      });
+
+      toast.success("앱 관리자가 활성화되었습니다.");
+      // 목록 새로고침
+      setAppAdminUsers((prev) =>
+        prev.map((user) =>
+          user._id === enableDialog.userId ? { ...user, isEnabled: true } : user
+        )
+      );
+
+      // 다이얼로그 닫기
+      setEnableDialog({
+        open: false,
+        userId: "",
+        userName: "",
+        isLoading: false,
+      });
+    } catch (error) {
+      console.error("Enable user error:", error);
+      toast.error("사용자 활성화에 실패했습니다.");
+      setEnableDialog((prev) => ({ ...prev, isLoading: false }));
+    }
+  };
+
   const handleDeleteUser = async () => {
     if (!jsonWebToken || !deleteDialog.userId) return;
 
@@ -201,6 +249,15 @@ export default function AppAdminPage() {
 
   const openDisableDialog = (userId: string, userName: string) => {
     setDisableDialog({
+      open: true,
+      userId,
+      userName,
+      isLoading: false,
+    });
+  };
+
+  const openEnableDialog = (userId: string, userName: string) => {
+    setEnableDialog({
       open: true,
       userId,
       userName,
@@ -389,6 +446,18 @@ export default function AppAdminPage() {
                               비활성화
                             </DropdownMenuItem>
                           )}
+                          {!user.isEnabled && (
+                            <DropdownMenuItem
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                openEnableDialog(user._id, user.name);
+                              }}
+                              className="text-green-600"
+                            >
+                              <UserPlus className="mr-2 h-4 w-4" />
+                              활성화
+                            </DropdownMenuItem>
+                          )}
 
                           <DropdownMenuSeparator />
                           <DropdownMenuItem
@@ -500,6 +569,28 @@ export default function AppAdminPage() {
         variant="destructive"
         onConfirm={handleDisableUser}
         isLoading={disableDialog.isLoading}
+      />
+
+      {/* 활성화 확인 다이얼로그 */}
+      <ConfirmDialog
+        open={enableDialog.open}
+        onOpenChange={(open) => {
+          if (!open) {
+            setEnableDialog({
+              open: false,
+              userId: "",
+              userName: "",
+              isLoading: false,
+            });
+          }
+        }}
+        title="앱 관리자 활성화"
+        description={`"${enableDialog.userName}" 앱 관리자를 활성화하시겠습니까?`}
+        confirmText="활성화"
+        cancelText="취소"
+        variant="default"
+        onConfirm={handleEnableUser}
+        isLoading={enableDialog.isLoading}
       />
     </div>
   );
