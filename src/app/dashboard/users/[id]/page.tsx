@@ -498,6 +498,13 @@ export default function UserDetailPage() {
 
                   <div>
                     <Label className="text-sm font-medium text-muted-foreground">
+                      등급
+                    </Label>
+                    <p className="font-medium mt-1">{user?.gradeInfo?.title}</p>
+                  </div>
+
+                  <div>
+                    <Label className="text-sm font-medium text-muted-foreground">
                       회원 해시
                     </Label>
                     <p className="font-medium mt-1 font-mono text-sm break-all">

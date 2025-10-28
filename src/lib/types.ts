@@ -260,6 +260,18 @@ export interface RestrictionInfo {
   restrictedReason: string | null;
   restrictionEndsAt: string | null;
 }
+export interface GradeInfo {
+  title:
+    | "STONE"
+    | "BRONZE"
+    | "SILVER"
+    | "GOLD"
+    | "PLATINUM"
+    | "DIAMOND"
+    | "MASTER";
+  level: number;
+  createdAt: string;
+}
 
 export interface BanInfo {
   isBanned: boolean;
@@ -283,6 +295,7 @@ export interface User {
   nicknameChangedAt: string | null;
   imageList: UserImage[];
   restrictionInfo: RestrictionInfo;
+  gradeInfo: GradeInfo;
   banInfo: BanInfo;
   memberHash: string;
   favoriteArtistIds: string[];

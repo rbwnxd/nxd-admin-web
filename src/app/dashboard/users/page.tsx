@@ -140,6 +140,19 @@ export default function UsersPage() {
     );
   };
 
+  const getGradeBadgeColor = (grade: string) => {
+    const gradeMap: { [key: string]: string } = {
+      STONE: "bg-stone-500",
+      BRONZE: "bg-amber-600",
+      SILVER: "bg-slate-400",
+      GOLD: "bg-yellow-400",
+      PLATINUM: "bg-emerald-400",
+      DIAMOND: "bg-cyan-300",
+      MASTER: "bg-purple-600",
+    };
+    return gradeMap[grade.toUpperCase()] || "gray";
+  };
+
   const getGenderBadge = (gender: string) => {
     const genderMap: { [key: string]: string } = {
       MALE: "남성",
@@ -290,6 +303,16 @@ export default function UsersPage() {
                           {user.profile.nickname}
                         </h3>
                         {getPlatformBadge(user.platform)}
+                        {user?.gradeInfo?.title && (
+                          <Badge
+                            variant={"default"}
+                            className={`text-xs ${getGradeBadgeColor(
+                              user.gradeInfo.title
+                            )}`}
+                          >
+                            {user.gradeInfo.title}
+                          </Badge>
+                        )}
                         {user.restrictionInfo.isRestricted && (
                           <Badge variant="destructive" className="text-xs">
                             제한됨
