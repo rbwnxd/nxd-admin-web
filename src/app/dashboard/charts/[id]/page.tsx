@@ -207,11 +207,16 @@ export default function ChartDetailPage() {
               {rankings.map((ranking) => (
                 <div
                   key={`${ranking.user._id}-${ranking.index}`}
-                  className={`border rounded-lg p-4 ${
-                    ranking.ranking <= 3
-                      ? "bg-gradient-to-r from-yellow-50 to-amber-50 border-yellow-200 dark:from-yellow-900/20 dark:to-amber-900/20 dark:border-yellow-700/30"
-                      : "hover:bg-muted/30"
-                  } transition-colors`}
+                  className={`border rounded-lg p-4 hover:bg-muted/30 transition-colors ${
+                    ranking.user.deletedAt ? "opacity-50" : "cursor-pointer"
+                  }`}
+                  onClick={() => {
+                    if (ranking.user.deletedAt) {
+                      toast.error("탈퇴한 사용자입니다");
+                      return;
+                    }
+                    router.push(`/dashboard/users/${ranking.user._id}`);
+                  }}
                 >
                   <div className="flex items-center gap-4">
                     {/* 프로필 이미지 */}
@@ -237,20 +242,22 @@ export default function ChartDetailPage() {
                           variant={ranking.ranking <= 3 ? "default" : "outline"}
                           className={
                             ranking.ranking === 1
-                              ? "bg-yellow-500 hover:bg-yellow-600"
+                              ? "bg-yellow-500"
                               : ranking.ranking === 2
-                              ? "bg-gray-400 hover:bg-gray-500"
+                              ? "bg-gray-400 "
                               : ranking.ranking === 3
-                              ? "bg-amber-600 hover:bg-amber-700"
+                              ? "bg-amber-600 "
                               : ""
                           }
                         >
                           #{ranking.ranking}
                         </Badge>
                         <h3 className="font-semibold text-lg">
-                          {ranking.user.nickname || "이름 없음"}
+                          {ranking.user.deletedAt
+                            ? "(탈퇴한 사용자)"
+                            : ranking.user.nickname || "이름 없음"}
                         </h3>
-                        {ranking.changedRanking !== null && (
+                        {!!ranking?.changedRanking && (
                           <span
                             className={`text-xs px-2 py-1 rounded ${
                               ranking.changedRanking > 0
@@ -276,12 +283,12 @@ export default function ChartDetailPage() {
                           현재 포인트:{" "}
                           {ranking.user.currentPoint.toLocaleString()}
                         </span>
-                        {ranking.previousPoint && (
+                        {/* {ranking.previousTotalPoint && (
                           <span>
                             이전 포인트:{" "}
-                            {ranking.previousPoint.toLocaleString()}
+                            {ranking.previousTotalPoint.toLocaleString()}
                           </span>
-                        )}
+                        )} */}
                       </div>
                     </div>
 

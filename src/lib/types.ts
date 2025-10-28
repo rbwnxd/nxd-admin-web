@@ -86,8 +86,11 @@ export interface AdminChartRankingItem {
       imageFilename: string;
     }>;
     currentPoint: number;
+    gradeInfo: GradeInfo;
+    createdAt: string;
+    deletedAt: string | null;
   };
-  previousPoint: number | null;
+  previousTotalPoint: number | null;
   totalPoint: number;
   previousRanking: number | null;
   ranking: number;
