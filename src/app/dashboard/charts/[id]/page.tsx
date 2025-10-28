@@ -138,15 +138,7 @@ export default function ChartDetailPage() {
 
       <Card className="mb-6">
         <CardHeader>
-          <div className="flex items-center justify-between">
-            <div>
-              <CardTitle className="text-2xl">
-                {currentChartInfo.nameList[0]?.ko}
-              </CardTitle>
-              <p className="text-muted-foreground">
-                {currentChartInfo.descriptionList[0]?.ko}
-              </p>
-            </div>
+          <div className="flex flex-col items-start gap-2">
             <div className="flex items-center gap-2">
               <Badge variant={getChartTypeVariant(currentChartInfo.type)}>
                 {getChartTypeLabel(currentChartInfo.type)}
@@ -156,6 +148,14 @@ export default function ChartDetailPage() {
               >
                 {currentChartInfo.isActivated ? "활성화" : "비활성화"}
               </Badge>
+            </div>
+            <div>
+              <CardTitle className="text-2xl">
+                {currentChartInfo.nameList[0]?.ko}
+              </CardTitle>
+              <p className="text-muted-foreground">
+                {currentChartInfo.descriptionList[0]?.ko}
+              </p>
             </div>
           </div>
         </CardHeader>
@@ -218,86 +218,82 @@ export default function ChartDetailPage() {
                     router.push(`/dashboard/users/${ranking.user._id}`);
                   }}
                 >
-                  <div className="flex items-center gap-4">
-                    {/* 프로필 이미지 */}
-                    <div className="flex items-center justify-center w-12 h-12 rounded-full overflow-hidden bg-background border">
-                      {ranking.user.imageList &&
-                      ranking.user.imageList.length > 0 ? (
-                        <Image
-                          src={`${STORAGE_URL}/${ranking.user.imageList[0].image64Path}`}
-                          alt={ranking.user.nickname || "사용자"}
-                          width={64}
-                          height={64}
-                          className="w-full h-full object-cover"
-                        />
-                      ) : (
-                        <User className="w-8 h-8 text-muted-foreground" />
-                      )}
-                    </div>
-
-                    {/* 사용자 정보 */}
-                    <div className="flex-1">
-                      <div className="flex items-center gap-2 mb-1">
-                        <Badge
-                          variant={ranking.ranking <= 3 ? "default" : "outline"}
-                          className={
-                            ranking.ranking === 1
-                              ? "bg-yellow-500"
-                              : ranking.ranking === 2
-                              ? "bg-gray-400 "
-                              : ranking.ranking === 3
-                              ? "bg-amber-600 "
-                              : ""
-                          }
-                        >
-                          #{ranking.ranking}
-                        </Badge>
-                        <h3 className="font-semibold text-lg">
-                          {ranking.user.deletedAt
-                            ? "(탈퇴한 사용자)"
-                            : ranking.user.nickname || "이름 없음"}
-                        </h3>
-                        {!!ranking?.changedRanking && (
-                          <span
-                            className={`text-xs px-2 py-1 rounded ${
-                              ranking.changedRanking > 0
-                                ? "bg-red-100 text-red-600"
-                                : ranking.changedRanking < 0
-                                ? "bg-green-100 text-green-600"
-                                : "bg-gray-100 text-gray-600"
-                            }`}
-                          >
-                            {ranking.changedRanking > 0 && "↓"}
-                            {ranking.changedRanking < 0 && "↑"}
-                            {Math.abs(ranking.changedRanking) > 0 &&
-                              Math.abs(ranking.changedRanking)}
-                          </span>
+                  <div className="flex flex-col lg:flex-row items-start lg:items-center gap-1">
+                    <div className="flex flex-row flex-1 items-center gap-2 lg:gap-4">
+                      {/* 프로필 이미지 */}
+                      <div className="flex items-center justify-center w-12 h-12 rounded-full overflow-hidden bg-background border">
+                        {ranking.user.imageList &&
+                        ranking.user.imageList.length > 0 ? (
+                          <Image
+                            src={`${STORAGE_URL}/${ranking.user.imageList[0].image64Path}`}
+                            alt={ranking.user.nickname || "사용자"}
+                            width={64}
+                            height={64}
+                            className="w-full h-full object-cover"
+                          />
+                        ) : (
+                          <User className="w-8 h-8 text-muted-foreground" />
                         )}
                       </div>
-                      <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                        <span className="flex items-center gap-1">
-                          <User className="w-3 h-3" />
-                          ID: {ranking.user._id}
-                        </span>
-                        <span>
-                          현재 포인트:{" "}
-                          {ranking.user.currentPoint.toLocaleString()}
-                        </span>
-                        {/* {ranking.previousTotalPoint && (
-                          <span>
-                            이전 포인트:{" "}
-                            {ranking.previousTotalPoint.toLocaleString()}
+
+                      {/* 사용자 정보 */}
+                      <div className="flex-1 break-all">
+                        <div className="flex items-center gap-2 mb-1">
+                          <Badge
+                            variant={
+                              ranking.ranking <= 3 ? "default" : "outline"
+                            }
+                            className={
+                              ranking.ranking === 1
+                                ? "bg-yellow-500"
+                                : ranking.ranking === 2
+                                ? "bg-gray-400 "
+                                : ranking.ranking === 3
+                                ? "bg-amber-600 "
+                                : ""
+                            }
+                          >
+                            #{ranking.ranking}
+                          </Badge>
+                          <h3 className="font-semibold text-lg">
+                            {ranking.user.deletedAt
+                              ? "(탈퇴한 사용자)"
+                              : ranking.user.nickname || "이름 없음"}
+                          </h3>
+                          {!!ranking?.changedRanking && (
+                            <span
+                              className={`text-xs px-2 py-1 rounded ${
+                                ranking.changedRanking > 0
+                                  ? "bg-red-100 text-red-600"
+                                  : ranking.changedRanking < 0
+                                  ? "bg-green-100 text-green-600"
+                                  : "bg-gray-100 text-gray-600"
+                              }`}
+                            >
+                              {ranking.changedRanking > 0 && "↓"}
+                              {ranking.changedRanking < 0 && "↑"}
+                              {Math.abs(ranking.changedRanking) > 0 &&
+                                Math.abs(ranking.changedRanking)}
+                            </span>
+                          )}
+                        </div>
+                        <div className="flex flex-col gap-1 text-sm text-muted-foreground">
+                          <span className="flex items-center gap-1">
+                            ID: {ranking.user._id}
                           </span>
-                        )} */}
+                          <span>
+                            현재 포인트:{" "}
+                            {ranking.user.currentPoint.toLocaleString()}
+                          </span>
+                        </div>
                       </div>
                     </div>
-
                     {/* 포인트 */}
-                    <div className="text-right">
-                      <div className="text-2xl font-bold text-primary">
+                    <div className="flex flex-col w-full lg:w-auto items-end text-right">
+                      <div className="text-lg lg:text-2xl font-bold text-primary">
                         {ranking.totalPoint.toLocaleString()}
                       </div>
-                      <div className="text-sm text-muted-foreground">
+                      <div className="text-xs lg:text-sm text-muted-foreground">
                         총 포인트
                       </div>
                     </div>
