@@ -406,18 +406,6 @@ export default function QRCodesPage() {
         </CardContent>
       </Card>
 
-      {/* 체크인 바로가기 */}
-      <div className="mt-6">
-        <Button
-          variant="outline"
-          onClick={() => router.push("/dashboard/qr-codes/check-in")}
-          className="flex items-center gap-2"
-        >
-          <Users className="w-4 h-4" />
-          체크인 관리
-        </Button>
-      </div>
-
       {/* 삭제 확인 다이얼로그 */}
       <ConfirmDialog
         open={isDeleteDialogOpen}
