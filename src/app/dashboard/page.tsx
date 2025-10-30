@@ -30,9 +30,11 @@ import {
 } from "@/lib/types";
 import { STORAGE_URL } from "@/lib/api";
 import moment from "moment";
+import { useRouter } from "next/navigation";
 
 export default function DashboardPage() {
   const jsonWebToken = useAuthStore((state) => state.token);
+  const router = useRouter();
 
   const [startDate, setStartDate] = useState(
     moment().subtract(7, "days").format("YYYY-MM-DD")
@@ -322,6 +324,9 @@ export default function DashboardPage() {
                 showPagination={true}
                 pageSize={10}
                 loading={isLoading}
+                onRowClick={(row) => {
+                  router.push(`/dashboard/users/${row?.user?._id}`);
+                }}
               />
             </div>
           )}
