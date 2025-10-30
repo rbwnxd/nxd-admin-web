@@ -247,11 +247,11 @@ export default function DashboardPage() {
           </div>
 
           {/* 로딩 상태 표시 */}
-          {isLoading && (
+          {/* {isLoading && (
             <div className="flex items-center justify-center p-4">
               <div className="text-sm text-muted-foreground">분석 중...</div>
             </div>
-          )}
+          )} */}
 
           {/* 에러 메시지 */}
           {error && (
@@ -261,7 +261,7 @@ export default function DashboardPage() {
           )}
 
           {/* 분석 결과 */}
-          {analysisData && (
+          {
             <div className="space-y-4">
               <div className="grid gap-4 md:grid-cols-3">
                 <Card>
@@ -272,11 +272,11 @@ export default function DashboardPage() {
                   </CardHeader>
                   <CardContent>
                     <div className="text-2xl font-bold">
-                      {analysisData.totalDays}일
+                      {analysisData?.totalDays}일
                     </div>
                     <p className="text-xs text-muted-foreground mt-1">
-                      {moment.utc(analysisData.startDate).format("YYYY-MM-DD")}{" "}
-                      ~ {moment.utc(analysisData.endDate).format("YYYY-MM-DD")}
+                      {moment.utc(analysisData?.startDate).format("YYYY-MM-DD")}{" "}
+                      ~ {moment.utc(analysisData?.endDate).format("YYYY-MM-DD")}
                     </p>
                   </CardContent>
                 </Card>
@@ -288,7 +288,7 @@ export default function DashboardPage() {
                   </CardHeader>
                   <CardContent>
                     <div className="text-2xl font-bold">
-                      {analysisData.range}
+                      {analysisData?.range}
                     </div>
                   </CardContent>
                 </Card>
@@ -300,7 +300,7 @@ export default function DashboardPage() {
                   </CardHeader>
                   <CardContent>
                     <div className="text-2xl font-bold">
-                      {analysisData.userStats.length}명
+                      {analysisData?.userStats.length}명
                     </div>
                   </CardContent>
                 </Card>
@@ -309,7 +309,7 @@ export default function DashboardPage() {
               {/* 사용자 통계 테이블 */}
               <DataTable
                 columns={columns}
-                data={analysisData.userStats}
+                data={analysisData?.userStats || []}
                 searchKey="user"
                 searchPlaceholder="사용자 검색..."
                 showColumnToggle={false}
@@ -321,7 +321,7 @@ export default function DashboardPage() {
                 }}
               />
             </div>
-          )}
+          }
         </CardContent>
       </Card>
     </div>
