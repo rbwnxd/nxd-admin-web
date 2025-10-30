@@ -62,6 +62,7 @@ export default function DashboardPage() {
       {
         id: "user",
         header: "사용자",
+        accessorFn: (row) => row.user?.nickname || "",
         cell: ({ row }) => {
           const userStat = row.original;
           return (
@@ -309,8 +310,8 @@ export default function DashboardPage() {
               <DataTable
                 columns={columns}
                 data={analysisData.userStats}
-                // searchKey="user"
-                // searchPlaceholder="사용자 검색..."
+                searchKey="user"
+                searchPlaceholder="사용자 검색..."
                 showColumnToggle={false}
                 showPagination={true}
                 pageSize={10}
