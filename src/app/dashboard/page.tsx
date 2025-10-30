@@ -19,7 +19,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { TrendingUp, Users } from "lucide-react";
+import { TrendingUp, User2, Users } from "lucide-react";
 import { ColumnDef } from "@tanstack/react-table";
 import { DataTable, DataTableColumnHeader } from "@/components/ui/data-table";
 import { getDailyRankingAnalysis } from "./actions";
@@ -76,7 +76,7 @@ export default function DashboardPage() {
                 </div>
               ) : (
                 <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center">
-                  <Users className="h-4 w-4 text-muted-foreground" />
+                  <User2 className="h-4 w-4 text-muted-foreground" />
                 </div>
               )}
               <span className="text-sm font-medium">
