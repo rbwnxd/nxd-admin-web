@@ -2,6 +2,7 @@
 
 import { useState, useMemo, useEffect, useCallback } from "react";
 import Image from "next/image";
+import { DateRange } from "react-day-picker";
 import { useAuthStore } from "@/store/authStore";
 import {
   Card,
@@ -10,7 +11,6 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
   Select,
@@ -22,6 +22,7 @@ import {
 import { TrendingUp, User2, Users } from "lucide-react";
 import { ColumnDef } from "@tanstack/react-table";
 import { DataTable, DataTableColumnHeader } from "@/components/ui/data-table";
+import { DateRangePicker } from "@/components/ui/date-range-picker";
 import { getDailyRankingAnalysis } from "./actions";
 import {
   DailyRankingAnalysisDto,
@@ -36,10 +37,10 @@ export default function DashboardPage() {
   const jsonWebToken = useAuthStore((state) => state.token);
   const router = useRouter();
 
-  const [startDate, setStartDate] = useState(
-    moment().subtract(7, "days").format("YYYY-MM-DD")
-  );
-  const [endDate, setEndDate] = useState(moment().format("YYYY-MM-DD"));
+  const [dateRange, setDateRange] = useState<DateRange | undefined>({
+    from: moment().subtract(7, "days").toDate(),
+    to: moment().toDate(),
+  });
   const [rankingRange, setRankingRange] = useState<RankingRange>("TOP10");
   const [analysisData, setAnalysisData] =
     useState<DailyRankingAnalysisDto | null>(null);
@@ -153,8 +154,8 @@ export default function DashboardPage() {
       return;
     }
 
-    if (!startDate || !endDate) {
-      setError("시작일과 종료일을 모두 입력해주세요.");
+    if (!dateRange?.from || !dateRange?.to) {
+      setError("시작일과 종료일을 모두 선택해주세요.");
       return;
     }
 
@@ -164,8 +165,8 @@ export default function DashboardPage() {
     try {
       const result = await getDailyRankingAnalysis({
         params: {
-          startDate,
-          endDate,
+          startDate: moment(dateRange.from).format("YYYY-MM-DD"),
+          endDate: moment(dateRange.to).format("YYYY-MM-DD"),
           rankingRange,
         },
         jsonWebToken,
@@ -183,14 +184,14 @@ export default function DashboardPage() {
     } finally {
       setIsLoading(false);
     }
-  }, [jsonWebToken, startDate, endDate, rankingRange]);
+  }, [jsonWebToken, dateRange, rankingRange]);
 
   // 필터링 변경시 자동 패치
   useEffect(() => {
-    if (startDate && endDate && rankingRange) {
+    if (dateRange?.from && dateRange?.to && rankingRange) {
       handleAnalyze();
     }
-  }, [handleAnalyze, startDate, endDate, rankingRange]);
+  }, [handleAnalyze, dateRange, rankingRange]);
 
   return (
     <div className="space-y-8">
@@ -215,23 +216,13 @@ export default function DashboardPage() {
         </CardHeader>
         <CardContent className="space-y-6">
           {/* 분석 파라미터 입력 */}
-          <div className="grid gap-4 md:grid-cols-3">
+          <div className="flex gap-4">
             <div className="space-y-2">
-              <Label htmlFor="startDate">시작일</Label>
-              <Input
-                id="startDate"
-                type="date"
-                value={startDate}
-                onChange={(e) => setStartDate(e.target.value)}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="endDate">종료일</Label>
-              <Input
-                id="endDate"
-                type="date"
-                value={endDate}
-                onChange={(e) => setEndDate(e.target.value)}
+              <Label htmlFor="dateRange">분석 기간</Label>
+              <DateRangePicker
+                dateRange={dateRange}
+                onDateRangeChange={setDateRange}
+                placeholder="분석할 기간을 선택하세요"
               />
             </div>
             <div className="space-y-2">
