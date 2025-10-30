@@ -1,4 +1,4 @@
-"use cleint";
+"use server";
 
 import { axiosApi } from "@/lib/axios";
 
