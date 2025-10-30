@@ -548,3 +548,54 @@ export interface AnniversaryRewardPolicy {
   updatedAt: string;
   deletedAt: string | null;
 }
+
+// === 일간 랭킹 분석 관련 타입들 ===
+
+export type RankingRange = "TOP10" | "TOP30" | "TOP50";
+
+// 랭킹 분석용 사용자 정보
+export interface DailyRankingAnalysisDtoUser {
+  _id: string;
+  nickname: string;
+  imageList: UserImage[];
+  gradeInfo: GradeInfo;
+  createdAt: string;
+  updatedAt: string;
+  deletedAt: string | null;
+}
+
+// 사용자별 랭킹 통계
+export interface DailyRankingAnalysisUserStat {
+  user: DailyRankingAnalysisDtoUser | null;
+  totalAppearances: number; // 전체 진입 횟수
+  bestRanking: number; // 최고 순위 (1부터 시작)
+  averageRanking: number; // 평균 순위
+  appearanceRate: number; // 진입률 (백분율)
+  firstAppearanceDate: string; // 첫 진입 날짜
+  lastAppearanceDate: string; // 마지막 진입 날짜
+}
+
+// 일간 랭킹 분석 결과 (스웨거 스펙 기준)
+export interface DailyRankingAnalysisDto {
+  chartId: string; // 차트 고유 ID
+  range: RankingRange; // 분석 범위 (TOP10, TOP30, TOP50)
+  startDate: string; // 분석 시작 날짜
+  endDate: string; // 분석 종료 날짜
+  totalDays: number; // 전체 분석 일수
+  userStats: DailyRankingAnalysisUserStat[]; // 사용자별 랭킹 통계
+}
+
+// 일간 랭킹 분석 API 요청 파라미터
+export interface DailyRankingAnalysisParams {
+  startDate: string; // YYYY-MM-DD
+  endDate: string; // YYYY-MM-DD
+  rankingRange: RankingRange;
+}
+
+// 일간 랭킹 분석 API 응답 타입 (스웨거 스펙 기준)
+export interface DailyRankingAnalysisApiResponse {
+  statusCode: number;
+  results: {
+    analysis: DailyRankingAnalysisDto;
+  };
+}

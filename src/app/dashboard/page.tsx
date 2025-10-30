@@ -1,3 +1,8 @@
+"use client";
+
+import { useState, useMemo, useEffect, useCallback } from "react";
+import Image from "next/image";
+import { useAuthStore } from "@/store/authStore";
 import {
   Card,
   CardContent,
@@ -5,129 +10,323 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { BarChart3, Users, Image, FileText } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { TrendingUp, Users } from "lucide-react";
+import { ColumnDef } from "@tanstack/react-table";
+import { DataTable, DataTableColumnHeader } from "@/components/ui/data-table";
+import { getDailyRankingAnalysis } from "./actions";
+import {
+  DailyRankingAnalysisDto,
+  DailyRankingAnalysisUserStat,
+  RankingRange,
+} from "@/lib/types";
+import { STORAGE_URL } from "@/lib/api";
+import moment from "moment";
 
 export default function DashboardPage() {
-  const stats = [
-    {
-      title: "총 사용자",
-      value: "2,350",
-      description: "+10.1% from last month",
-      icon: Users,
-    },
-    {
-      title: "포토카드",
-      value: "1,247",
-      description: "+12.5% from last month",
-      icon: Image,
-    },
-    {
-      title: "콘텐츠",
-      value: "847",
-      description: "+8.2% from last month",
-      icon: FileText,
-    },
-    {
-      title: "총 매출",
-      value: "₩15,231,000",
-      description: "+20.1% from last month",
-      icon: BarChart3,
-    },
-  ];
+  const jsonWebToken = useAuthStore((state) => state.token);
+
+  const [startDate, setStartDate] = useState(
+    moment().subtract(7, "days").format("YYYY-MM-DD")
+  );
+  const [endDate, setEndDate] = useState(moment().format("YYYY-MM-DD"));
+  const [rankingRange, setRankingRange] = useState<RankingRange>("TOP10");
+  const [analysisData, setAnalysisData] =
+    useState<DailyRankingAnalysisDto | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  // 테이블 컬럼 정의
+  const columns = useMemo<ColumnDef<DailyRankingAnalysisUserStat>[]>(
+    () => [
+      {
+        id: "ranking",
+        header: "순위",
+        cell: ({ row }) => {
+          const index = row.index;
+          return <div className="text-center font-medium">{index + 1}</div>;
+        },
+        size: 80,
+      },
+      {
+        id: "user",
+        header: "사용자",
+        cell: ({ row }) => {
+          const userStat = row.original;
+          return (
+            <div className="flex items-center gap-2">
+              {userStat.user?.imageList &&
+              userStat.user.imageList.length > 0 ? (
+                <div className="relative w-8 h-8 rounded-full overflow-hidden">
+                  <Image
+                    src={`${STORAGE_URL}/${userStat?.user?.imageList?.[0]?.image64Path}`}
+                    alt={userStat?.user?.nickname || "profile"}
+                    fill
+                    className="object-cover"
+                    sizes="32px"
+                  />
+                </div>
+              ) : (
+                <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center">
+                  <Users className="h-4 w-4 text-muted-foreground" />
+                </div>
+              )}
+              <span className="text-sm font-medium">
+                {userStat.user?.nickname || "알 수 없음"}
+              </span>
+            </div>
+          );
+        },
+        size: 200,
+      },
+      {
+        accessorKey: "totalAppearances",
+        header: "출현 횟수",
+        cell: ({ row }) => {
+          const userStat = row.original;
+          return (
+            <div className="text-right">
+              {userStat.totalAppearances}일 (
+              {userStat.appearanceRate.toFixed(1)}%)
+            </div>
+          );
+        },
+        size: 120,
+      },
+      {
+        accessorKey: "averageRanking",
+        header: "평균 랭킹",
+        cell: ({ row }) => {
+          const userStat = row.original;
+          return (
+            <div className="text-right">
+              {userStat.averageRanking.toFixed(1)}위
+            </div>
+          );
+        },
+        size: 100,
+      },
+      {
+        accessorKey: "bestRanking",
+        header: "최고 랭킹",
+        cell: ({ row }) => {
+          const userStat = row.original;
+          return <div className="text-right">{userStat.bestRanking}위</div>;
+        },
+        size: 100,
+      },
+      {
+        id: "period",
+        header: "기간",
+        cell: ({ row }) => {
+          const userStat = row.original;
+          return (
+            <div className="text-right">
+              <div className="text-xs text-muted-foreground">
+                {moment.utc(userStat.firstAppearanceDate).format("YYYY-MM-DD")}{" "}
+                ~
+                <br />
+                {moment.utc(userStat.lastAppearanceDate).format("YYYY-MM-DD")}
+              </div>
+            </div>
+          );
+        },
+        size: 120,
+      },
+    ],
+    []
+  );
+
+  const handleAnalyze = useCallback(async () => {
+    if (!jsonWebToken) {
+      setError("인증이 필요합니다.");
+      return;
+    }
+
+    if (!startDate || !endDate) {
+      setError("시작일과 종료일을 모두 입력해주세요.");
+      return;
+    }
+
+    setIsLoading(true);
+    setError(null);
+
+    try {
+      const result = await getDailyRankingAnalysis({
+        params: {
+          startDate,
+          endDate,
+          rankingRange,
+        },
+        jsonWebToken,
+      });
+
+      if (result?.analysis) {
+        setAnalysisData(result.analysis);
+      } else {
+        setError("분석 데이터를 가져오지 못했습니다.");
+      }
+    } catch (err) {
+      setError(
+        err instanceof Error ? err.message : "분석 중 오류가 발생했습니다."
+      );
+    } finally {
+      setIsLoading(false);
+    }
+  }, [jsonWebToken, startDate, endDate, rankingRange]);
+
+  // 필터링 변경시 자동 패치
+  useEffect(() => {
+    if (startDate && endDate && rankingRange) {
+      handleAnalyze();
+    }
+  }, [handleAnalyze, startDate, endDate, rankingRange]);
 
   return (
     <div className="space-y-8">
-        <div>
-          <h2 className="text-3xl font-bold tracking-tight">대시보드</h2>
-          <p className="text-muted-foreground">
-            NXD 관리자 대시보드에 오신 것을 환영합니다.
-          </p>
-        </div>
+      <div>
+        <h2 className="text-3xl font-bold tracking-tight">대시보드</h2>
+        <p className="text-muted-foreground">
+          NXD 관리자 대시보드에 오신 것을 환영합니다.
+        </p>
+      </div>
 
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-          {stats.map((stat) => {
-            const Icon = stat.icon;
-            return (
-              <Card key={stat.title}>
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">
-                    {stat.title}
-                  </CardTitle>
-                  <Icon className="h-4 w-4 text-muted-foreground" />
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold">{stat.value}</div>
-                  <p className="text-xs text-muted-foreground">
-                    {stat.description}
-                  </p>
-                </CardContent>
-              </Card>
-            );
-          })}
-        </div>
+      {/* 일간 랭킹 분석 섹션 */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <TrendingUp className="h-5 w-5" />
+            일간 랭킹 분석
+          </CardTitle>
+          <CardDescription>
+            특정 기간 동안 상위 랭킹에 반복적으로 나타나는 사용자들의 통계를
+            분석합니다.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-6">
+          {/* 분석 파라미터 입력 */}
+          <div className="grid gap-4 md:grid-cols-3">
+            <div className="space-y-2">
+              <Label htmlFor="startDate">시작일</Label>
+              <Input
+                id="startDate"
+                type="date"
+                value={startDate}
+                onChange={(e) => setStartDate(e.target.value)}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="endDate">종료일</Label>
+              <Input
+                id="endDate"
+                type="date"
+                value={endDate}
+                onChange={(e) => setEndDate(e.target.value)}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="rankingRange">랭킹 범위</Label>
+              <Select
+                value={rankingRange}
+                onValueChange={(value) =>
+                  setRankingRange(value as RankingRange)
+                }
+              >
+                <SelectTrigger id="rankingRange">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="TOP10">TOP 10</SelectItem>
+                  <SelectItem value="TOP30">TOP 30</SelectItem>
+                  <SelectItem value="TOP50">TOP 50</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
 
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
-          <Card className="col-span-4">
-            <CardHeader>
-              <CardTitle>최근 활동</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-8">
-                <div className="flex items-center">
-                  <div className="ml-4 space-y-1">
-                    <p className="text-sm font-medium leading-none">
-                      새로운 포토카드가 등록되었습니다.
-                    </p>
-                    <p className="text-sm text-muted-foreground">5분 전</p>
-                  </div>
-                </div>
-                <div className="flex items-center">
-                  <div className="ml-4 space-y-1">
-                    <p className="text-sm font-medium leading-none">
-                      사용자 kim123이 가입했습니다.
-                    </p>
-                    <p className="text-sm text-muted-foreground">1시간 전</p>
-                  </div>
-                </div>
-                <div className="flex items-center">
-                  <div className="ml-4 space-y-1">
-                    <p className="text-sm font-medium leading-none">
-                      새로운 주문이 들어왔습니다.
-                    </p>
-                    <p className="text-sm text-muted-foreground">2시간 전</p>
-                  </div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+          {/* 로딩 상태 표시 */}
+          {isLoading && (
+            <div className="flex items-center justify-center p-4">
+              <div className="text-sm text-muted-foreground">분석 중...</div>
+            </div>
+          )}
 
-          <Card className="col-span-3">
-            <CardHeader>
-              <CardTitle>빠른 액션</CardTitle>
-              <CardDescription>
-                자주 사용하는 기능들에 빠르게 접근할 수 있습니다.
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              <div className="p-3 rounded-lg border hover:bg-accent cursor-pointer transition-colors">
-                <div className="text-sm font-medium">포토카드 추가</div>
-                <div className="text-xs text-muted-foreground">
-                  새 포토카드 등록
-                </div>
+          {/* 에러 메시지 */}
+          {error && (
+            <div className="p-4 bg-destructive/10 text-destructive rounded-lg">
+              {error}
+            </div>
+          )}
+
+          {/* 분석 결과 */}
+          {analysisData && (
+            <div className="space-y-4">
+              <div className="grid gap-4 md:grid-cols-3">
+                <Card>
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-sm font-medium text-muted-foreground">
+                      분석 기간
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-2xl font-bold">
+                      {analysisData.totalDays}일
+                    </div>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      {moment.utc(analysisData.startDate).format("YYYY-MM-DD")}{" "}
+                      ~ {moment.utc(analysisData.endDate).format("YYYY-MM-DD")}
+                    </p>
+                  </CardContent>
+                </Card>
+                <Card>
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-sm font-medium text-muted-foreground">
+                      랭킹 범위
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-2xl font-bold">
+                      {analysisData.range}
+                    </div>
+                  </CardContent>
+                </Card>
+                <Card>
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-sm font-medium text-muted-foreground">
+                      분석 사용자 수
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-2xl font-bold">
+                      {analysisData.userStats.length}명
+                    </div>
+                  </CardContent>
+                </Card>
               </div>
-              <div className="p-3 rounded-lg border hover:bg-accent cursor-pointer transition-colors">
-                <div className="text-sm font-medium">사용자 관리</div>
-                <div className="text-xs text-muted-foreground">
-                  사용자 목록 보기
-                </div>
-              </div>
-              <div className="p-3 rounded-lg border hover:bg-accent cursor-pointer transition-colors">
-                <div className="text-sm font-medium">설정</div>
-                <div className="text-xs text-muted-foreground">시스템 설정</div>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
+
+              {/* 사용자 통계 테이블 */}
+              <DataTable
+                columns={columns}
+                data={analysisData.userStats}
+                // searchKey="user"
+                // searchPlaceholder="사용자 검색..."
+                showColumnToggle={false}
+                showPagination={true}
+                pageSize={10}
+                loading={isLoading}
+              />
+            </div>
+          )}
+        </CardContent>
+      </Card>
     </div>
   );
 }
