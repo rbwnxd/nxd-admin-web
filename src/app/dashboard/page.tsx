@@ -389,13 +389,6 @@ export default function DashboardPage() {
             )}
           </div>
 
-          {/* 에러 메시지 */}
-          {qrError && (
-            <div className="p-4 bg-destructive/10 text-destructive rounded-lg">
-              {qrError}
-            </div>
-          )}
-
           {/* 통계 결과 */}
           {qrLoading ? (
             <div className="flex items-center justify-center p-8">
@@ -497,7 +490,13 @@ export default function DashboardPage() {
               {/* 차트 */}
               <QRVerificationStats stats={qrStats} />
             </div>
-          ) : null}
+          ) : (
+            <div className="flex items-center justify-center p-8">
+              <div className="text-sm text-muted-foreground">
+                데이터가 없습니다.
+              </div>
+            </div>
+          )}
         </CardContent>
       </Card>
 
@@ -567,11 +566,11 @@ export default function DashboardPage() {
           )} */}
 
           {/* 에러 메시지 */}
-          {error && (
+          {/* {error && (
             <div className="p-4 bg-destructive/10 text-destructive rounded-lg">
               {error}
             </div>
-          )}
+          )} */}
 
           {/* 분석 결과 */}
           {
@@ -592,8 +591,8 @@ export default function DashboardPage() {
                           {analysisData?.totalDays}일
                         </div>
                         <div className="text-xs text-muted-foreground">
-                          {moment.utc(analysisData?.startDate).format("MM-DD")} ~{" "}
-                          {moment.utc(analysisData?.endDate).format("MM-DD")}
+                          {moment.utc(analysisData?.startDate).format("MM-DD")}{" "}
+                          ~ {moment.utc(analysisData?.endDate).format("MM-DD")}
                         </div>
                       </div>
                     </div>
@@ -601,9 +600,7 @@ export default function DashboardPage() {
                       <span className="text-sm font-medium text-muted-foreground">
                         랭킹 범위
                       </span>
-                      <div className="font-bold">
-                        {analysisData?.range}
-                      </div>
+                      <div className="font-bold">{analysisData?.range}</div>
                     </div>
                     <div className="flex flex-1 justify-between items-center py-2">
                       <span className="text-sm font-medium text-muted-foreground">
@@ -655,7 +652,7 @@ export default function DashboardPage() {
                   </CardHeader>
                   <CardContent>
                     <div className="text-2xl font-bold">
-                      {analysisData?.userStats.length}명
+                      {analysisData?.userStats?.length || 0}명
                     </div>
                   </CardContent>
                 </Card>
