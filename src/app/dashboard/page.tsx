@@ -19,7 +19,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { TrendingUp, User2, Users } from "lucide-react";
+import { TrendingUp, User2, Users, Download } from "lucide-react";
 import { ColumnDef } from "@tanstack/react-table";
 import { DataTable, DataTableColumnHeader } from "@/components/ui/data-table";
 import { DateRangePicker } from "@/components/ui/date-range-picker";
@@ -32,6 +32,8 @@ import {
 import { STORAGE_URL } from "@/lib/api";
 import moment from "moment";
 import { useRouter } from "next/navigation";
+import { downloadCSV } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
 
 export default function DashboardPage() {
   const jsonWebToken = useAuthStore((state) => state.token);
@@ -194,6 +196,50 @@ export default function DashboardPage() {
     }
   }, [handleAnalyze, dateRange, rankingRange]);
 
+  // CSV 다운로드 핸들러
+  const handleDownloadCSV = useCallback(() => {
+    if (!analysisData) return;
+
+    const csvData: string[][] = [];
+
+    // 상단 메타 정보
+    csvData.push(["분석 기간", `${moment.utc(analysisData.startDate).format("YYYY-MM-DD")} ~ ${moment.utc(analysisData.endDate).format("YYYY-MM-DD")} (${analysisData.totalDays}일)`]);
+    csvData.push(["랭킹 범위", analysisData.range]);
+    csvData.push([]); // 빈 줄
+
+    // 테이블 헤더
+    csvData.push([
+      "순위",
+      "사용자",
+      "출현 횟수",
+      "출현율(%)",
+      "평균 랭킹",
+      "최고 랭킹",
+      "첫 출현일",
+      "마지막 출현일"
+    ]);
+
+    // 테이블 데이터
+    analysisData.userStats.forEach((userStat, index) => {
+      csvData.push([
+        String(index + 1),
+        userStat.user?.nickname || "알 수 없음",
+        `${userStat.totalAppearances}일`,
+        userStat.appearanceRate.toFixed(1),
+        userStat.averageRanking.toFixed(1),
+        String(userStat.bestRanking),
+        moment.utc(userStat.firstAppearanceDate).format("YYYY-MM-DD"),
+        moment.utc(userStat.lastAppearanceDate).format("YYYY-MM-DD")
+      ]);
+    });
+
+    // 파일명 생성
+    const dateRangeStr = `${moment.utc(analysisData.startDate).format("YYYYMMDD")}-${moment.utc(analysisData.endDate).format("YYYYMMDD")}`;
+    const filename = `상위 유저 랭킹 빈도 분석 (${dateRangeStr}_${analysisData.range}).csv`;
+
+    downloadCSV(csvData, filename);
+  }, [analysisData]);
+
   return (
     <div className="space-y-8">
       <div>
@@ -206,14 +252,29 @@ export default function DashboardPage() {
       {/* 일간 랭킹 분석 섹션 */}
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <TrendingUp className="h-5 w-5" />
-            일간 랭킹 분석
-          </CardTitle>
-          <CardDescription>
-            특정 기간 동안 상위 랭킹에 반복적으로 나타나는 사용자들의 통계를
-            분석합니다.
-          </CardDescription>
+          <div className="flex items-center justify-between">
+            <div>
+              <CardTitle className="flex items-center gap-2">
+                <TrendingUp className="h-5 w-5" />
+                상위 유저 랭킹 빈도 분석
+              </CardTitle>
+              <CardDescription>
+                특정 기간 동안 상위 랭킹에 반복적으로 나타나는 사용자들의 통계를
+                분석합니다.
+              </CardDescription>
+            </div>
+            {analysisData && (
+              <Button
+                onClick={handleDownloadCSV}
+                variant="outline"
+                size="sm"
+                className="gap-2"
+              >
+                <Download className="h-4 w-4" />
+                CSV 다운로드
+              </Button>
+            )}
+          </div>
         </CardHeader>
         <CardContent className="space-y-6">
           {/* 분석 파라미터 입력 */}
