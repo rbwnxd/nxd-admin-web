@@ -599,3 +599,40 @@ export interface DailyRankingAnalysisApiResponse {
     analysis: DailyRankingAnalysisDto;
   };
 }
+
+// === QR 코드 인증 통계 관련 타입들 ===
+
+export type QRVerificationPeriod = "monthly" | "yearly";
+
+// 카테고리별 통계
+export interface QRCodeVerificationCategoryStatDto {
+  category: string;
+  count: number;
+  percentage: number;
+}
+
+// QR 코드 인증 통계
+export interface QRCodeVerificationStatsDto {
+  period: QRVerificationPeriod;
+  year: number;
+  month: number | null;
+  totalVerifications: number;
+  categoryStats: QRCodeVerificationCategoryStatDto[];
+  startDate: string;
+  endDate: string;
+}
+
+// QR 코드 인증 통계 API 요청 파라미터
+export interface QRCodeVerificationStatsParams {
+  period: QRVerificationPeriod;
+  year: number;
+  month?: number;
+}
+
+// QR 코드 인증 통계 API 응답 타입
+export interface QRCodeVerificationStatsResponse {
+  statusCode: number;
+  results: {
+    stats: QRCodeVerificationStatsDto;
+  };
+}
