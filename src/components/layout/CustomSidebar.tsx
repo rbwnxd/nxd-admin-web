@@ -45,6 +45,11 @@ import { useTheme } from "next-themes";
 
 const menuItems = [
   {
+    title: "대시보드",
+    href: "/dashboard",
+    icon: LayoutDashboard,
+  },
+  {
     title: "사용자 관리",
     href: "/dashboard/users",
     icon: Users2,
