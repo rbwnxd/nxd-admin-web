@@ -17,6 +17,7 @@ interface PointModificationState {
   setCurrentPage: (page: number) => void;
   setSelectedType: (type: "ALL" | "GRANT" | "REVOKE") => void;
   setSearchTitle: (title: string) => void;
+  resetPagination: () => void;
   addPointModification: (pointModification: PointModification) => void;
   findPointModificationById: (id: string) => PointModification | null;
 }
@@ -37,6 +38,7 @@ export const usePointModificationStore = create<PointModificationState>(
     setCurrentPage: (currentPage) => set({ currentPage }),
     setSelectedType: (selectedType) => set({ selectedType }),
     setSearchTitle: (searchTitle) => set({ searchTitle }),
+    resetPagination: () => set({ currentPage: 1 }),
 
     addPointModification: (pointModification) => {
       set((state) => ({

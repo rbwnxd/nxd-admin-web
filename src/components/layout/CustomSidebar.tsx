@@ -25,6 +25,13 @@ import {
 } from "lucide-react";
 
 import { useAuthStore } from "@/store/authStore";
+import { useUserManagementStore } from "@/store/userManagementStore";
+import { useArtistStore } from "@/store/artistStore";
+import { useQRCodeStore } from "@/store/qrCodeStore";
+import { useChartStore } from "@/store/chartStore";
+import { useAnnouncementStore } from "@/store/announcementStore";
+import { usePointModificationStore } from "@/store/pointModificationStore";
+import { useAnniversaryRewardPolicyStore } from "@/store/anniversaryRwardPolicyStore";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
 import {
   Sidebar,
@@ -105,6 +112,15 @@ export function CustomSidebar({ className }: SidebarProps) {
   const pathname = usePathname();
   const { user, logout } = useAuthStore();
   const { setTheme, theme } = useTheme();
+  
+  // Store 리셋 함수들
+  const resetUserPagination = useUserManagementStore((state) => state.resetPagination);
+  const resetArtistPagination = useArtistStore((state) => state.resetPagination);
+  const resetQRCode = useQRCodeStore((state) => state.reset);
+  const resetChart = useChartStore((state) => state.reset);
+  const resetAnnouncementPagination = useAnnouncementStore((state) => state.resetPagination);
+  const resetPointModificationPagination = usePointModificationStore((state) => state.resetPagination);
+  const resetAnniversaryRewardPolicyPagination = useAnniversaryRewardPolicyStore((state) => state.resetPagination);
 
   const handleLogout = async () => {
     try {
@@ -112,6 +128,35 @@ export function CustomSidebar({ className }: SidebarProps) {
       window.location.href = "/login";
     } catch (error) {
       console.error("Logout error:", error);
+    }
+  };
+
+  // 메뉴 클릭 시 페이지 리셋 핸들러
+  const handleMenuClick = (href: string) => {
+    switch (href) {
+      case "/dashboard/users":
+        resetUserPagination();
+        break;
+      case "/dashboard/artists":
+        resetArtistPagination();
+        break;
+      case "/dashboard/qr-codes":
+        resetQRCode();
+        break;
+      case "/dashboard/charts":
+        resetChart();
+        break;
+      case "/dashboard/announcements":
+        resetAnnouncementPagination();
+        break;
+      case "/dashboard/point-modifications":
+        resetPointModificationPagination();
+        break;
+      case "/dashboard/anniversary-reward-policies":
+        resetAnniversaryRewardPolicyPagination();
+        break;
+      default:
+        break;
     }
   };
 
@@ -171,7 +216,10 @@ export function CustomSidebar({ className }: SidebarProps) {
                 return (
                   <SidebarMenuItem key={item.href}>
                     <SidebarMenuButton asChild isActive={isActive}>
-                      <Link href={item.href}>
+                      <Link 
+                        href={item.href}
+                        onClick={() => handleMenuClick(item.href)}
+                      >
                         <Icon className="h-4 w-4" />
                         <span>{item.title}</span>
                       </Link>

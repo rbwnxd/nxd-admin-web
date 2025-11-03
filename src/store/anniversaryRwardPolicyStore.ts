@@ -19,6 +19,7 @@ interface AnniversaryRewardPolicyStore {
   setCurrentPolicyPage: (page: number) => void;
   setIncludeDeleted: (includeDeleted: boolean) => void;
   setIncludeDisabled: (includeDisabled: boolean) => void;
+  resetPagination: () => void;
 }
 
 export const useAnniversaryRewardPolicyStore =
@@ -40,6 +41,7 @@ export const useAnniversaryRewardPolicyStore =
         setCurrentPolicyPage: (currentPolicyPage) => set({ currentPolicyPage }),
         setIncludeDeleted: (includeDeleted) => set({ includeDeleted }),
         setIncludeDisabled: (includeDisabled) => set({ includeDisabled }),
+        resetPagination: () => set({ currentPolicyPage: 1 }),
       }),
       {
         name: "anniversary-reward-policy-storage",

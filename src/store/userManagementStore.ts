@@ -17,6 +17,7 @@ interface UserManagementState {
   setCurrentPage: (page: number) => void;
   setSearchNickname: (nickname: string) => void;
   setIncludeDeleted: (includeDeleted: boolean) => void;
+  resetPagination: () => void;
   findUserById: (id: string) => User | null;
 }
 
@@ -36,6 +37,7 @@ export const useUserManagementStore = create<UserManagementState>(
     setCurrentPage: (currentPage) => set({ currentPage }),
     setSearchNickname: (searchNickname) => set({ searchNickname }),
     setIncludeDeleted: (includeDeleted) => set({ includeDeleted }),
+    resetPagination: () => set({ currentPage: 1 }),
 
     findUserById: (id) => {
       const { users } = get();
