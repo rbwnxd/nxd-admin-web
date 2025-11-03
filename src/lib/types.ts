@@ -23,7 +23,6 @@ export interface Announcement {
     imageOriginalPath: string;
     name: string;
   }[];
-  externalLink: string | null;
   createdAt: string;
   updatedAt: string;
   deletedAt: string | null;
@@ -484,7 +483,6 @@ export interface AnnouncementFormData {
   contentKo: string;
   contentEn: string;
   publishedAt: string;
-  externalLink: string;
 }
 
 // === QR 코드 관련 타입들 ===

@@ -7,13 +7,7 @@ import { Announcement } from "@/lib/types";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import {
-  CalendarDays,
-  ExternalLink,
-  ArrowLeft,
-  Edit,
-  Trash2,
-} from "lucide-react";
+import { CalendarDays, ArrowLeft, Edit, Trash2 } from "lucide-react";
 import moment from "moment";
 import Image from "next/image";
 import { STORAGE_URL } from "@/lib/api";
@@ -277,29 +271,6 @@ export default function AnnouncementDetailPage() {
                   {currentAnnouncement?.contentList?.[0]?.en}
                 </div>
               </div>
-            </div>
-          </div>
-
-          {/* 외부 링크 */}
-          <div className="mb-6">
-            <h3 className="text-lg font-semibold mb-3">관련 링크</h3>
-            <div className="flex items-center justify-between flex-row whitespace-pre-wrap text-sm leading-relaxed p-4 rounded-lg border">
-              <span>{currentAnnouncement?.externalLink}</span>
-              {currentAnnouncement?.externalLink && (
-                <Button
-                  variant="outline"
-                  asChild
-                  className="flex items-center gap-2"
-                >
-                  <a
-                    href={currentAnnouncement?.externalLink}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    <ExternalLink className="w-4 h-4" />
-                  </a>
-                </Button>
-              )}
             </div>
           </div>
         </CardContent>

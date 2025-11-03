@@ -18,11 +18,10 @@ import Image from "next/image";
 import { toast } from "sonner";
 import { Announcement, UploadedImage, AnnouncementFormData } from "@/lib/types";
 
-
 export default function AnnouncementCreatePage() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  
+
   // Next.js 15 권장: useSearchParams hook 사용
   const isUpdateMode = searchParams.get("isUpdate") === "true";
   const announcementId = searchParams.get("id");
@@ -35,7 +34,6 @@ export default function AnnouncementCreatePage() {
     contentKo: "",
     contentEn: "",
     publishedAt: "",
-    externalLink: "",
   });
 
   const [isLoading, setIsLoading] = useState(false); // 저장 로딩
@@ -63,7 +61,6 @@ export default function AnnouncementCreatePage() {
               publishedAt: moment(announcementData.publishedAt).format(
                 "YYYY-MM-DDTHH:mm"
               ),
-              externalLink: announcementData.externalLink || "",
             });
 
             // 기존 이미지들을 UploadedImage 형태로 변환
@@ -91,7 +88,10 @@ export default function AnnouncementCreatePage() {
       fetchAnnouncementData();
     }
   }, [isUpdateMode, announcementId, jsonWebToken]);
-  const handleInputChange = (field: keyof AnnouncementFormData, value: string) => {
+  const handleInputChange = (
+    field: keyof AnnouncementFormData,
+    value: string
+  ) => {
     setFormData((prev) => ({
       ...prev,
       [field]: value,
@@ -209,7 +209,6 @@ export default function AnnouncementCreatePage() {
               imageOriginalPath: img.path!,
             };
           }) as { name: string; imageOriginalPath: string }[],
-        externalLink: formData.externalLink || "",
       };
 
       let result;
@@ -401,22 +400,6 @@ export default function AnnouncementCreatePage() {
                     }
                     disabled={isLoading}
                     className="mt-1 w-fit"
-                  />
-                </div>
-                <div className="flex-1">
-                  <Label htmlFor="externalLink" className="text-sm font-medium">
-                    외부 링크
-                  </Label>
-                  <Input
-                    id="externalLink"
-                    type="url"
-                    value={formData.externalLink}
-                    onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                      handleInputChange("externalLink", e.target.value)
-                    }
-                    placeholder="https://example.com"
-                    disabled={isLoading}
-                    className="mt-1"
                   />
                 </div>
               </div>

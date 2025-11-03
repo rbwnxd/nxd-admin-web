@@ -65,7 +65,6 @@ export const postAnnouncement = async ({
     }[];
     publishedAt: string;
     imageList?: { name: string; imageOriginalPath: string }[];
-    externalLink?: string;
   };
   jsonWebToken: string | null;
 }) => {
@@ -98,7 +97,6 @@ export const putAnnouncement = async ({
     }[];
     publishedAt: string;
     imageList?: { name: string; imageOriginalPath: string }[];
-    externalLink?: string;
   };
   jsonWebToken: string | null;
 }) => {
