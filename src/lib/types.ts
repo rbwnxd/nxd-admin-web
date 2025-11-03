@@ -500,7 +500,7 @@ export interface MultiLanguageText {
 export interface QRCodeFormData {
   category: "ALBUM" | "CONCERT" | "OFFLINE_SPOT" | "GOODS" | "";
   point: number;
-  expireMinutes: number;
+  expireMinutes: number | null;
   issuedCount: number;
   hashCount: number;
   isHashReusable: boolean;

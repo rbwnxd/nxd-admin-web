@@ -14,17 +14,26 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { ArrowLeft, QrCode, Save, Plus, X, Upload, Trash2, Loader2 } from "lucide-react";
+import {
+  ArrowLeft,
+  QrCode,
+  Save,
+  Plus,
+  X,
+  Upload,
+  Trash2,
+  Loader2,
+} from "lucide-react";
 import { createQRCode, updateQRCode, getQRCodeDetail } from "../actions";
 import { toast } from "sonner";
 import { CATEGORY_OPTIONS } from "@/lib/consts";
 import { uploadImageFile } from "@/app/actions";
 import { STORAGE_URL } from "@/lib/api";
 import Image from "next/image";
-import { 
-  MultiLanguageText, 
-  QRCodeFormData, 
-  QRCodeUploadedImage 
+import {
+  MultiLanguageText,
+  QRCodeFormData,
+  QRCodeUploadedImage,
 } from "@/lib/types";
 
 // 썸네일 이미지 추가, 적립태그 추가
@@ -32,7 +41,7 @@ import {
 export default function CreateQRCodePage() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  
+
   // Next.js 15 권장: useSearchParams hook 사용
   const isUpdateMode = searchParams.get("isUpdate") === "true";
   const qrCodeId = searchParams.get("id");
@@ -44,7 +53,7 @@ export default function CreateQRCodePage() {
   const [formData, setFormData] = useState<QRCodeFormData>({
     category: "",
     point: 0,
-    expireMinutes: 1440,
+    expireMinutes: null,
     issuedCount: 1, // 인증가능한 횟수
     hashCount: 1, // 발급할 해시 개수
     isHashReusable: false, // 해시 재활용 가능 여부
@@ -81,7 +90,7 @@ export default function CreateQRCodePage() {
             setFormData({
               category: existingQRCode.category,
               point: existingQRCode.point,
-              expireMinutes: existingQRCode.expireMinutes || 1440,
+              expireMinutes: existingQRCode?.expireMinutes || null,
               issuedCount: existingQRCode.issuedCount,
               hashCount: existingQRCode.hashCount || 1,
               isHashReusable: Boolean(
@@ -315,7 +324,7 @@ export default function CreateQRCodePage() {
           | "GOODS",
         point: formData.point,
         displayTextList: validDisplayTextList,
-        expireMinutes: formData.expireMinutes,
+        expireMinutes: formData?.expireMinutes || null,
         issuedCount: formData.issuedCount,
         hashCount: formData.hashCount,
         isHashReusable: formData.isHashReusable,
@@ -572,18 +581,18 @@ export default function CreateQRCodePage() {
                   <Input
                     id="expireMinutes"
                     type="number"
-                    min="1"
-                    value={formData.expireMinutes}
+                    min={0}
+                    value={formData?.expireMinutes || 0}
                     disabled={isUpdateMode}
                     onChange={(e) =>
                       setFormData({
                         ...formData,
-                        expireMinutes: parseInt(e.target.value) || 1440,
+                        expireMinutes: parseInt(e.target.value) || null,
                       })
                     }
                   />
                   <p className="text-sm text-muted-foreground mt-1">
-                    기본값: 1440분 (24시간)
+                    기본값: 무제한
                   </p>
                 </div>
               </div>
