@@ -53,7 +53,8 @@ export function LoginForm() {
         password: data.password,
         rememberMe: data.rememberMe,
       });
-      router.push("/dashboard");
+
+      window.location.href = "/dashboard";
     } catch (error: unknown | AxiosError) {
       const errorMessage =
         error instanceof Error
