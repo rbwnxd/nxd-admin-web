@@ -133,6 +133,11 @@ export function CustomSidebar({ className }: SidebarProps) {
 
   // 메뉴 클릭 시 페이지 리셋 핸들러
   const handleMenuClick = (href: string) => {
+    // 현재 경로와 클릭한 경로가 같으면 초기화하지 않음
+    if (pathname.startsWith(href)) {
+      return;
+    }
+
     switch (href) {
       case "/dashboard/users":
         resetUserPagination();
