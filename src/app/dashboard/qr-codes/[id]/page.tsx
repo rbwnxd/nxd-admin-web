@@ -112,9 +112,10 @@ export default function QRCodeDetailPage() {
         <div className="flex items-center gap-2">
           <Button
             variant="outline"
-            onClick={() =>
-              router.push(`/dashboard/qr-codes/${qrCode._id}/hashes`)
-            }
+            onClick={() => {
+              console.log("ws", qrCode?._id);
+              router.push(`/dashboard/qr-codes/${qrCode._id}/hashes`);
+            }}
             className="flex items-center gap-2"
           >
             <Hash className="w-4 h-4" />
@@ -255,10 +256,10 @@ export default function QRCodeDetailPage() {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div>
                 <Label className="text-sm font-medium text-muted-foreground">
-                  인증 가능 횟수
+                  발급된 해시
                 </Label>
                 <p className="text-2xl font-bold  mt-1">
-                  {qrCode.issuedCount}회
+                  {qrCode.issuedCount}개
                 </p>
               </div>
 
@@ -273,7 +274,7 @@ export default function QRCodeDetailPage() {
 
               <div>
                 <Label className="text-sm font-medium text-muted-foreground">
-                  해시 다중인증 여부
+                  해시 중복인증 여부
                 </Label>
                 <div className="mt-1">
                   <Badge

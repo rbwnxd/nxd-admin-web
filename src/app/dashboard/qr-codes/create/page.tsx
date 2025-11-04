@@ -35,6 +35,7 @@ import {
   QRCodeFormData,
   QRCodeUploadedImage,
 } from "@/lib/types";
+import { useQRCodeStore } from "@/store/qrCodeStore";
 
 // 썸네일 이미지 추가, 적립태그 추가
 
@@ -47,6 +48,8 @@ export default function CreateQRCodePage() {
   const qrCodeId = searchParams.get("id");
 
   const jsonWebToken = useAuthStore((state) => state.token);
+
+  const { addQRCode, updateQRCode: updateQRCodeStore } = useQRCodeStore();
 
   const [loading, setLoading] = useState(false); // 저장 로딩
   const [dataLoading, setDataLoading] = useState(false); // 데이터 로딩
@@ -369,6 +372,12 @@ export default function CreateQRCodePage() {
             ? "QR 코드가 성공적으로 수정되었습니다."
             : "QR 코드가 성공적으로 생성되었습니다."
         );
+
+        if (isUpdateMode) {
+          updateQRCodeStore(result._id, result);
+        } else {
+          addQRCode(result);
+        }
         router.replace(`/dashboard/qr-codes/${result._id}`);
       } else {
         toast.error(
@@ -657,7 +666,7 @@ export default function CreateQRCodePage() {
                 </div>
 
                 <div className="flex flex-col gap-2">
-                  <Label htmlFor="isHashReusable">해시 재활용 여부</Label>
+                  <Label htmlFor="isHashReusable">해시 중복인증 여부</Label>
                   <Select
                     value={formData.isHashReusable ? "true" : "false"}
                     disabled={isUpdateMode}
