@@ -359,9 +359,8 @@ export default function AnnouncementCreatePage() {
                     }
                     placeholder="한국어 내용을 입력하세요"
                     required
-                    rows={6}
                     disabled={isLoading}
-                    className="mt-1 max-h-40 overflow-y-auto resize-none"
+                    className="mt-1 min-h-50 overflow-y-auto"
                   />
                 </div>
                 <div>
@@ -375,9 +374,8 @@ export default function AnnouncementCreatePage() {
                       handleInputChange("contentEn", e.target.value)
                     }
                     placeholder="Enter English content"
-                    rows={6}
                     disabled={isLoading}
-                    className="mt-1 max-h-40 overflow-y-auto resize-none"
+                    className="mt-1 min-h-50 overflow-y-auto"
                   />
                 </div>
               </div>
