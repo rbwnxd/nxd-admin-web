@@ -21,7 +21,7 @@ import {
 } from "@/components/ui/select";
 import { TrendingUp, User2, Users, Download, QrCode } from "lucide-react";
 import { ColumnDef } from "@tanstack/react-table";
-import { DataTable, DataTableColumnHeader } from "@/components/ui/data-table";
+import { DataTable } from "@/components/ui/data-table";
 import { DateRangePicker } from "@/components/ui/date-range-picker";
 import { getDailyRankingAnalysis, getQRCodeVerificationStats } from "./actions";
 import {
@@ -209,7 +209,8 @@ export default function DashboardPage() {
     if (dateRange?.from && dateRange?.to && rankingRange) {
       handleAnalyze();
     }
-  }, [handleAnalyze, dateRange, rankingRange]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [dateRange, rankingRange]);
 
   // QR 통계 조회 핸들러
   const handleQRStatsAnalyze = useCallback(async () => {
@@ -250,7 +251,8 @@ export default function DashboardPage() {
     if (qrPeriod && qrYear) {
       handleQRStatsAnalyze();
     }
-  }, [handleQRStatsAnalyze, qrPeriod, qrYear, qrMonth]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [qrPeriod, qrYear, qrMonth]);
 
   // CSV 다운로드 핸들러
   const handleDownloadCSV = useCallback(() => {

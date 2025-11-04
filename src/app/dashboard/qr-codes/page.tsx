@@ -12,8 +12,6 @@ import {
   PaginationContent,
   PaginationItem,
   PaginationLink,
-  PaginationNext,
-  PaginationPrevious,
 } from "@/components/ui/pagination";
 import {
   DropdownMenu,
@@ -24,12 +22,15 @@ import {
 import {
   QrCode,
   Plus,
-  Users,
   Settings,
   Loader2,
   Edit,
   MoreHorizontal,
   Trash2,
+  ChevronsLeft,
+  ChevronsRight,
+  ChevronLeft,
+  ChevronRight,
 } from "lucide-react";
 import { getQRCodes, deleteQRCode } from "./actions";
 import { ConfirmDialog } from "@/components/dialog/ConfirmDialog";
@@ -108,6 +109,7 @@ export default function QRCodesPage() {
     };
 
     fetchQRCodes();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
     jsonWebToken,
     currentQRPage,
@@ -115,12 +117,6 @@ export default function QRCodesPage() {
     selectedCategory,
     includeDeleted,
     includeDisabled,
-    setQRCodes,
-    setQRLoading,
-    setTotalQRCount,
-    setCurrentQRPage,
-    setIncludeDeleted,
-    setIncludeDisabled,
   ]);
 
   const getQRCodeTypeLabel = (type: "STATIC" | "CHECK_IN") => {
@@ -363,42 +359,74 @@ export default function QRCodesPage() {
             <div className="flex justify-center mt-6">
               <Pagination>
                 <PaginationContent>
-                  <PaginationPrevious
-                    onClick={() =>
-                      currentQRPage > 1 && handlePageChange(currentQRPage - 1)
-                    }
-                    className={
-                      currentQRPage <= 1
-                        ? "pointer-events-none opacity-50"
-                        : "cursor-pointer"
-                    }
-                  />
+                  <PaginationItem>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => handlePageChange(1)}
+                      disabled={currentQRPage <= 1}
+                      className="h-9 w-9"
+                      title="첫 페이지"
+                    >
+                      <ChevronsLeft className="h-4 w-4" />
+                    </Button>
+                  </PaginationItem>
+                  <PaginationItem>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => handlePageChange(currentQRPage - 1)}
+                      disabled={currentQRPage <= 1}
+                      className="h-9 w-9"
+                      title="이전 페이지"
+                    >
+                      <ChevronLeft className="h-4 w-4" />
+                    </Button>
+                  </PaginationItem>
 
-                  {Array.from({ length: totalPages }, (_, i) => i + 1).map(
-                    (page) => (
-                      <PaginationItem key={page}>
+                  {Array.from({ length: Math.min(totalPages, 5) }, (_, i) => {
+                    const pageNumber =
+                      Math.max(1, Math.min(totalPages - 4, currentQRPage - 2)) +
+                      i;
+                    if (pageNumber > totalPages) return null;
+
+                    return (
+                      <PaginationItem key={pageNumber}>
                         <PaginationLink
-                          onClick={() => handlePageChange(page)}
-                          isActive={currentQRPage === page}
+                          onClick={() => handlePageChange(pageNumber)}
+                          isActive={currentQRPage === pageNumber}
                           className="cursor-pointer"
                         >
-                          {page}
+                          {pageNumber}
                         </PaginationLink>
                       </PaginationItem>
-                    )
-                  )}
+                    );
+                  })}
 
-                  <PaginationNext
-                    onClick={() =>
-                      currentQRPage < totalPages &&
-                      handlePageChange(currentQRPage + 1)
-                    }
-                    className={
-                      currentQRPage >= totalPages
-                        ? "pointer-events-none opacity-50"
-                        : "cursor-pointer"
-                    }
-                  />
+                  <PaginationItem>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => handlePageChange(currentQRPage + 1)}
+                      disabled={currentQRPage >= totalPages}
+                      className="h-9 w-9"
+                      title="다음 페이지"
+                    >
+                      <ChevronRight className="h-4 w-4" />
+                    </Button>
+                  </PaginationItem>
+                  <PaginationItem>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => handlePageChange(totalPages)}
+                      disabled={currentQRPage >= totalPages}
+                      className="h-9 w-9"
+                      title="마지막 페이지"
+                    >
+                      <ChevronsRight className="h-4 w-4" />
+                    </Button>
+                  </PaginationItem>
                 </PaginationContent>
               </Pagination>
             </div>

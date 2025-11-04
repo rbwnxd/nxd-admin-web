@@ -14,23 +14,17 @@ import {
   PaginationContent,
   PaginationItem,
   PaginationLink,
-  PaginationNext,
-  PaginationPrevious,
 } from "@/components/ui/pagination";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+
 import {
   Search,
   Loader2,
-  Eye,
-  MoreHorizontal,
   Users,
-  UserX,
   User2,
+  ChevronsLeft,
+  ChevronsRight,
+  ChevronLeft,
+  ChevronRight,
 } from "lucide-react";
 import { getUsers } from "./actions";
 import { toast } from "sonner";
@@ -89,17 +83,8 @@ export default function UsersPage() {
     };
 
     fetchUsers();
-  }, [
-    jsonWebToken,
-    currentPage,
-    itemsPerPage,
-    searchNickname,
-    includeDeleted,
-    setUsers,
-    setTotalCount,
-    setLoading,
-    setIncludeDeleted,
-  ]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [jsonWebToken, currentPage, itemsPerPage, searchNickname, includeDeleted]);
 
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
@@ -367,41 +352,74 @@ export default function UsersPage() {
             <div className="flex justify-center mt-6">
               <Pagination>
                 <PaginationContent>
-                  <PaginationPrevious
-                    onClick={() =>
-                      currentPage > 1 && handlePageChange(currentPage - 1)
-                    }
-                    className={
-                      currentPage <= 1
-                        ? "pointer-events-none opacity-50"
-                        : "cursor-pointer"
-                    }
-                  />
-                  {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
-                    const pageNum = i + 1;
+                  <PaginationItem>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => handlePageChange(1)}
+                      disabled={currentPage <= 1}
+                      className="h-9 w-9"
+                      title="첫 페이지"
+                    >
+                      <ChevronsLeft className="h-4 w-4" />
+                    </Button>
+                  </PaginationItem>
+                  <PaginationItem>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => handlePageChange(currentPage - 1)}
+                      disabled={currentPage <= 1}
+                      className="h-9 w-9"
+                      title="이전 페이지"
+                    >
+                      <ChevronLeft className="h-4 w-4" />
+                    </Button>
+                  </PaginationItem>
+
+                  {Array.from({ length: Math.min(totalPages, 5) }, (_, i) => {
+                    const pageNumber =
+                      Math.max(1, Math.min(totalPages - 4, currentPage - 2)) +
+                      i;
+                    if (pageNumber > totalPages) return null;
+
                     return (
-                      <PaginationItem key={pageNum}>
+                      <PaginationItem key={pageNumber}>
                         <PaginationLink
-                          onClick={() => handlePageChange(pageNum)}
-                          isActive={currentPage === pageNum}
+                          onClick={() => handlePageChange(pageNumber)}
+                          isActive={currentPage === pageNumber}
                           className="cursor-pointer"
                         >
-                          {pageNum}
+                          {pageNumber}
                         </PaginationLink>
                       </PaginationItem>
                     );
                   })}
-                  <PaginationNext
-                    onClick={() =>
-                      currentPage < totalPages &&
-                      handlePageChange(currentPage + 1)
-                    }
-                    className={
-                      currentPage >= totalPages
-                        ? "pointer-events-none opacity-50"
-                        : "cursor-pointer"
-                    }
-                  />
+
+                  <PaginationItem>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => handlePageChange(currentPage + 1)}
+                      disabled={currentPage >= totalPages}
+                      className="h-9 w-9"
+                      title="다음 페이지"
+                    >
+                      <ChevronRight className="h-4 w-4" />
+                    </Button>
+                  </PaginationItem>
+                  <PaginationItem>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => handlePageChange(totalPages)}
+                      disabled={currentPage >= totalPages}
+                      className="h-9 w-9"
+                      title="마지막 페이지"
+                    >
+                      <ChevronsRight className="h-4 w-4" />
+                    </Button>
+                  </PaginationItem>
                 </PaginationContent>
               </Pagination>
             </div>

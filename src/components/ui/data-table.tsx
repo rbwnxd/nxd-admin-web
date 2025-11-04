@@ -23,6 +23,10 @@ import {
   ArrowUp,
   ArrowDown,
   Loader2,
+  ChevronsLeft,
+  ChevronsRight,
+  ChevronLeft,
+  ChevronRight,
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -47,8 +51,6 @@ import {
   PaginationContent,
   PaginationItem,
   PaginationLink,
-  PaginationNext,
-  PaginationPrevious,
 } from "@/components/ui/pagination";
 
 interface DataTableProps<TData, TValue> {
@@ -269,14 +271,30 @@ export function DataTable<TData, TValue>({
 
           <Pagination>
             <PaginationContent>
-              <PaginationPrevious
-                onClick={() => table.previousPage()}
-                className={
-                  !table.getCanPreviousPage()
-                    ? "pointer-events-none opacity-50"
-                    : "cursor-pointer"
-                }
-              />
+              <PaginationItem>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => table.setPageIndex(0)}
+                  disabled={!table.getCanPreviousPage()}
+                  className="h-9 w-9"
+                  title="첫 페이지"
+                >
+                  <ChevronsLeft className="h-4 w-4" />
+                </Button>
+              </PaginationItem>
+              <PaginationItem>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => table.previousPage()}
+                  disabled={!table.getCanPreviousPage()}
+                  className="h-9 w-9"
+                  title="이전 페이지"
+                >
+                  <ChevronLeft className="h-4 w-4" />
+                </Button>
+              </PaginationItem>
 
               {Array.from(
                 {
@@ -303,14 +321,30 @@ export function DataTable<TData, TValue>({
                 }
               )}
 
-              <PaginationNext
-                onClick={() => table.nextPage()}
-                className={
-                  !table.getCanNextPage()
-                    ? "pointer-events-none opacity-50"
-                    : "cursor-pointer"
-                }
-              />
+              <PaginationItem>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => table.nextPage()}
+                  disabled={!table.getCanNextPage()}
+                  className="h-9 w-9"
+                  title="다음 페이지"
+                >
+                  <ChevronRight className="h-4 w-4" />
+                </Button>
+              </PaginationItem>
+              <PaginationItem>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => table.setPageIndex(table.getPageCount() - 1)}
+                  disabled={!table.getCanNextPage()}
+                  className="h-9 w-9"
+                  title="마지막 페이지"
+                >
+                  <ChevronsRight className="h-4 w-4" />
+                </Button>
+              </PaginationItem>
             </PaginationContent>
           </Pagination>
         </div>

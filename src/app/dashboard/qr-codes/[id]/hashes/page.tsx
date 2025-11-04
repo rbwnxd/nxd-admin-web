@@ -12,10 +12,15 @@ import {
   PaginationContent,
   PaginationItem,
   PaginationLink,
-  PaginationNext,
-  PaginationPrevious,
 } from "@/components/ui/pagination";
-import { ArrowLeft, Hash, RefreshCw } from "lucide-react";
+import {
+  ArrowLeft,
+  Hash,
+  ChevronsLeft,
+  ChevronsRight,
+  ChevronLeft,
+  ChevronRight,
+} from "lucide-react";
 import { getQRCodeHashes } from "../../actions";
 import { toast } from "sonner";
 import moment from "moment";
@@ -238,43 +243,76 @@ export default function QRCodeHashesPage() {
             <div className="flex justify-center mt-6">
               <Pagination>
                 <PaginationContent>
-                  <PaginationPrevious
-                    onClick={() =>
-                      currentHashPage > 1 &&
-                      handlePageChange(currentHashPage - 1)
-                    }
-                    className={
-                      currentHashPage <= 1
-                        ? "pointer-events-none opacity-50"
-                        : "cursor-pointer"
-                    }
-                  />
+                  <PaginationItem>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => handlePageChange(1)}
+                      disabled={currentHashPage <= 1}
+                      className="h-9 w-9"
+                      title="첫 페이지"
+                    >
+                      <ChevronsLeft className="h-4 w-4" />
+                    </Button>
+                  </PaginationItem>
+                  <PaginationItem>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => handlePageChange(currentHashPage - 1)}
+                      disabled={currentHashPage <= 1}
+                      className="h-9 w-9"
+                      title="이전 페이지"
+                    >
+                      <ChevronLeft className="h-4 w-4" />
+                    </Button>
+                  </PaginationItem>
 
-                  {Array.from({ length: totalPages }, (_, i) => i + 1).map(
-                    (page) => (
-                      <PaginationItem key={page}>
+                  {Array.from({ length: Math.min(totalPages, 5) }, (_, i) => {
+                    const pageNumber =
+                      Math.max(
+                        1,
+                        Math.min(totalPages - 4, currentHashPage - 2)
+                      ) + i;
+                    if (pageNumber > totalPages) return null;
+
+                    return (
+                      <PaginationItem key={pageNumber}>
                         <PaginationLink
-                          onClick={() => handlePageChange(page)}
-                          isActive={currentHashPage === page}
+                          onClick={() => handlePageChange(pageNumber)}
+                          isActive={currentHashPage === pageNumber}
                           className="cursor-pointer"
                         >
-                          {page}
+                          {pageNumber}
                         </PaginationLink>
                       </PaginationItem>
-                    )
-                  )}
+                    );
+                  })}
 
-                  <PaginationNext
-                    onClick={() =>
-                      currentHashPage < totalPages &&
-                      handlePageChange(currentHashPage + 1)
-                    }
-                    className={
-                      currentHashPage >= totalPages
-                        ? "pointer-events-none opacity-50"
-                        : "cursor-pointer"
-                    }
-                  />
+                  <PaginationItem>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => handlePageChange(currentHashPage + 1)}
+                      disabled={currentHashPage >= totalPages}
+                      className="h-9 w-9"
+                      title="다음 페이지"
+                    >
+                      <ChevronRight className="h-4 w-4" />
+                    </Button>
+                  </PaginationItem>
+                  <PaginationItem>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => handlePageChange(totalPages)}
+                      disabled={currentHashPage >= totalPages}
+                      className="h-9 w-9"
+                      title="마지막 페이지"
+                    >
+                      <ChevronsRight className="h-4 w-4" />
+                    </Button>
+                  </PaginationItem>
                 </PaginationContent>
               </Pagination>
             </div>

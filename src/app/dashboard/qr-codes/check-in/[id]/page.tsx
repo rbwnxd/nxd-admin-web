@@ -23,8 +23,6 @@ import {
   PaginationContent,
   PaginationItem,
   PaginationLink,
-  PaginationNext,
-  PaginationPrevious,
 } from "@/components/ui/pagination";
 import {
   DropdownMenu,
@@ -42,6 +40,10 @@ import {
   RefreshCw,
   Loader2,
   MoreHorizontal,
+  ChevronsLeft,
+  ChevronsRight,
+  ChevronLeft,
+  ChevronRight,
 } from "lucide-react";
 import {
   getQRCodeVerifications,
@@ -513,48 +515,98 @@ export default function QRCodeCheckInDetailPage() {
               <div className="flex justify-center mt-6">
                 <Pagination>
                   <PaginationContent>
-                    <PaginationPrevious
-                      onClick={() =>
-                        currentVerificationPage > 1 &&
-                        handleVerificationPageChange(
-                          currentVerificationPage - 1
-                        )
-                      }
-                      className={
-                        currentVerificationPage <= 1
-                          ? "pointer-events-none opacity-50"
-                          : "cursor-pointer"
-                      }
-                    />
+                    <PaginationItem>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => handleVerificationPageChange(1)}
+                        disabled={currentVerificationPage <= 1}
+                        className="h-9 w-9"
+                        title="첫 페이지"
+                      >
+                        <ChevronsLeft className="h-4 w-4" />
+                      </Button>
+                    </PaginationItem>
+                    <PaginationItem>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() =>
+                          handleVerificationPageChange(
+                            currentVerificationPage - 1
+                          )
+                        }
+                        disabled={currentVerificationPage <= 1}
+                        className="h-9 w-9"
+                        title="이전 페이지"
+                      >
+                        <ChevronLeft className="h-4 w-4" />
+                      </Button>
+                    </PaginationItem>
 
                     {Array.from(
-                      { length: totalVerificationPages },
-                      (_, i) => i + 1
-                    ).map((page) => (
-                      <PaginationItem key={page}>
-                        <PaginationLink
-                          onClick={() => handleVerificationPageChange(page)}
-                          isActive={currentVerificationPage === page}
-                          className="cursor-pointer"
-                        >
-                          {page}
-                        </PaginationLink>
-                      </PaginationItem>
-                    ))}
+                      { length: Math.min(totalVerificationPages, 5) },
+                      (_, i) => {
+                        const pageNumber =
+                          Math.max(
+                            1,
+                            Math.min(
+                              totalVerificationPages - 4,
+                              currentVerificationPage - 2
+                            )
+                          ) + i;
+                        if (pageNumber > totalVerificationPages) return null;
 
-                    <PaginationNext
-                      onClick={() =>
-                        currentVerificationPage < totalVerificationPages &&
-                        handleVerificationPageChange(
-                          currentVerificationPage + 1
-                        )
+                        return (
+                          <PaginationItem key={pageNumber}>
+                            <PaginationLink
+                              onClick={() =>
+                                handleVerificationPageChange(pageNumber)
+                              }
+                              isActive={currentVerificationPage === pageNumber}
+                              className="cursor-pointer"
+                            >
+                              {pageNumber}
+                            </PaginationLink>
+                          </PaginationItem>
+                        );
                       }
-                      className={
-                        currentVerificationPage >= totalVerificationPages
-                          ? "pointer-events-none opacity-50"
-                          : "cursor-pointer"
-                      }
-                    />
+                    )}
+
+                    <PaginationItem>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() =>
+                          handleVerificationPageChange(
+                            currentVerificationPage + 1
+                          )
+                        }
+                        disabled={
+                          currentVerificationPage >= totalVerificationPages
+                        }
+                        className="h-9 w-9"
+                        title="다음 페이지"
+                      >
+                        <ChevronRight className="h-4 w-4" />
+                      </Button>
+                    </PaginationItem>
+                    <PaginationItem>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() =>
+                          handleVerificationPageChange(totalVerificationPages)
+                        }
+                        disabled={
+                          currentVerificationPage >= totalVerificationPages
+                        }
+                        className="h-9 w-9"
+                        title="마지막 페이지"
+                      >
+                        <ChevronsRight className="h-4 w-4" />
+                      </Button>
+                    </PaginationItem>
                   </PaginationContent>
                 </Pagination>
               </div>

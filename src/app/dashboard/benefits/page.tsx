@@ -12,8 +12,6 @@ import {
   PaginationContent,
   PaginationItem,
   PaginationLink,
-  PaginationNext,
-  PaginationPrevious,
 } from "@/components/ui/pagination";
 import { DataTable, DataTableColumnHeader } from "@/components/ui/data-table";
 import { ColumnDef, SortingState } from "@tanstack/react-table";
@@ -26,8 +24,10 @@ import {
   Users,
   Mail,
   Bell,
-  Eye,
-  Loader2,
+  ChevronsLeft,
+  ChevronsRight,
+  ChevronLeft,
+  ChevronRight,
 } from "lucide-react";
 import { getBenefits } from "./actions";
 import { toast } from "sonner";
@@ -447,26 +447,40 @@ export default function BenefitsPage() {
             />
 
             {/* 서버 사이드 페이지네이션 */}
-            {totalCount > itemsPerPage && (
+            {Math.ceil(totalCount / itemsPerPage) > 1 && (
               <div className="flex justify-center mt-6">
                 <Pagination>
                   <PaginationContent>
-                    <PaginationPrevious
-                      onClick={() =>
-                        currentPage > 1 && handlePageChange(currentPage - 1)
-                      }
-                      className={
-                        currentPage <= 1
-                          ? "pointer-events-none opacity-50"
-                          : "cursor-pointer"
-                      }
-                    />
+                    <PaginationItem>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => handlePageChange(1)}
+                        disabled={currentPage <= 1}
+                        className="h-9 w-9"
+                        title="첫 페이지"
+                      >
+                        <ChevronsLeft className="h-4 w-4" />
+                      </Button>
+                    </PaginationItem>
+                    <PaginationItem>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => handlePageChange(currentPage - 1)}
+                        disabled={currentPage <= 1}
+                        className="h-9 w-9"
+                        title="이전 페이지"
+                      >
+                        <ChevronLeft className="h-4 w-4" />
+                      </Button>
+                    </PaginationItem>
 
                     {Array.from(
                       {
                         length: Math.min(
-                          5,
-                          Math.ceil(totalCount / itemsPerPage)
+                          Math.ceil(totalCount / itemsPerPage),
+                          5
                         ),
                       },
                       (_, i) => {
@@ -492,17 +506,36 @@ export default function BenefitsPage() {
                       }
                     )}
 
-                    <PaginationNext
-                      onClick={() =>
-                        currentPage < Math.ceil(totalCount / itemsPerPage) &&
-                        handlePageChange(currentPage + 1)
-                      }
-                      className={
-                        currentPage >= Math.ceil(totalCount / itemsPerPage)
-                          ? "pointer-events-none opacity-50"
-                          : "cursor-pointer"
-                      }
-                    />
+                    <PaginationItem>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => handlePageChange(currentPage + 1)}
+                        disabled={
+                          currentPage >= Math.ceil(totalCount / itemsPerPage)
+                        }
+                        className="h-9 w-9"
+                        title="다음 페이지"
+                      >
+                        <ChevronRight className="h-4 w-4" />
+                      </Button>
+                    </PaginationItem>
+                    <PaginationItem>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() =>
+                          handlePageChange(Math.ceil(totalCount / itemsPerPage))
+                        }
+                        disabled={
+                          currentPage >= Math.ceil(totalCount / itemsPerPage)
+                        }
+                        className="h-9 w-9"
+                        title="마지막 페이지"
+                      >
+                        <ChevronsRight className="h-4 w-4" />
+                      </Button>
+                    </PaginationItem>
                   </PaginationContent>
                 </Pagination>
               </div>

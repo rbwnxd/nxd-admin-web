@@ -10,6 +10,10 @@ import {
   Edit,
   Trash2,
   Layers,
+  ChevronsLeft,
+  ChevronsRight,
+  ChevronLeft,
+  ChevronRight,
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -21,11 +25,8 @@ import { ConfirmDialog } from "@/components/dialog";
 import {
   Pagination,
   PaginationContent,
-  PaginationEllipsis,
   PaginationItem,
   PaginationLink,
-  PaginationNext,
-  PaginationPrevious,
 } from "@/components/ui/pagination";
 import moment from "moment";
 import Image from "next/image";
@@ -109,12 +110,11 @@ export default function AnnouncementsPage() {
     };
 
     fetchAnnouncement();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
     jsonWebToken,
     currentPage,
     itemsPerPage,
-    setAnnouncements,
-    setTotalCount,
     includeDeleted,
     includeUnpublished,
   ]);
@@ -376,128 +376,85 @@ export default function AnnouncementsPage() {
       </Card>
 
       {/* 페이지네이션 */}
-      {
-        <Pagination className="mt-6">
-          <PaginationContent>
-            <PaginationItem>
-              <PaginationPrevious
-                href="#"
-                onClick={(e) => {
-                  e.preventDefault();
-                  if (currentPage > 1) handlePageChange(currentPage - 1);
-                }}
-                className={
-                  currentPage <= 1 ? "pointer-events-none opacity-50" : ""
-                }
-              />
-            </PaginationItem>
+      {Math.ceil(totalCount / itemsPerPage) > 1 && (
+        <div className="flex justify-center mt-6">
+          <Pagination>
+            <PaginationContent>
+              <PaginationItem>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => handlePageChange(1)}
+                  disabled={currentPage <= 1}
+                  className="h-9 w-9"
+                  title="첫 페이지"
+                >
+                  <ChevronsLeft className="h-4 w-4" />
+                </Button>
+              </PaginationItem>
+              <PaginationItem>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => handlePageChange(currentPage - 1)}
+                  disabled={currentPage <= 1}
+                  className="h-9 w-9"
+                  title="이전 페이지"
+                >
+                  <ChevronLeft className="h-4 w-4" />
+                </Button>
+              </PaginationItem>
 
-            {(() => {
-              const totalPages = Math.ceil(totalCount / itemsPerPage);
-              const pages = [];
-              const maxPagesToShow = 5;
+              {Array.from({ length: Math.min(Math.ceil(totalCount / itemsPerPage), 5) }, (_, i) => {
+                const totalPages = Math.ceil(totalCount / itemsPerPage);
+                const pageNumber =
+                  Math.max(
+                    1,
+                    Math.min(totalPages - 4, currentPage - 2)
+                  ) + i;
+                if (pageNumber > totalPages) return null;
 
-              let startPage = Math.max(
-                1,
-                currentPage - Math.floor(maxPagesToShow / 2)
-              );
-              const endPage = Math.min(
-                totalPages,
-                startPage + maxPagesToShow - 1
-              );
-
-              if (endPage - startPage + 1 < maxPagesToShow) {
-                startPage = Math.max(1, endPage - maxPagesToShow + 1);
-              }
-
-              // 시작 생략 표시
-              if (startPage > 1) {
-                pages.push(
-                  <PaginationItem key="start">
+                return (
+                  <PaginationItem key={pageNumber}>
                     <PaginationLink
-                      href="#"
-                      onClick={(e) => {
-                        e.preventDefault();
-                        handlePageChange(1);
-                      }}
+                      onClick={() => handlePageChange(pageNumber)}
+                      isActive={currentPage === pageNumber}
+                      className="cursor-pointer"
                     >
-                      1
+                      {pageNumber}
                     </PaginationLink>
                   </PaginationItem>
                 );
-                if (startPage > 2) {
-                  pages.push(
-                    <PaginationItem key="ellipsis-start">
-                      <PaginationEllipsis />
-                    </PaginationItem>
-                  );
-                }
-              }
+              })}
 
-              // 페이지 번호들
-              for (let i = startPage; i <= endPage; i++) {
-                pages.push(
-                  <PaginationItem key={i}>
-                    <PaginationLink
-                      href="#"
-                      isActive={currentPage === i}
-                      onClick={(e) => {
-                        e.preventDefault();
-                        handlePageChange(i);
-                      }}
-                    >
-                      {i}
-                    </PaginationLink>
-                  </PaginationItem>
-                );
-              }
-
-              // 끝 생략 표시
-              if (endPage < totalPages) {
-                if (endPage < totalPages - 1) {
-                  pages.push(
-                    <PaginationItem key="ellipsis-end">
-                      <PaginationEllipsis />
-                    </PaginationItem>
-                  );
-                }
-                pages.push(
-                  <PaginationItem key="end">
-                    <PaginationLink
-                      href="#"
-                      onClick={(e) => {
-                        e.preventDefault();
-                        handlePageChange(totalPages);
-                      }}
-                    >
-                      {totalPages}
-                    </PaginationLink>
-                  </PaginationItem>
-                );
-              }
-
-              return pages;
-            })()}
-
-            <PaginationItem>
-              <PaginationNext
-                href="#"
-                onClick={(e) => {
-                  e.preventDefault();
-                  const totalPages = Math.ceil(totalCount / itemsPerPage);
-                  if (currentPage < totalPages)
-                    handlePageChange(currentPage + 1);
-                }}
-                className={
-                  currentPage >= Math.ceil(totalCount / itemsPerPage)
-                    ? "pointer-events-none opacity-50"
-                    : ""
-                }
-              />
-            </PaginationItem>
-          </PaginationContent>
-        </Pagination>
-      }
+              <PaginationItem>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => handlePageChange(currentPage + 1)}
+                  disabled={currentPage >= Math.ceil(totalCount / itemsPerPage)}
+                  className="h-9 w-9"
+                  title="다음 페이지"
+                >
+                  <ChevronRight className="h-4 w-4" />
+                </Button>
+              </PaginationItem>
+              <PaginationItem>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => handlePageChange(Math.ceil(totalCount / itemsPerPage))}
+                  disabled={currentPage >= Math.ceil(totalCount / itemsPerPage)}
+                  className="h-9 w-9"
+                  title="마지막 페이지"
+                >
+                  <ChevronsRight className="h-4 w-4" />
+                </Button>
+              </PaginationItem>
+            </PaginationContent>
+          </Pagination>
+        </div>
+      )}
 
       {/* 삭제 확인 다이얼로그 */}
       <ConfirmDialog
