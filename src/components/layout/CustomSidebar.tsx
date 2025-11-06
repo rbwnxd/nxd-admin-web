@@ -102,6 +102,11 @@ const menuItems = [
     href: "/dashboard/anniversary-reward-policies",
     icon: CalendarHeart,
   },
+  {
+    title: "약관 관리",
+    href: "/dashboard/terms",
+    icon: FileText,
+  },
 ];
 
 interface SidebarProps {
@@ -112,15 +117,24 @@ export function CustomSidebar({ className }: SidebarProps) {
   const pathname = usePathname();
   const { user, logout } = useAuthStore();
   const { setTheme, theme } = useTheme();
-  
+
   // Store 리셋 함수들
-  const resetUserPagination = useUserManagementStore((state) => state.resetPagination);
-  const resetArtistPagination = useArtistStore((state) => state.resetPagination);
+  const resetUserPagination = useUserManagementStore(
+    (state) => state.resetPagination
+  );
+  const resetArtistPagination = useArtistStore(
+    (state) => state.resetPagination
+  );
   const resetQRCode = useQRCodeStore((state) => state.reset);
   const resetChart = useChartStore((state) => state.reset);
-  const resetAnnouncementPagination = useAnnouncementStore((state) => state.resetPagination);
-  const resetPointModificationPagination = usePointModificationStore((state) => state.resetPagination);
-  const resetAnniversaryRewardPolicyPagination = useAnniversaryRewardPolicyStore((state) => state.resetPagination);
+  const resetAnnouncementPagination = useAnnouncementStore(
+    (state) => state.resetPagination
+  );
+  const resetPointModificationPagination = usePointModificationStore(
+    (state) => state.resetPagination
+  );
+  const resetAnniversaryRewardPolicyPagination =
+    useAnniversaryRewardPolicyStore((state) => state.resetPagination);
 
   const handleLogout = async () => {
     try {
@@ -221,7 +235,7 @@ export function CustomSidebar({ className }: SidebarProps) {
                 return (
                   <SidebarMenuItem key={item.href}>
                     <SidebarMenuButton asChild isActive={isActive}>
-                      <Link 
+                      <Link
                         href={item.href}
                         onClick={() => handleMenuClick(item.href)}
                       >

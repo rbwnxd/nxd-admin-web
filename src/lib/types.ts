@@ -634,3 +634,38 @@ export interface QRCodeVerificationStatsResponse {
     stats: QRCodeVerificationStatsDto;
   };
 }
+
+// === 약관 관련 타입들 ===
+
+export type TermsType = "PRIVACY_POLICY" | "TERMS_OF_SERVICE";
+
+export interface Terms {
+  _id: string;
+  type: TermsType;
+  title: string;
+  content: string;
+  version: string;
+  createdAt: string;
+  updatedAt: string;
+  deletedAt: string | null;
+}
+
+export interface TermsFormData {
+  type: TermsType;
+  title: string;
+  content: string;
+  version: string;
+}
+
+export interface TermsResponse {
+  count: number;
+  terms: Terms[];
+}
+
+export interface TermsDetailResponse {
+  terms: Terms;
+}
+
+export interface CreateTermsResponse {
+  terms: Terms;
+}
