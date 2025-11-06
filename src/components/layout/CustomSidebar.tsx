@@ -22,6 +22,7 @@ import {
   Coins,
   Users2,
   CalendarHeart,
+  Bell,
 } from "lucide-react";
 
 import { useAuthStore } from "@/store/authStore";
@@ -106,6 +107,11 @@ const menuItems = [
     title: "약관 관리",
     href: "/dashboard/terms",
     icon: FileText,
+  },
+  {
+    title: "알림 관리",
+    href: "/dashboard/notifications",
+    icon: Bell,
   },
 ];
 

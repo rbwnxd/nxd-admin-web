@@ -669,3 +669,20 @@ export interface TermsDetailResponse {
 export interface CreateTermsResponse {
   terms: Terms;
 }
+
+// === 알림 관련 타입들 ===
+
+export interface Notification {
+  _id: string;
+  title: string;
+  content: string;
+  type: string;
+  createdAt: string;
+  updatedAt: string;
+  deletedAt: string | null;
+}
+
+export interface NotificationListDto {
+  count: number;
+  notifications: Notification[];
+}
