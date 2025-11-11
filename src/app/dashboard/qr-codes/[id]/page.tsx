@@ -265,7 +265,7 @@ export default function QRCodeDetailPage() {
 
               <div>
                 <Label className="text-sm font-medium text-muted-foreground">
-                  인증 된 횟수
+                  인증된 횟수
                 </Label>
                 <p className="text-2xl font-bold mt-1">
                   {qrCode.verifiedCount || 0}회
