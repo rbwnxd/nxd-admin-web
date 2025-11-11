@@ -782,8 +782,17 @@ export default function UserDetailPage() {
               <Input
                 type="number"
                 min="1"
-                value={restrictDuration}
-                onChange={(e) => setRestrictDuration(Number(e.target.value))}
+                value={restrictDuration || ""}
+                onChange={(e) => {
+                  const val = e.target.value;
+                  setRestrictDuration(val === "" ? 0 : Number(val) || 0);
+                }}
+                onBlur={(e) => {
+                  const numVal = Number(e.target.value);
+                  if (isNaN(numVal) || numVal < 1) {
+                    setRestrictDuration(7);
+                  }
+                }}
                 className="mt-1"
                 placeholder="7"
               />

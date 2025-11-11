@@ -256,16 +256,16 @@ export default function QRCodeDetailPage() {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div>
                 <Label className="text-sm font-medium text-muted-foreground">
-                  발급된 해시
+                  총 인증 가능 횟수
                 </Label>
                 <p className="text-2xl font-bold  mt-1">
-                  {qrCode.issuedCount}개
+                  {qrCode.issuedCount}회
                 </p>
               </div>
 
               <div>
                 <Label className="text-sm font-medium text-muted-foreground">
-                  검증 횟수
+                  인증 된 횟수
                 </Label>
                 <p className="text-2xl font-bold mt-1">
                   {qrCode.verifiedCount || 0}회
@@ -314,8 +314,8 @@ export default function QRCodeDetailPage() {
                 />
               </div>
               <div className="flex justify-between text-xs text-muted-foreground">
-                <span>검증: {qrCode.verifiedCount}회</span>
-                <span>발급: {qrCode.issuedCount}회</span>
+                <span>인증: {qrCode.verifiedCount}회</span>
+                <span>가능: {qrCode.issuedCount}회</span>
               </div>
             </div>
           </CardContent>
@@ -491,7 +491,9 @@ export default function QRCodeDetailPage() {
                   만료일
                 </Label>
                 <p className="font-medium mt-1">
-                  {moment(qrCode.expiresAt).format("YYYY년 MM월 DD일 HH:mm")}
+                  {qrCode?.expiresAt
+                    ? moment(qrCode.expiresAt).format("YYYY년 MM월 DD일 HH:mm")
+                    : "무제한"}
                 </p>
               </div>
 

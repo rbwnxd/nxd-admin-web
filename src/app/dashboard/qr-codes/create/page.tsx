@@ -55,8 +55,8 @@ export default function CreateQRCodePage() {
   const [dataLoading, setDataLoading] = useState(false); // 데이터 로딩
   const [formData, setFormData] = useState<QRCodeFormData>({
     category: "",
-    point: 0,
-    expireMinutes: null,
+    point: 10,
+    expireMinutes: 0,
     issuedCount: 1, // 인증가능한 횟수
     hashCount: 1, // 발급할 해시 개수
     isHashReusable: false, // 해시 재활용 가능 여부
@@ -93,7 +93,7 @@ export default function CreateQRCodePage() {
             setFormData({
               category: existingQRCode.category,
               point: existingQRCode.point,
-              expireMinutes: existingQRCode?.expireMinutes || null,
+              expireMinutes: existingQRCode?.expireMinutes,
               issuedCount: existingQRCode.issuedCount,
               hashCount: existingQRCode.hashCount || 1,
               isHashReusable: Boolean(
@@ -574,14 +574,24 @@ export default function CreateQRCodePage() {
                   <Input
                     id="point"
                     type="number"
-                    min="0"
-                    value={formData.point}
-                    onChange={(e) =>
+                    min="1"
+                    value={formData.point || ""}
+                    onChange={(e) => {
+                      const val = e.target.value;
                       setFormData({
                         ...formData,
-                        point: parseInt(e.target.value) || 0,
-                      })
-                    }
+                        point: val === "" ? 0 : parseInt(val) || 0,
+                      });
+                    }}
+                    onBlur={(e) => {
+                      const numVal = parseInt(e.target.value);
+                      if (isNaN(numVal) || numVal < 1) {
+                        setFormData({
+                          ...formData,
+                          point: 10,
+                        });
+                      }
+                    }}
                   />
                 </div>
 
@@ -591,17 +601,28 @@ export default function CreateQRCodePage() {
                     id="expireMinutes"
                     type="number"
                     min={0}
-                    value={formData?.expireMinutes || 0}
+                    value={formData?.expireMinutes || ""}
+                    placeholder="0"
                     disabled={isUpdateMode}
-                    onChange={(e) =>
+                    onChange={(e) => {
+                      const val = e.target.value;
                       setFormData({
                         ...formData,
-                        expireMinutes: parseInt(e.target.value) || null,
-                      })
-                    }
+                        expireMinutes: val === "" ? 0 : parseInt(val) || 0,
+                      });
+                    }}
+                    onBlur={(e) => {
+                      const numVal = parseInt(e.target.value);
+                      if (isNaN(numVal) || numVal < 0) {
+                        setFormData({
+                          ...formData,
+                          expireMinutes: 0,
+                        });
+                      }
+                    }}
                   />
                   <p className="text-sm text-muted-foreground mt-1">
-                    기본값: 무제한
+                    기본값: 0 (무제한)
                   </p>
                 </div>
               </div>
@@ -615,50 +636,75 @@ export default function CreateQRCodePage() {
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div className="flex flex-col gap-2">
-                  <Label htmlFor="hashCount">
-                    발급할 해시 개수 <span className="text-red-500">*</span>
-                  </Label>
-                  <Input
-                    id="hashCount"
-                    type="number"
-                    min="1"
-                    value={formData.hashCount}
-                    disabled={isUpdateMode}
-                    onChange={(e) => {
-                      const newHashCount = parseInt(e.target.value) || 1;
-                      setFormData({
-                        ...formData,
-                        hashCount: newHashCount,
-                        // 해시 개수가 변경되면 인증 횟수도 최소값으로 조정
-                        issuedCount: Math.max(
-                          formData.issuedCount,
-                          newHashCount
-                        ),
-                      });
-                    }}
-                  />
-                  <p className="text-sm text-muted-foreground mt-1">
-                    생성할 해시의 개수를 설정합니다
-                  </p>
-                </div>
+                {!isUpdateMode && (
+                  <div className="flex flex-col gap-2">
+                    <Label htmlFor="hashCount">
+                      발급할 해시 개수 <span className="text-red-500">*</span>
+                    </Label>
+                    <Input
+                      id="hashCount"
+                      type="number"
+                      min="1"
+                      value={formData.hashCount || ""}
+                      disabled={isUpdateMode}
+                      onChange={(e) => {
+                        const val = e.target.value;
+                        const newHashCount =
+                          val === "" ? 0 : parseInt(val) || 0;
+                        setFormData({
+                          ...formData,
+                          hashCount: newHashCount,
+                          // 해시 개수가 변경되면 인증 횟수도 최소값으로 조정
+                          // 해시 재사용 불가능한 경우 issuedCount는 항상 hashCount와 동일
+                          issuedCount: !formData.isHashReusable
+                            ? newHashCount
+                            : Math.max(formData.issuedCount, newHashCount),
+                        });
+                      }}
+                      onBlur={(e) => {
+                        const numVal = parseInt(e.target.value);
+                        if (isNaN(numVal) || numVal < 1) {
+                          setFormData({
+                            ...formData,
+                            hashCount: 1,
+                            issuedCount: !formData.isHashReusable
+                              ? 1
+                              : Math.max(formData.issuedCount, 1),
+                          });
+                        }
+                      }}
+                    />
+                    <p className="text-sm text-muted-foreground mt-1">
+                      생성할 해시의 개수를 설정합니다
+                    </p>
+                  </div>
+                )}
 
                 <div className="flex flex-col gap-2">
                   <Label htmlFor="issuedCount">
-                    인증 가능 횟수 <span className="text-red-500">*</span>
+                    총 인증 가능 횟수 <span className="text-red-500">*</span>
                   </Label>
                   <Input
                     id="issuedCount"
-                    type="number"
                     min={formData.hashCount}
-                    value={formData.issuedCount}
-                    onChange={(e) =>
+                    value={formData.issuedCount || ""}
+                    disabled={!formData?.isHashReusable}
+                    onChange={(e) => {
+                      const val = e.target.value;
                       setFormData({
                         ...formData,
-                        issuedCount:
-                          parseInt(e.target.value) || formData.hashCount,
-                      })
-                    }
+                        issuedCount: val === "" ? 0 : parseInt(val) || 0,
+                      });
+                    }}
+                    onBlur={(e) => {
+                      const numVal = parseInt(e.target.value);
+                      if (isNaN(numVal) || numVal < formData.hashCount) {
+                        setFormData({
+                          ...formData,
+                          issuedCount: formData.hashCount,
+                        });
+                      }
+                    }}
                   />
                   <p className="text-sm text-muted-foreground mt-1">
                     해시 개수보다 크거나 같아야 합니다
@@ -674,6 +720,9 @@ export default function CreateQRCodePage() {
                       setFormData({
                         ...formData,
                         isHashReusable: value === "true",
+                        ...(value === "false" && {
+                          issuedCount: formData.hashCount,
+                        }),
                       })
                     }
                   >

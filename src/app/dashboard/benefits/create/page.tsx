@@ -402,18 +402,30 @@ export default function CreateBenefitPage() {
               <div>
                 <Label className="text-sm font-medium">상위 랭킹 수</Label>
                 <Input
-                  type="number"
                   min="1"
                   value={formData.filter.topRanking || ""}
-                  onChange={(e) =>
+                  onChange={(e) => {
+                    const val = e.target.value;
                     setFormData((prev) => ({
                       ...prev,
                       filter: {
                         ...prev.filter,
-                        topRanking: parseInt(e.target.value) || 0,
+                        topRanking: val === "" ? 0 : parseInt(val) || 0,
                       },
-                    }))
-                  }
+                    }));
+                  }}
+                  onBlur={(e) => {
+                    const numVal = parseInt(e.target.value);
+                    if (isNaN(numVal) || numVal < 1) {
+                      setFormData((prev) => ({
+                        ...prev,
+                        filter: {
+                          ...prev.filter,
+                          topRanking: 100,
+                        },
+                      }));
+                    }
+                  }}
                   placeholder="예: 100"
                   disabled={loading}
                   className="mt-1"

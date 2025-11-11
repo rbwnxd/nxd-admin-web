@@ -39,7 +39,7 @@ export default function CreateAnniversaryRewardPolicyPage() {
   const [dataLoading, setDataLoading] = useState(false); // 데이터 로딩
   const [formData, setFormData] = useState<AnniversaryRewardPolicyFormData>({
     year: 1,
-    pointAmount: 0,
+    pointAmount: 10,
     isEnabled: true,
   });
 
@@ -198,13 +198,23 @@ export default function CreateAnniversaryRewardPolicyPage() {
                     id="year"
                     type="number"
                     min={1}
-                    value={formData.year}
-                    onChange={(e) =>
+                    value={formData.year || ""}
+                    onChange={(e) => {
+                      const val = e.target.value;
                       setFormData({
                         ...formData,
-                        year: parseInt(e.target.value) || 1,
-                      })
-                    }
+                        year: val === "" ? 0 : parseInt(val) || 0,
+                      });
+                    }}
+                    onBlur={(e) => {
+                      const numVal = parseInt(e.target.value);
+                      if (isNaN(numVal) || numVal < 1) {
+                        setFormData({
+                          ...formData,
+                          year: 1,
+                        });
+                      }
+                    }}
                   />
                 </div>
 
@@ -238,14 +248,24 @@ export default function CreateAnniversaryRewardPolicyPage() {
                   <Input
                     id="point"
                     type="number"
-                    min="0"
-                    value={formData.pointAmount}
-                    onChange={(e) =>
+                    min="1"
+                    value={formData.pointAmount || ""}
+                    onChange={(e) => {
+                      const val = e.target.value;
                       setFormData({
                         ...formData,
-                        pointAmount: parseInt(e.target.value) || 0,
-                      })
-                    }
+                        pointAmount: val === "" ? 0 : parseInt(val) || 0,
+                      });
+                    }}
+                    onBlur={(e) => {
+                      const numVal = parseInt(e.target.value);
+                      if (isNaN(numVal) || numVal < 1) {
+                        setFormData({
+                          ...formData,
+                          pointAmount: 10,
+                        });
+                      }
+                    }}
                   />
                 </div>
               </div>

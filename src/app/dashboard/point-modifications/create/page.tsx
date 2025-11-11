@@ -32,7 +32,7 @@ export default function CreatePointModificationPage() {
   const [formData, setFormData] = useState({
     type: "GRANT" as "GRANT" | "REVOKE",
     title: "",
-    amount: "",
+    amount: 10,
     description: "",
     scheduledAt: "",
   });
@@ -183,9 +183,15 @@ export default function CreatePointModificationPage() {
                 <Input
                   id="amount"
                   type="number"
-                  placeholder="1000"
-                  value={formData.amount}
+                  placeholder="포인트 금액"
+                  value={formData.amount || ""}
                   onChange={(e) => handleInputChange("amount", e.target.value)}
+                  onBlur={(e) => {
+                    const numVal = parseInt(e.target.value);
+                    if (isNaN(numVal) || numVal < 1) {
+                      handleInputChange("amount", "10");
+                    }
+                  }}
                   className="mt-1"
                   min="1"
                 />
@@ -232,7 +238,7 @@ export default function CreatePointModificationPage() {
                 onChange={(e) =>
                   handleInputChange("scheduledAt", e.target.value)
                 }
-                className="mt-1"
+                className="mt-1 w-fit"
                 min={getCurrentDateTime()}
               />
               <p className="text-xs text-muted-foreground mt-1">
