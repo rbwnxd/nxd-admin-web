@@ -35,8 +35,9 @@ import {
   ChevronsRight,
   ChevronLeft,
   ChevronRight,
+  CheckCircle,
 } from "lucide-react";
-import { getTerms, deleteTerms } from "./actions";
+import { getTerms, deleteTerms, activateTerms } from "./actions";
 import { Terms, TermsType } from "@/lib/types";
 import { toast } from "sonner";
 import moment from "moment";
@@ -65,6 +66,14 @@ export default function TermsPage() {
     title: "",
   });
   const [isDeleting, setIsDeleting] = useState(false);
+
+  // 활성화 다이얼로그
+  const [activateDialog, setActivateDialog] = useState({
+    open: false,
+    termsId: "",
+    title: "",
+  });
+  const [isActivating, setIsActivating] = useState(false);
 
   // 약관 목록 조회
   const fetchTerms = async () => {
@@ -150,6 +159,39 @@ export default function TermsPage() {
     }
   };
 
+  const handleActivateClick = (termsId: string, title: string) => {
+    setActivateDialog({
+      open: true,
+      termsId,
+      title,
+    });
+  };
+
+  const handleActivateConfirm = async () => {
+    if (!jsonWebToken || !activateDialog.termsId) return;
+
+    setIsActivating(true);
+    try {
+      const result = await activateTerms({
+        termsId: activateDialog.termsId,
+        jsonWebToken,
+      });
+
+      if (result) {
+        toast.success("약관이 활성화되었습니다.");
+        setActivateDialog({ open: false, termsId: "", title: "" });
+        fetchTerms();
+      } else {
+        toast.error("약관 활성화에 실패했습니다.");
+      }
+    } catch (error) {
+      console.error("약관 활성화 실패:", error);
+      toast.error("약관 활성화에 실패했습니다.");
+    } finally {
+      setIsActivating(false);
+    }
+  };
+
   const totalPages = Math.ceil(totalCount / itemsPerPage);
 
   return (
@@ -219,16 +261,23 @@ export default function TermsPage() {
                         {TERMS_TYPE_LABELS[term.type]}
                       </Badge>
                       <Badge variant="secondary">v{term.version}</Badge>
+                      {term.isActive && (
+                        <Badge variant="default" className="bg-green-600">
+                          활성화
+                        </Badge>
+                      )}
                     </div>
-                    <h3 className="font-semibold text-lg">{term.title}</h3>
+                    <h3 className="font-semibold text-lg">
+                      {term?.titleList?.[0]?.ko}
+                    </h3>
                     <div className="text-sm text-muted-foreground">
                       <p>
                         생성일:{" "}
-                        {moment(term.createdAt).format("YYYY-MM-DD HH:mm:ss")}
+                        {moment(term?.createdAt).format("YYYY-MM-DD HH:mm:ss")}
                       </p>
                       <p>
                         수정일:{" "}
-                        {moment(term.updatedAt).format("YYYY-MM-DD HH:mm:ss")}
+                        {moment(term?.updatedAt).format("YYYY-MM-DD HH:mm:ss")}
                       </p>
                       {!!term?.deletedAt && (
                         <p>
@@ -248,12 +297,30 @@ export default function TermsPage() {
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
+                        {!term?.isActive && (
+                          <DropdownMenuItem
+                            onClick={(e) => {
+                              e.preventDefault();
+                              e.stopPropagation();
+                              handleActivateClick(
+                                term?._id,
+                                term?.titleList?.[0]?.ko
+                              );
+                            }}
+                          >
+                            <CheckCircle className="mr-2 h-4 w-4" />
+                            활성화
+                          </DropdownMenuItem>
+                        )}
                         <DropdownMenuItem
                           variant="destructive"
                           onClick={(e) => {
                             e.preventDefault();
                             e.stopPropagation();
-                            handleDeleteClick(term._id, term.title);
+                            handleDeleteClick(
+                              term?._id,
+                              term?.titleList?.[0]?.ko
+                            );
                           }}
                         >
                           <Trash2 className="mr-2 h-4 w-4" />
@@ -352,12 +419,26 @@ export default function TermsPage() {
         open={deleteDialog.open}
         onOpenChange={(open) => setDeleteDialog({ ...deleteDialog, open })}
         title="약관 삭제"
-        description={`"${deleteDialog.title}" 약관을 삭제하시겠습니까?`}
+        description={`"${deleteDialog?.title || ""}" 약관을 삭제하시겠습니까?`}
         confirmText="삭제"
         cancelText="취소"
         isLoading={isDeleting}
         variant="destructive"
         onConfirm={handleDeleteConfirm}
+      />
+
+      {/* 활성화 확인 다이얼로그 */}
+      <ConfirmDialog
+        open={activateDialog.open}
+        onOpenChange={(open) => setActivateDialog({ ...activateDialog, open })}
+        title="약관 활성화"
+        description={`"${
+          activateDialog?.title || ""
+        }" 약관을 활성화하시겠습니까? 기존 활성화된 동일 타입의 약관은 자동으로 비활성화됩니다.`}
+        confirmText="활성화"
+        cancelText="취소"
+        isLoading={isActivating}
+        onConfirm={handleActivateConfirm}
       />
     </div>
   );

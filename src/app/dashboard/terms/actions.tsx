@@ -1,4 +1,4 @@
-"use server";
+"use client";
 
 import { axiosApi } from "@/lib/axios";
 
@@ -60,8 +60,14 @@ export const createTerms = async ({
 }: {
   body: {
     type: string;
-    title: string;
-    content: string;
+    titleList: {
+      ko: string;
+      en: string;
+    }[];
+    contentList: {
+      ko: string;
+      en: string;
+    }[];
     version: string;
   };
   jsonWebToken: string | null;
@@ -101,6 +107,32 @@ export const deleteTerms = async ({
     return data && !data?.["error"] ? true : false;
   } catch (error) {
     console.warn("TermsActions deleteTerms error", error);
+    throw error;
+  }
+};
+
+// 약관 활성화
+export const activateTerms = async ({
+  termsId,
+  jsonWebToken,
+}: {
+  termsId: string;
+  jsonWebToken: string | null;
+}) => {
+  try {
+    const { data } = await axiosApi(
+      `/admin/terms/${termsId}/activate`,
+      "post",
+      {},
+      {
+        headers: {
+          Authorization: `jwt ${jsonWebToken}`,
+        },
+      }
+    );
+    return (data && data["data"] && data["data"]["terms"]) || null;
+  } catch (error) {
+    console.warn("TermsActions activateTerms error", error);
     throw error;
   }
 };

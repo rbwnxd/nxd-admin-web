@@ -32,8 +32,10 @@ export default function TermsCreatePage() {
   const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState<TermsFormData>({
     type: "PRIVACY_POLICY",
-    title: "",
-    content: "",
+    titleKo: "",
+    titleEn: "",
+    contentKo: "",
+    contentEn: "",
     version: "",
   });
 
@@ -56,15 +58,39 @@ export default function TermsCreatePage() {
     }
 
     // 유효성 검사
-    if (!formData.type || !formData.title || !formData.content || !formData.version) {
+    if (
+      !formData.type ||
+      !formData.titleKo ||
+      !formData.titleEn ||
+      !formData.contentKo ||
+      !formData.contentEn ||
+      !formData.version
+    ) {
       toast.error("모든 필드를 입력해주세요.");
       return;
     }
 
     setIsLoading(true);
     try {
+      const requestData = {
+        type: formData.type,
+        titleList: [
+          {
+            ko: formData.titleKo,
+            en: formData.titleEn,
+          },
+        ] as [{ ko: string; en: string }],
+        contentList: [
+          {
+            ko: formData.contentKo,
+            en: formData.contentEn,
+          },
+        ] as [{ ko: string; en: string }],
+        version: formData.version,
+      };
+
       const result = await createTerms({
-        body: formData,
+        body: requestData,
         jsonWebToken,
       });
 
@@ -130,14 +156,27 @@ export default function TermsCreatePage() {
               </Select>
             </div>
 
-            {/* 제목 */}
+            {/* 제목 (한국어) */}
             <div className="space-y-2">
-              <Label htmlFor="title">제목 *</Label>
+              <Label htmlFor="titleKo">제목 (한국어) *</Label>
               <Input
-                id="title"
-                value={formData.title}
-                onChange={(e) => handleInputChange("title", e.target.value)}
+                id="titleKo"
+                value={formData.titleKo}
+                onChange={(e) => handleInputChange("titleKo", e.target.value)}
                 placeholder="약관 제목을 입력하세요"
+                required
+                disabled={isLoading}
+              />
+            </div>
+
+            {/* 제목 (English) */}
+            <div className="space-y-2">
+              <Label htmlFor="titleEn">제목 (English) *</Label>
+              <Input
+                id="titleEn"
+                value={formData.titleEn}
+                onChange={(e) => handleInputChange("titleEn", e.target.value)}
+                placeholder="Enter terms title"
                 required
                 disabled={isLoading}
               />
@@ -159,17 +198,31 @@ export default function TermsCreatePage() {
               </p>
             </div>
 
-            {/* 내용 */}
+            {/* 내용 (한국어) */}
             <div className="space-y-2">
-              <Label htmlFor="content">내용 *</Label>
+              <Label htmlFor="contentKo">내용 (한국어) *</Label>
               <Textarea
-                id="content"
-                value={formData.content}
-                onChange={(e) => handleInputChange("content", e.target.value)}
+                id="contentKo"
+                value={formData.contentKo}
+                onChange={(e) => handleInputChange("contentKo", e.target.value)}
                 placeholder="약관 내용을 입력하세요"
                 required
                 disabled={isLoading}
-                className="min-h-[400px]"
+                className="min-h-[300px]"
+              />
+            </div>
+
+            {/* 내용 (English) */}
+            <div className="space-y-2">
+              <Label htmlFor="contentEn">내용 (English) *</Label>
+              <Textarea
+                id="contentEn"
+                value={formData.contentEn}
+                onChange={(e) => handleInputChange("contentEn", e.target.value)}
+                placeholder="Enter terms content"
+                required
+                disabled={isLoading}
+                className="min-h-[300px]"
               />
             </div>
 

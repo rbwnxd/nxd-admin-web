@@ -642,9 +642,20 @@ export type TermsType = "PRIVACY_POLICY" | "TERMS_OF_SERVICE";
 export interface Terms {
   _id: string;
   type: TermsType;
-  title: string;
-  content: string;
+  titleList: [
+    {
+      ko: string;
+      en: string;
+    }
+  ];
+  contentList: [
+    {
+      ko: string;
+      en: string;
+    }
+  ];
   version: string;
+  isActive: boolean;
   createdAt: string;
   updatedAt: string;
   deletedAt: string | null;
@@ -652,8 +663,10 @@ export interface Terms {
 
 export interface TermsFormData {
   type: TermsType;
-  title: string;
-  content: string;
+  titleKo: string;
+  titleEn: string;
+  contentKo: string;
+  contentEn: string;
   version: string;
 }
 

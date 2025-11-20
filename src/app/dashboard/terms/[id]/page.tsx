@@ -7,8 +7,14 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Label } from "@/components/ui/label";
-import { ArrowLeft, Loader2, FileText, Trash2 } from "lucide-react";
-import { getTermsById, deleteTerms } from "../actions";
+import {
+  ArrowLeft,
+  Loader2,
+  FileText,
+  Trash2,
+  CheckCircle,
+} from "lucide-react";
+import { getTermsById, deleteTerms, activateTerms } from "../actions";
 import { Terms, TermsType } from "@/lib/types";
 import { toast } from "sonner";
 import moment from "moment";
@@ -28,6 +34,8 @@ export default function TermsDetailPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [deleteDialog, setDeleteDialog] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [activateDialog, setActivateDialog] = useState(false);
+  const [isActivating, setIsActivating] = useState(false);
 
   useEffect(() => {
     const fetchTerms = async () => {
@@ -85,6 +93,34 @@ export default function TermsDetailPage() {
     }
   };
 
+  const handleActivate = async () => {
+    if (!jsonWebToken || !params.id) return;
+
+    setIsActivating(true);
+    try {
+      const result = await activateTerms({
+        termsId: params.id,
+        jsonWebToken,
+      });
+
+      if (result) {
+        toast.success("약관이 활성화되었습니다.");
+        setTerms(result);
+        setActivateDialog(false);
+      } else {
+        toast.error("약관 활성화에 실패했습니다.");
+      }
+    } catch (error) {
+      console.error("약관 활성화 실패:", error);
+      toast.error(
+        error instanceof Error ? error.message : "약관 활성화에 실패했습니다."
+      );
+    } finally {
+      setIsActivating(false);
+      setActivateDialog(false);
+    }
+  };
+
   if (isLoading) {
     return (
       <div className="flex justify-center items-center min-h-[400px]">
@@ -113,14 +149,25 @@ export default function TermsDetailPage() {
             <h1 className="text-2xl font-bold">약관 상세</h1>
           </div>
         </div>
-        <Button
-          variant="destructive"
-          onClick={() => setDeleteDialog(true)}
-          disabled={isDeleting}
-        >
-          <Trash2 className="mr-2 h-4 w-4" />
-          삭제
-        </Button>
+        <div className="flex gap-2">
+          {!terms.isActive && (
+            <Button
+              onClick={() => setActivateDialog(true)}
+              disabled={isActivating}
+            >
+              <CheckCircle className="mr-2 h-4 w-4" />
+              활성화
+            </Button>
+          )}
+          <Button
+            variant="destructive"
+            onClick={() => setDeleteDialog(true)}
+            disabled={isDeleting}
+          >
+            <Trash2 className="mr-2 h-4 w-4" />
+            삭제
+          </Button>
+        </div>
       </div>
 
       <Card>
@@ -130,6 +177,11 @@ export default function TermsDetailPage() {
             <div className="flex gap-2">
               <Badge variant="outline">{TERMS_TYPE_LABELS[terms.type]}</Badge>
               <Badge variant="secondary">v{terms.version}</Badge>
+              {terms.isActive && (
+                <Badge variant="default" className="bg-green-600">
+                  활성화
+                </Badge>
+              )}
             </div>
           </div>
         </CardHeader>
@@ -139,7 +191,20 @@ export default function TermsDetailPage() {
             <Label className="text-sm font-medium text-muted-foreground">
               제목
             </Label>
-            <p className="text-lg font-semibold">{terms.title}</p>
+            <div className="space-y-3">
+              <div>
+                <p className="text-xs text-muted-foreground mb-1">한국어</p>
+                <p className="text-lg font-semibold">
+                  {terms?.titleList?.[0]?.ko}
+                </p>
+              </div>
+              <div>
+                <p className="text-xs text-muted-foreground mb-1">English</p>
+                <p className="text-lg font-semibold">
+                  {terms?.titleList?.[0]?.en}
+                </p>
+              </div>
+            </div>
           </div>
 
           {/* 타입 및 버전 */}
@@ -163,10 +228,27 @@ export default function TermsDetailPage() {
             <Label className="text-sm font-medium text-muted-foreground">
               내용
             </Label>
-            <div className="bg-muted/50 rounded-lg p-4">
-              <pre className="whitespace-pre-wrap font-sans text-sm leading-relaxed">
-                {terms.content}
-              </pre>
+            <div className="space-y-4">
+              <div>
+                <p className="text-xs font-medium text-muted-foreground mb-2">
+                  한국어
+                </p>
+                <div className="bg-muted/50 rounded-lg p-4">
+                  <pre className="whitespace-pre-wrap font-sans text-sm leading-relaxed">
+                    {terms?.contentList?.[0]?.ko}
+                  </pre>
+                </div>
+              </div>
+              <div>
+                <p className="text-xs font-medium text-muted-foreground mb-2">
+                  English
+                </p>
+                <div className="bg-muted/50 rounded-lg p-4">
+                  <pre className="whitespace-pre-wrap font-sans text-sm leading-relaxed">
+                    {terms?.contentList?.[0]?.en}
+                  </pre>
+                </div>
+              </div>
             </div>
           </div>
 
@@ -207,12 +289,24 @@ export default function TermsDetailPage() {
         open={deleteDialog}
         onOpenChange={setDeleteDialog}
         title="약관 삭제"
-        description={`"${terms.title}" 약관을 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.`}
+        description={`"${terms?.titleList?.[0]?.ko}" 약관을 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.`}
         confirmText="삭제"
         cancelText="취소"
         isLoading={isDeleting}
         variant="destructive"
         onConfirm={handleDelete}
+      />
+
+      {/* 활성화 확인 다이얼로그 */}
+      <ConfirmDialog
+        open={activateDialog}
+        onOpenChange={setActivateDialog}
+        title="약관 활성화"
+        description={`"${terms?.titleList?.[0]?.ko}" 약관을 활성화하시겠습니까? 기존 활성화된 동일 타입의 약관은 자동으로 비활성화됩니다.`}
+        confirmText="활성화"
+        cancelText="취소"
+        isLoading={isActivating}
+        onConfirm={handleActivate}
       />
     </div>
   );
