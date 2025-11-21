@@ -178,6 +178,36 @@ export const getQRCodeHashes = async ({
   }
 };
 
+// 해시 추가 발행
+export const createAdditionalIssueQRCode = async ({
+  qrCodeId,
+  body,
+  jsonWebToken,
+}: {
+  qrCodeId: string;
+  body: {
+    hashCount: number;
+  };
+  jsonWebToken: string;
+}) => {
+  try {
+    const { data } = await axiosApi(
+      `/admin/qr-codes/${qrCodeId}/hashes`,
+      "post",
+      body,
+      {
+        headers: {
+          Authorization: `jwt ${jsonWebToken}`,
+        },
+      }
+    );
+    return (data && data["data"]) || null;
+  } catch (error) {
+    console.warn("QRCode createAdditionalIssueQRCode error", error);
+    throw error;
+  }
+};
+
 // 체크인 목록 조회 (앱 관리자용)
 export const getQRCodeCheckIns = async ({
   params,

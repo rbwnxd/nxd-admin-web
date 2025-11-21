@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter, useParams } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useQRCodeStore } from "@/store/qrCodeStore";
 import { useAuthStore } from "@/store/authStore";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -20,12 +20,24 @@ import {
   ChevronsRight,
   ChevronLeft,
   ChevronRight,
+  Plus,
+  AlertTriangle,
+  Loader2,
 } from "lucide-react";
-import { getQRCodeHashes } from "../../actions";
+import { createAdditionalIssueQRCode, getQRCodeHashes } from "../../actions";
 import { toast } from "sonner";
 import moment from "moment";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
 
 /**
  *
@@ -36,6 +48,11 @@ export default function QRCodeHashesPage() {
   const params = useParams<{ id: string }>();
   const router = useRouter();
   const jsonWebToken = useAuthStore((state) => state.token);
+
+  const [actionLoading, setActionLoading] = useState(false);
+  const [additionalIssueCount, setAdditionalIssueCount] = useState(1);
+  const [additionalIssueDialogOpen, setAdditionalIssueDialogOpen] =
+    useState(false);
 
   const {
     qrHashes,
@@ -54,34 +71,43 @@ export default function QRCodeHashesPage() {
 
   const qrCode = findQRCodeById(params.id);
 
-  useEffect(() => {
+  const fetchHashes = useCallback(async () => {
     if (!jsonWebToken || !params.id) return;
 
-    const fetchHashes = async () => {
-      setHashLoading(true);
-      try {
-        const result = await getQRCodeHashes({
-          qrCodeId: params.id,
-          params: {
-            __skip: (currentHashPage - 1) * hashItemsPerPage,
-            __limit: hashItemsPerPage,
-            __includeDeleted: hashIncludeDeleted,
-          },
-          jsonWebToken,
-        });
+    setHashLoading(true);
+    try {
+      const result = await getQRCodeHashes({
+        qrCodeId: params.id,
+        params: {
+          __skip: (currentHashPage - 1) * hashItemsPerPage,
+          __limit: hashItemsPerPage,
+          __includeDeleted: hashIncludeDeleted,
+        },
+        jsonWebToken,
+      });
 
-        if (result) {
-          setQRHashes(result.qrCodeHashes || []);
-          setTotalHashCount(result.count || 0);
-        }
-      } catch (error) {
-        console.error("QR hash fetch error:", error);
-        toast.error("해시 목록을 가져올 수 없습니다.");
-      } finally {
-        setHashLoading(false);
+      if (result) {
+        setQRHashes(result.qrCodeHashes || []);
+        setTotalHashCount(result.count || 0);
       }
-    };
+    } catch (error) {
+      console.error("QR hash fetch error:", error);
+      toast.error("해시 목록을 가져올 수 없습니다.");
+    } finally {
+      setHashLoading(false);
+    }
+  }, [
+    currentHashPage,
+    hashItemsPerPage,
+    hashIncludeDeleted,
+    jsonWebToken,
+    params.id,
+    setQRHashes,
+    setTotalHashCount,
+    setHashLoading,
+  ]);
 
+  useEffect(() => {
     fetchHashes();
   }, [
     jsonWebToken,
@@ -89,9 +115,7 @@ export default function QRCodeHashesPage() {
     currentHashPage,
     hashItemsPerPage,
     hashIncludeDeleted,
-    setQRHashes,
-    setTotalHashCount,
-    setHashLoading,
+    fetchHashes,
   ]);
 
   const handlePageChange = (page: number) => {
@@ -116,6 +140,40 @@ export default function QRCodeHashesPage() {
     );
   }
 
+  // 추가 발행 처리
+  const handleAdditionalIssue = async () => {
+    if (additionalIssueCount < 1) {
+      toast.error("추가 발행 수는 최소 1 이상이어야 합니다.");
+      return;
+    }
+
+    setActionLoading(true);
+    try {
+      await createAdditionalIssueQRCode({
+        qrCodeId: params.id,
+        body: {
+          hashCount: additionalIssueCount,
+        },
+        jsonWebToken: jsonWebToken!,
+      });
+
+      toast.success(`${additionalIssueCount}개의 해시가 추가 발행되었습니다.`);
+      setAdditionalIssueDialogOpen(false);
+      setAdditionalIssueCount(1);
+
+      if (currentHashPage !== 1) {
+        setCurrentHashPage(1);
+      } else {
+        fetchHashes();
+      }
+    } catch (error) {
+      console.error("해시 추가 발행 오류:", error);
+      toast.error("해시 추가 발행에 실패했습니다.");
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
   return (
     <div className="container mx-auto">
       {/* 상단 네비게이션 */}
@@ -131,13 +189,25 @@ export default function QRCodeHashesPage() {
       </div>
 
       {/* 헤더 */}
-      <div className="flex items-center gap-3 mb-6">
-        <Hash className="w-8 h-8" />
-        <div>
-          <h1 className="text-3xl font-bold">해시 관리</h1>
-          <p className="text-muted-foreground">
-            {qrCode.displayMainTitleList[0]?.ko || "제목 없음"}의 해시 목록
-          </p>
+      <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between mb-6 gap-4 lg:gap-0">
+        <div className="flex items-center gap-3">
+          <Hash className="w-8 h-8" />
+          <div>
+            <h1 className="text-3xl font-bold">해시 관리</h1>
+            <p className="text-muted-foreground">
+              {qrCode.displayMainTitleList[0]?.ko || "제목 없음"}의 해시 목록
+            </p>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-2 self-end lg:self-auto">
+          <Button
+            onClick={() => setAdditionalIssueDialogOpen(true)}
+            className="flex items-center gap-2"
+          >
+            <Plus className="w-4 h-4" />
+            추가 해시 발행
+          </Button>
         </div>
       </div>
 
@@ -319,6 +389,78 @@ export default function QRCodeHashesPage() {
           )}
         </CardContent>
       </Card>
+
+      {/* 활동정지 다이얼로그 */}
+      <Dialog
+        open={additionalIssueDialogOpen}
+        onOpenChange={setAdditionalIssueDialogOpen}
+      >
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Plus className="w-5 h-5 " />
+              추가 발행
+            </DialogTitle>
+            <DialogDescription className="whitespace-pre-line">
+              {`${qrCode?.displayMainTitleList[0]?.ko}의 해시를 추가 발행합니다.`}
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-4">
+            <div>
+              <Label className="text-sm font-medium">추가 발행 수량</Label>
+              <Input
+                type="number"
+                min="1"
+                value={additionalIssueCount || ""}
+                onChange={(e) => {
+                  const val = e.target.value;
+                  setAdditionalIssueCount(val === "" ? 0 : Number(val) || 0);
+                }}
+                onBlur={(e) => {
+                  const numVal = Number(e.target.value);
+                  if (isNaN(numVal) || numVal < 1) {
+                    setAdditionalIssueCount(1);
+                  }
+                }}
+                className="mt-1"
+                placeholder="10"
+              />
+              <p className="text-xs text-muted-foreground mt-1">
+                1개 이상 발행 가능합니다
+              </p>
+            </div>
+          </div>
+
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => {
+                setAdditionalIssueDialogOpen(false);
+                setAdditionalIssueCount(1);
+              }}
+              disabled={actionLoading}
+            >
+              취소
+            </Button>
+            <Button
+              onClick={handleAdditionalIssue}
+              disabled={actionLoading || additionalIssueCount < 1}
+              variant="default"
+              className="cursor-pointer"
+            >
+              {actionLoading ? (
+                <>
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  발행중...
+                </>
+              ) : (
+                `${additionalIssueCount}개 발행`
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
