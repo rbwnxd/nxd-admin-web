@@ -38,6 +38,11 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 /**
  *
@@ -124,6 +129,8 @@ export default function QRCodeHashesPage() {
 
   const totalPages = Math.ceil(totalHashCount / hashItemsPerPage);
 
+  const isExpired = !moment().isBefore(moment(qrCode?.expiresAt));
+
   if (!qrCode) {
     return (
       <div className="container mx-auto">
@@ -166,9 +173,22 @@ export default function QRCodeHashesPage() {
       } else {
         fetchHashes();
       }
-    } catch (error) {
+    } catch (error: unknown) {
       console.error("해시 추가 발행 오류:", error);
-      toast.error("해시 추가 발행에 실패했습니다.");
+
+      const status =
+        typeof error === "object" && error !== null
+          ? // AxiosError 형태: { response: { status } }
+            // 또는 직접 status가 있는 경우
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            (error as any).response?.status ?? (error as any).status
+          : undefined;
+
+      if (status === 422) {
+        toast.error("추가 발행 실패. 만료된 qrCode입니다");
+      } else {
+        toast.error("해시 추가 발행에 실패했습니다.");
+      }
     } finally {
       setActionLoading(false);
     }
@@ -201,13 +221,25 @@ export default function QRCodeHashesPage() {
         </div>
 
         <div className="flex items-center gap-2 self-end lg:self-auto">
-          <Button
-            onClick={() => setAdditionalIssueDialogOpen(true)}
-            className="flex items-center gap-2"
-          >
-            <Plus className="w-4 h-4" />
-            추가 해시 발행
-          </Button>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <span className={isExpired ? "cursor-not-allowed" : undefined}>
+                <Button
+                  onClick={() => setAdditionalIssueDialogOpen(true)}
+                  className="flex items-center gap-2"
+                  disabled={isExpired}
+                >
+                  <Plus className="w-4 h-4" />
+                  추가 해시 발행
+                </Button>
+              </span>
+            </TooltipTrigger>
+            {isExpired && (
+              <TooltipContent>
+                만료된 qrCode에는 추가 발행을 할 수 없습니다
+              </TooltipContent>
+            )}
+          </Tooltip>
         </div>
       </div>
 

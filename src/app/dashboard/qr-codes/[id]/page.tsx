@@ -26,6 +26,11 @@ import { getCategoryLabel } from "@/lib/consts";
 import { STORAGE_URL } from "@/lib/api";
 import Image from "next/image";
 import { QRCode } from "@/lib/types";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 export default function QRCodeDetailPage() {
   const params = useParams<{ id: string }>();
@@ -96,6 +101,8 @@ export default function QRCodeDetailPage() {
     );
   }
 
+  const isExpired = !moment().isBefore(moment(qrCode?.expiresAt));
+
   return (
     <div className="container mx-auto max-w-4xl">
       {/* 상단 네비게이션 */}
@@ -121,18 +128,30 @@ export default function QRCodeDetailPage() {
             <Hash className="w-4 h-4" />
             해시 관리
           </Button>
-          <Button
-            variant="outline"
-            onClick={() =>
-              router.push(
-                `/dashboard/qr-codes/create?isUpdate=true&id=${qrCode._id}`
-              )
-            }
-            className="flex items-center gap-2"
-          >
-            <Edit className="w-4 h-4" />
-            수정
-          </Button>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <span className={isExpired ? "cursor-not-allowed" : undefined}>
+                <Button
+                  variant="outline"
+                  onClick={() =>
+                    router.push(
+                      `/dashboard/qr-codes/create?isUpdate=true&id=${qrCode._id}`
+                    )
+                  }
+                  className="flex items-center gap-2"
+                  disabled={isExpired}
+                >
+                  <Edit className="w-4 h-4" />
+                  수정
+                </Button>
+              </span>
+            </TooltipTrigger>
+            {isExpired && (
+              <TooltipContent>
+                만료된 qrCode는 수정할 수 없습니다
+              </TooltipContent>
+            )}
+          </Tooltip>
           <Button
             variant="destructive"
             onClick={() => setIsDeleteDialogOpen(true)}
@@ -190,10 +209,20 @@ export default function QRCodeDetailPage() {
                 </Label>
                 <div className="mt-1">
                   <Badge
-                    variant={qrCode?.isEnabled ? "default" : "secondary"}
+                    variant={
+                      !isExpired
+                        ? qrCode?.isEnabled
+                          ? "default"
+                          : "secondary"
+                        : "destructive"
+                    }
                     className={qrCode?.isEnabled ? "bg-green-400" : ""}
                   >
-                    {qrCode?.isEnabled ? "활성화" : "비활성화"}
+                    {!isExpired
+                      ? qrCode?.isEnabled
+                        ? "활성화"
+                        : "비활성화"
+                      : "만료"}
                   </Badge>
                   {qrCode.deletedAt && (
                     <Badge variant="destructive" className="ml-2">

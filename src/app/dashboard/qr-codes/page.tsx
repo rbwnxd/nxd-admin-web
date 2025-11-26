@@ -269,10 +269,20 @@ export default function QRCodesPage() {
                           {getCategoryLabel(qrCode?.category || "")}
                         </Badge>
                         <Badge
-                          variant={qrCode?.isEnabled ? "default" : "secondary"}
+                          variant={
+                            moment().isBefore(moment(qrCode?.expiresAt))
+                              ? qrCode?.isEnabled
+                                ? "default"
+                                : "secondary"
+                              : "destructive"
+                          }
                           className={qrCode?.isEnabled ? "bg-green-400" : ""}
                         >
-                          {qrCode?.isEnabled ? "활성화" : "비활성화"}
+                          {moment().isBefore(moment(qrCode?.expiresAt))
+                            ? qrCode?.isEnabled
+                              ? "활성화"
+                              : "비활성화"
+                            : "만료"}
                         </Badge>
                         {!!qrCode.deletedAt && (
                           <Badge variant="destructive">삭제됨</Badge>
