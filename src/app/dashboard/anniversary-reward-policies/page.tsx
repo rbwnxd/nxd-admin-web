@@ -220,11 +220,12 @@ export default function AnniversaryRewardPoliciesPage() {
                         )}
                       </div>
 
-                      <div className="flex items-center justify-between text-sm text-muted-foreground">
-                        <div className="flex items-center gap-4">
-                          <span>포인트 : {policy?.pointAmount}P</span>
-                        </div>
-                      </div>
+                      <p className="text-sm text-muted-foreground mt-1">
+                        {`연차 : ${policy?.year}년`}
+                      </p>
+                      <p className="text-sm text-muted-foreground mt-1">
+                        {`포인트 : ${policy?.pointAmount}P`}
+                      </p>
                       <p className="text-sm text-muted-foreground mt-1">
                         생성일:{" "}
                         {moment(policy?.createdAt).format("YYYY-MM-DD HH:mm")}
@@ -318,7 +319,10 @@ export default function AnniversaryRewardPoliciesPage() {
 
                   {Array.from({ length: Math.min(totalPages, 5) }, (_, i) => {
                     const pageNumber =
-                      Math.max(1, Math.min(totalPages - 4, currentPolicyPage - 2)) + i;
+                      Math.max(
+                        1,
+                        Math.min(totalPages - 4, currentPolicyPage - 2)
+                      ) + i;
                     if (pageNumber > totalPages) return null;
 
                     return (
