@@ -334,17 +334,19 @@ export default function QRCodesPage() {
                           </DropdownMenuTrigger>
                         )}
                         <DropdownMenuContent align="end">
-                          <DropdownMenuItem
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              router.push(
-                                `/dashboard/qr-codes/create?isUpdate=true&id=${qrCode?._id}`
-                              );
-                            }}
-                          >
-                            <Edit className="w-4 h-4 mr-2" />
-                            수정
-                          </DropdownMenuItem>
+                          {moment().isBefore(moment(qrCode?.expiresAt)) && (
+                            <DropdownMenuItem
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                router.push(
+                                  `/dashboard/qr-codes/create?isUpdate=true&id=${qrCode?._id}`
+                                );
+                              }}
+                            >
+                              <Edit className="w-4 h-4 mr-2" />
+                              수정
+                            </DropdownMenuItem>
+                          )}
                           <DropdownMenuItem
                             onClick={(e) => {
                               e.stopPropagation();
