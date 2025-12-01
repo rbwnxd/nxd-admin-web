@@ -101,10 +101,16 @@ export default function TermsCreatePage() {
         toast.error("약관 생성에 실패했습니다.");
       }
     } catch (error) {
-      console.error("약관 생성 실패:", error);
-      toast.error(
-        error instanceof Error ? error.message : "약관 생성에 실패했습니다."
-      );
+      if (
+        error instanceof Error &&
+        error?.message === "Request failed with status code 400"
+      ) {
+        toast.error("약관 생성 실패. 이미 존재하는 버전입니다.");
+      } else {
+        toast.error(
+          error instanceof Error ? error.message : "약관 생성에 실패했습니다."
+        );
+      }
     } finally {
       setIsLoading(false);
     }
