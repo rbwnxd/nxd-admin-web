@@ -21,7 +21,6 @@ import {
   ChevronLeft,
   ChevronRight,
   Plus,
-  AlertTriangle,
   Loader2,
   QrCode,
   Download,
@@ -600,7 +599,7 @@ export default function QRCodeHashesPage() {
                 // SVG를 Canvas로 변환 후 다운로드
                 const svg = document.getElementById(
                   "qr-code-svg"
-                ) as SVGElement;
+                ) as unknown as SVGElement;
                 if (!svg) return;
 
                 const canvas = document.createElement("canvas");
