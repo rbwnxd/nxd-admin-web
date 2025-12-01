@@ -23,6 +23,8 @@ import {
   Plus,
   AlertTriangle,
   Loader2,
+  QrCode,
+  Download,
 } from "lucide-react";
 import { createAdditionalIssueQRCode, getQRCodeHashes } from "../../actions";
 import { toast } from "sonner";
@@ -43,6 +45,7 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { QRCodeSVG } from "qrcode.react";
 
 /**
  *
@@ -58,6 +61,14 @@ export default function QRCodeHashesPage() {
   const [additionalIssueCount, setAdditionalIssueCount] = useState(1);
   const [additionalIssueDialogOpen, setAdditionalIssueDialogOpen] =
     useState(false);
+
+  // QR 코드 생성 관련 state
+  const [qrCodeDialogOpen, setQrCodeDialogOpen] = useState(false);
+  const [selectedQrData, setSelectedQrData] = useState<{
+    _id: string;
+    qrCodeId: string;
+    token: string;
+  } | null>(null);
 
   const {
     qrHashes,
@@ -335,6 +346,26 @@ export default function QRCodeHashesPage() {
                         </div>
                       </div>
                     </div>
+
+                    {/* QR 코드 생성 버튼 */}
+                    <div className="ml-4">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => {
+                          setSelectedQrData({
+                            _id: hash._id,
+                            qrCodeId: params.id,
+                            token: hash.token,
+                          });
+                          setQrCodeDialogOpen(true);
+                        }}
+                        className="flex items-center gap-2"
+                      >
+                        <QrCode className="w-4 h-4" />
+                        QR 생성
+                      </Button>
+                    </div>
                   </div>
                 </div>
               ))}
@@ -490,6 +521,123 @@ export default function QRCodeHashesPage() {
               ) : (
                 `${additionalIssueCount}개 발행`
               )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* QR 코드 생성 다이얼로그 */}
+      <Dialog open={qrCodeDialogOpen} onOpenChange={setQrCodeDialogOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <QrCode className="w-5 h-5" />
+              QR 코드
+            </DialogTitle>
+            <DialogDescription>
+              해시 정보가 담긴 QR 코드입니다.
+            </DialogDescription>
+          </DialogHeader>
+
+          {selectedQrData && (
+            <div className="space-y-4">
+              {/* QR 코드 표시 */}
+              <div className="flex justify-center p-6 bg-white rounded-lg">
+                <QRCodeSVG
+                  id="qr-code-svg"
+                  value={JSON.stringify(selectedQrData)}
+                  size={256}
+                  level="H"
+                  includeMargin={true}
+                />
+              </div>
+
+              {/* 데이터 정보 */}
+              <div className="space-y-2 text-sm">
+                <div className="flex flex-col gap-1">
+                  <span className="font-medium text-muted-foreground">
+                    해시 ID:
+                  </span>
+                  <code className="px-2 py-1 bg-muted rounded text-xs break-all">
+                    {selectedQrData._id}
+                  </code>
+                </div>
+                <div className="flex flex-col gap-1">
+                  <span className="font-medium text-muted-foreground">
+                    QR 코드 ID:
+                  </span>
+                  <code className="px-2 py-1 bg-muted rounded text-xs break-all">
+                    {selectedQrData.qrCodeId}
+                  </code>
+                </div>
+                <div className="flex flex-col gap-1">
+                  <span className="font-medium text-muted-foreground">
+                    토큰:
+                  </span>
+                  <code className="px-2 py-1 bg-muted rounded text-xs break-all">
+                    {selectedQrData.token}
+                  </code>
+                </div>
+              </div>
+            </div>
+          )}
+
+          <DialogFooter className="flex-row gap-2">
+            <Button
+              variant="outline"
+              onClick={() => {
+                setQrCodeDialogOpen(false);
+                setSelectedQrData(null);
+              }}
+              className="flex-1"
+            >
+              닫기
+            </Button>
+            <Button
+              onClick={() => {
+                if (!selectedQrData) return;
+
+                // SVG를 Canvas로 변환 후 다운로드
+                const svg = document.getElementById(
+                  "qr-code-svg"
+                ) as SVGElement;
+                if (!svg) return;
+
+                const canvas = document.createElement("canvas");
+                const ctx = canvas.getContext("2d");
+                const img = new Image();
+
+                const svgData = new XMLSerializer().serializeToString(svg);
+                const svgBlob = new Blob([svgData], {
+                  type: "image/svg+xml;charset=utf-8",
+                });
+                const url = URL.createObjectURL(svgBlob);
+
+                img.onload = () => {
+                  canvas.width = img.width;
+                  canvas.height = img.height;
+                  ctx?.drawImage(img, 0, 0);
+
+                  canvas.toBlob((blob) => {
+                    if (blob) {
+                      const link = document.createElement("a");
+                      link.href = URL.createObjectURL(blob);
+                      link.download = `qrcode_${selectedQrData._id}.png`;
+                      link.click();
+                      URL.revokeObjectURL(link.href);
+                    }
+                  });
+
+                  URL.revokeObjectURL(url);
+                };
+
+                img.src = url;
+                toast.success("QR 코드를 다운로드했습니다.");
+              }}
+              className="flex-1 flex items-center gap-2"
+            >
+              <Download className="w-4 h-4" />
+              다운로드
             </Button>
           </DialogFooter>
         </DialogContent>

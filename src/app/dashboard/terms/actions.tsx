@@ -1,6 +1,7 @@
-"use client";
+"use server";
 
 import { axiosApi } from "@/lib/axios";
+import { AxiosError } from "axios";
 
 // 약관 목록 조회
 export const getTerms = async ({
@@ -81,7 +82,14 @@ export const createTerms = async ({
     return (data && data["data"] && data["data"]["terms"]) || null;
   } catch (error) {
     console.warn("TermsActions createTerms error", error);
-    throw error;
+    if (error instanceof AxiosError && error?.response?.status === 400) {
+      throw {
+        message: error?.response?.data?.message,
+        status: error?.response?.status,
+      };
+    } else {
+      throw error;
+    }
   }
 };
 
