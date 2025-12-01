@@ -129,7 +129,8 @@ export default function QRCodeHashesPage() {
 
   const totalPages = Math.ceil(totalHashCount / hashItemsPerPage);
 
-  const isExpired = !moment().isBefore(moment(qrCode?.expiresAt));
+  const isExpired =
+    !!qrCode?.expiresAt && !moment().isBefore(moment(qrCode?.expiresAt));
 
   if (!qrCode) {
     return (

@@ -101,7 +101,8 @@ export default function QRCodeDetailPage() {
     );
   }
 
-  const isExpired = !moment().isBefore(moment(qrCode?.expiresAt));
+  const isExpired =
+    !!qrCode?.expiresAt && !moment().isBefore(moment(qrCode?.expiresAt));
 
   return (
     <div className="container mx-auto max-w-4xl">

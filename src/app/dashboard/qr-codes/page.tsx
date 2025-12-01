@@ -270,7 +270,8 @@ export default function QRCodesPage() {
                         </Badge>
                         <Badge
                           variant={
-                            moment().isBefore(moment(qrCode?.expiresAt))
+                            moment().isBefore(moment(qrCode?.expiresAt)) ||
+                            !qrCode?.expiresAt
                               ? qrCode?.isEnabled
                                 ? "default"
                                 : "secondary"
@@ -278,7 +279,8 @@ export default function QRCodesPage() {
                           }
                           className={qrCode?.isEnabled ? "bg-green-400" : ""}
                         >
-                          {moment().isBefore(moment(qrCode?.expiresAt))
+                          {moment().isBefore(moment(qrCode?.expiresAt)) ||
+                          !qrCode?.expiresAt
                             ? qrCode?.isEnabled
                               ? "활성화"
                               : "비활성화"
@@ -309,7 +311,9 @@ export default function QRCodesPage() {
                       </p>
                       <p className="text-sm text-muted-foreground mt-1">
                         만료일:{" "}
-                        {moment(qrCode?.expiresAt).format("YYYY-MM-DD HH:mm")}
+                        {qrCode?.expiresAt
+                          ? moment(qrCode?.expiresAt).format("YYYY-MM-DD HH:mm")
+                          : "무제한"}
                       </p>
                       {qrCode?.deletedAt && (
                         <p className="text-sm text-muted-foreground mt-1">
@@ -334,7 +338,8 @@ export default function QRCodesPage() {
                           </DropdownMenuTrigger>
                         )}
                         <DropdownMenuContent align="end">
-                          {moment().isBefore(moment(qrCode?.expiresAt)) && (
+                          {(moment().isBefore(moment(qrCode?.expiresAt)) ||
+                            !qrCode?.expiresAt) && (
                             <DropdownMenuItem
                               onClick={(e) => {
                                 e.stopPropagation();
