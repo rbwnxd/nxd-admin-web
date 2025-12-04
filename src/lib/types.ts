@@ -270,7 +270,8 @@ export interface GradeInfo {
     | "GOLD"
     | "PLATINUM"
     | "DIAMOND"
-    | "MASTER";
+    | "MASTER"
+    | "ARTIST";
   level: number;
   createdAt: string;
 }

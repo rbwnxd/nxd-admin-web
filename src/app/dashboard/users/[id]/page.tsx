@@ -23,6 +23,7 @@ import {
   User2,
   UserX,
   AlertTriangle,
+  Mic2,
 } from "lucide-react";
 import {
   getUserDetail,
@@ -30,6 +31,7 @@ import {
   restrictUser,
   liftBanUser,
   liftRestrictUser,
+  promoteUser,
 } from "../actions";
 import { toast } from "sonner";
 import moment from "moment";
@@ -59,6 +61,8 @@ export default function UserDetailPage() {
   const [unbanDialogOpen, setUnbanDialogOpen] = useState(false);
   const [restrictDialogOpen, setRestrictDialogOpen] = useState(false);
   const [unrestrictDialogOpen, setUnrestrictDialogOpen] = useState(false);
+  const [promoteToArtistDialogOpen, setPromoteToArtistDialogOpen] =
+    useState(false);
   const [actionLoading, setActionLoading] = useState(false);
 
   // 폼 상태
@@ -244,6 +248,34 @@ export default function UserDetailPage() {
     }
   };
 
+  // 아티스트 승격 처리
+  const handlePromoteToArtistUser = async () => {
+    setActionLoading(true);
+    try {
+      await promoteUser({
+        userId: params.id,
+        jsonWebToken: jsonWebToken!,
+      });
+
+      toast.success("사용자가 아티스트로 승격되었습니다.");
+      setPromoteToArtistDialogOpen(false);
+
+      // 사용자 정보 다시 불러오기
+      const result = await getUserDetail({
+        userId: params.id,
+        jsonWebToken: jsonWebToken!,
+      });
+      if (result?.user) {
+        setUser(result.user);
+      }
+    } catch (error) {
+      console.error("아티스트 승격 오류:", error);
+      toast.error("아티스트 승격에 실패했습니다.");
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
   const getPlatformLabel = (platform: string) => {
     const platformMap: { [key: string]: string } = {
       GOOGLE: "구글",
@@ -319,6 +351,18 @@ export default function UserDetailPage() {
 
         {/* 관리 액션 버튼들 */}
         <div className="flex items-center gap-2">
+          {user?.gradeInfo?.title?.toUpperCase() !== "ARTIST" && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setPromoteToArtistDialogOpen(true)}
+              className="flex items-center gap-2 text-green-500 hover:text-green-600 hover:bg-green-50"
+              disabled={loading || actionLoading}
+            >
+              <Mic2 className="w-4 h-4" />
+              아티스트 승격
+            </Button>
+          )}
           {user?.restrictionInfo?.isRestricted ? (
             <Button
               variant="outline"
@@ -942,6 +986,50 @@ export default function UserDetailPage() {
                 </>
               ) : (
                 "활동정지 해제"
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* 아티스트 승격 다이얼로그 */}
+      <Dialog
+        open={promoteToArtistDialogOpen}
+        onOpenChange={setPromoteToArtistDialogOpen}
+      >
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Mic2 className="w-5 h-5" />
+              사용자 아티스트 승격
+            </DialogTitle>
+            <DialogDescription className="whitespace-pre-line">
+              {`${user?.profile?.nickname}님을 아티스트로 승격합니다.`}
+            </DialogDescription>
+          </DialogHeader>
+
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => {
+                setPromoteToArtistDialogOpen(false);
+              }}
+              disabled={actionLoading}
+            >
+              취소
+            </Button>
+            <Button
+              variant="default"
+              onClick={handlePromoteToArtistUser}
+              disabled={actionLoading}
+            >
+              {actionLoading ? (
+                <>
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  처리중...
+                </>
+              ) : (
+                "아티스트 승격"
               )}
             </Button>
           </DialogFooter>

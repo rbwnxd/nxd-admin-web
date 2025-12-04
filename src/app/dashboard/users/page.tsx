@@ -134,6 +134,7 @@ export default function UsersPage() {
       PLATINUM: "bg-emerald-400",
       DIAMOND: "bg-cyan-300",
       MASTER: "bg-purple-600",
+      ARTIST: "bg-green-600",
     };
     return gradeMap[grade.toUpperCase()] || "gray";
   };

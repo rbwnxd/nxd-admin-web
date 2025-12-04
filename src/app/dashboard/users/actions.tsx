@@ -165,3 +165,29 @@ export const liftBanUser = async ({
     throw error;
   }
 };
+
+// 관리자용 사용자 아티스트 승격
+export const promoteUser = async ({
+  userId,
+  jsonWebToken,
+}: {
+  userId: string;
+  jsonWebToken: string;
+}) => {
+  try {
+    const { data } = await axiosApi(
+      `/admin/users/${userId}/promote-to-artist`,
+      "patch",
+      {},
+      {
+        headers: {
+          Authorization: `jwt ${jsonWebToken}`,
+        },
+      }
+    );
+    return (data && data["data"]) || null;
+  } catch (error) {
+    console.warn("promoteUser error", error);
+    throw error;
+  }
+};
