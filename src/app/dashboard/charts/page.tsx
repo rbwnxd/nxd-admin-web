@@ -7,7 +7,17 @@ import { useChartStore } from "@/store/chartStore";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { BarChart3, Plus, Eye, Calendar, Loader2, ChevronsLeft, ChevronsRight, ChevronLeft, ChevronRight } from "lucide-react";
+import {
+  BarChart3,
+  Plus,
+  Eye,
+  Calendar,
+  Loader2,
+  ChevronsLeft,
+  ChevronsRight,
+  ChevronLeft,
+  ChevronRight,
+} from "lucide-react";
 import {
   Pagination,
   PaginationContent,
@@ -261,7 +271,7 @@ export default function ChartsPage() {
                       </div>
                     </div>
 
-                    <Button
+                    {/* <Button
                       variant="ghost"
                       size="sm"
                       onClick={(e) => {
@@ -272,7 +282,7 @@ export default function ChartsPage() {
                     >
                       <Eye className="w-4 h-4" />
                       랭킹 보기
-                    </Button>
+                    </Button> */}
                   </div>
                 </div>
               ))}
@@ -311,24 +321,27 @@ export default function ChartsPage() {
                 </Button>
               </PaginationItem>
 
-              {Array.from({ length: Math.min(Math.ceil(totalCount / itemsPerPage), 5) }, (_, i) => {
-                const totalPages = Math.ceil(totalCount / itemsPerPage);
-                const pageNumber =
-                  Math.max(1, Math.min(totalPages - 4, currentPage - 2)) + i;
-                if (pageNumber > totalPages) return null;
+              {Array.from(
+                { length: Math.min(Math.ceil(totalCount / itemsPerPage), 5) },
+                (_, i) => {
+                  const totalPages = Math.ceil(totalCount / itemsPerPage);
+                  const pageNumber =
+                    Math.max(1, Math.min(totalPages - 4, currentPage - 2)) + i;
+                  if (pageNumber > totalPages) return null;
 
-                return (
-                  <PaginationItem key={pageNumber}>
-                    <PaginationLink
-                      onClick={() => handlePageChange(pageNumber)}
-                      isActive={currentPage === pageNumber}
-                      className="cursor-pointer"
-                    >
-                      {pageNumber}
-                    </PaginationLink>
-                  </PaginationItem>
-                );
-              })}
+                  return (
+                    <PaginationItem key={pageNumber}>
+                      <PaginationLink
+                        onClick={() => handlePageChange(pageNumber)}
+                        isActive={currentPage === pageNumber}
+                        className="cursor-pointer"
+                      >
+                        {pageNumber}
+                      </PaginationLink>
+                    </PaginationItem>
+                  );
+                }
+              )}
 
               <PaginationItem>
                 <Button
@@ -346,7 +359,9 @@ export default function ChartsPage() {
                 <Button
                   variant="ghost"
                   size="icon"
-                  onClick={() => handlePageChange(Math.ceil(totalCount / itemsPerPage))}
+                  onClick={() =>
+                    handlePageChange(Math.ceil(totalCount / itemsPerPage))
+                  }
                   disabled={currentPage >= Math.ceil(totalCount / itemsPerPage)}
                   className="h-9 w-9"
                   title="마지막 페이지"

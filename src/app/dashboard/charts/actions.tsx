@@ -110,3 +110,57 @@ export const createSeasonChart = async ({
     throw error;
   }
 };
+
+// 시즌 차트 삭제
+export const deleteSeasonChart = async ({
+  chartId,
+  jsonWebToken,
+}: {
+  chartId: string;
+  jsonWebToken: string | null;
+}) => {
+  try {
+    const { data } = await axiosApi(
+      `/admin/charts/season/${chartId}`,
+      "delete",
+      {},
+      {
+        headers: {
+          Authorization: `jwt ${jsonWebToken}`,
+        },
+      }
+    );
+    return (data && data["data"]) || null;
+  } catch (error) {
+    console.warn("ChartActions deleteSeasonChart error", error);
+    throw error;
+  }
+};
+
+// 시즌 차트 활성화 상태 수정
+export const updateSeasonChartActivation = async ({
+  chartId,
+  isActivated,
+  jsonWebToken,
+}: {
+  chartId: string;
+  isActivated: boolean;
+  jsonWebToken: string | null;
+}) => {
+  try {
+    const { data } = await axiosApi(
+      `/admin/charts/season/${chartId}`,
+      "patch",
+      { isActivated },
+      {
+        headers: {
+          Authorization: `jwt ${jsonWebToken}`,
+        },
+      }
+    );
+    return (data && data["data"]) || null;
+  } catch (error) {
+    console.warn("ChartActions updateSeasonChartActivation error", error);
+    throw error;
+  }
+};

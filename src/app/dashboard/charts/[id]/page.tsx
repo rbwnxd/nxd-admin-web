@@ -10,8 +10,22 @@ import { ChartItem, AdminChartRankingItem } from "@/lib/types";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, Calendar, Trophy, User } from "lucide-react";
-import { getChartRanking } from "../actions";
+import {
+  ArrowLeft,
+  Calendar,
+  Trophy,
+  User,
+  Trash2,
+  Loader2,
+} from "lucide-react";
+import {
+  getChartRanking,
+  deleteSeasonChart,
+  updateSeasonChartActivation,
+} from "../actions";
+import { ConfirmDialog } from "@/components/dialog/ConfirmDialog";
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { STORAGE_URL } from "@/lib/api";
 
@@ -33,6 +47,11 @@ export default function ChartDetailPage() {
   const [isFetching, setIsFetching] = useState(false);
   const [currentPage, setCurrentPage] = useState(0);
   const [hasMore, setHasMore] = useState(true);
+
+  // 시즌 차트 관리 상태
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [isUpdatingActivation, setIsUpdatingActivation] = useState(false);
 
   // 랭킹 데이터 가져오기
   const fetchRankings = useCallback(
@@ -122,6 +141,65 @@ export default function ChartDetailPage() {
 
   const currentChartInfo = chartInfo || defaultChartInfo;
 
+  // 시즌 차트인지 확인
+  const isSeasonChart = currentChartInfo.type === "SEASON";
+
+  // 시즌 차트 삭제 핸들러
+  const handleDeleteSeasonChart = async () => {
+    if (!jsonWebToken || !params.id) return;
+
+    setIsDeleting(true);
+    try {
+      await deleteSeasonChart({
+        chartId: params.id,
+        jsonWebToken,
+      });
+      toast.success("시즌 차트가 삭제되었습니다.");
+      setIsDeleteDialogOpen(false);
+      router.push("/dashboard/charts");
+    } catch (error) {
+      console.error("시즌 차트 삭제 실패:", error);
+      toast.error("시즌 차트 삭제에 실패했습니다.");
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
+  // 시즌 차트 활성화 상태 변경 핸들러
+  const handleToggleActivation = async (newActivated: boolean) => {
+    if (!jsonWebToken || !params.id) return;
+
+    setIsUpdatingActivation(true);
+    try {
+      const result = await updateSeasonChartActivation({
+        chartId: params.id,
+        isActivated: newActivated,
+        jsonWebToken,
+      });
+      if (result?.chart) {
+        // 차트 스토어 업데이트
+        const updatedCharts = useChartStore
+          .getState()
+          .charts.map((chart) =>
+            chart._id === params.id
+              ? { ...chart, isActivated: newActivated }
+              : chart
+          );
+        useChartStore.getState().setCharts(updatedCharts);
+        toast.success(
+          newActivated
+            ? "시즌 차트가 활성화되었습니다."
+            : "시즌 차트가 비활성화되었습니다."
+        );
+      }
+    } catch (error) {
+      console.error("시즌 차트 활성화 상태 변경 실패:", error);
+      toast.error("활성화 상태 변경에 실패했습니다.");
+    } finally {
+      setIsUpdatingActivation(false);
+    }
+  };
+
   return (
     <div className="container mx-auto">
       {/* 상단 네비게이션 */}
@@ -134,6 +212,39 @@ export default function ChartDetailPage() {
           <ArrowLeft className="w-4 h-4" />
           돌아가기
         </Button>
+
+        {/* 시즌 차트 관리 버튼 */}
+        {isSeasonChart && !currentChartInfo.deletedAt && (
+          <div className="flex items-center gap-4">
+            {/* 활성화 토글 */}
+            <div className="flex items-center gap-2">
+              <Label htmlFor="activation-toggle" className="text-sm">
+                {currentChartInfo.isActivated ? "활성화" : "비활성화"}
+              </Label>
+              {isUpdatingActivation ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <Switch
+                  id="activation-toggle"
+                  checked={currentChartInfo.isActivated}
+                  onCheckedChange={handleToggleActivation}
+                  disabled={isUpdatingActivation}
+                />
+              )}
+            </div>
+
+            {/* 삭제 버튼 */}
+            <Button
+              variant="destructive"
+              size="sm"
+              onClick={() => setIsDeleteDialogOpen(true)}
+              className="flex items-center gap-2"
+            >
+              <Trash2 className="w-4 h-4" />
+              삭제
+            </Button>
+          </div>
+        )}
       </div>
 
       <Card className="mb-6">
@@ -318,6 +429,19 @@ export default function ChartDetailPage() {
           )}
         </CardContent>
       </Card>
+
+      {/* 삭제 확인 다이얼로그 */}
+      <ConfirmDialog
+        open={isDeleteDialogOpen}
+        onOpenChange={setIsDeleteDialogOpen}
+        title="시즌 차트 삭제"
+        description={`"${currentChartInfo.nameList[0]?.ko}" 차트를 삭제하시겠습니까?\n삭제된 차트는 복구할 수 없습니다.`}
+        confirmText="삭제"
+        cancelText="취소"
+        onConfirm={handleDeleteSeasonChart}
+        isLoading={isDeleting}
+        variant="destructive"
+      />
     </div>
   );
 }
