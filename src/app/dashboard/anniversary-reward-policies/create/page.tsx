@@ -38,7 +38,7 @@ export default function CreateAnniversaryRewardPolicyPage() {
   const [loading, setLoading] = useState(false); // 저장 로딩
   const [dataLoading, setDataLoading] = useState(false); // 데이터 로딩
   const [formData, setFormData] = useState<AnniversaryRewardPolicyFormData>({
-    year: 1,
+    year: 0,
     pointAmount: 10,
     isEnabled: true,
   });
@@ -84,10 +84,10 @@ export default function CreateAnniversaryRewardPolicyPage() {
     }
 
     // 새로운 필드들 유효성 검사
-    if (formData.year < 1) {
-      toast.error("연차는 1 이상이어야 합니다.");
-      return;
-    }
+    // if (formData.year < 1) {
+    //   toast.error("연차는 1 이상이어야 합니다.");
+    //   return;
+    // }
 
     setLoading(true);
 
@@ -192,13 +192,14 @@ export default function CreateAnniversaryRewardPolicyPage() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="flex flex-col gap-2">
                   <Label htmlFor="year">
-                    연차 <span className="text-red-500">*</span>
+                    연차 (0인 경우 가입즉시){" "}
+                    <span className="text-red-500">*</span>
                   </Label>
                   <Input
                     id="year"
                     type="number"
-                    min={1}
-                    value={formData.year || ""}
+                    min={0}
+                    value={formData.year}
                     onChange={(e) => {
                       const val = e.target.value;
                       setFormData({
@@ -208,10 +209,10 @@ export default function CreateAnniversaryRewardPolicyPage() {
                     }}
                     onBlur={(e) => {
                       const numVal = parseInt(e.target.value);
-                      if (isNaN(numVal) || numVal < 1) {
+                      if (isNaN(numVal)) {
                         setFormData({
                           ...formData,
-                          year: 1,
+                          year: 0,
                         });
                       }
                     }}

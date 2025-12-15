@@ -161,7 +161,9 @@ export default function AnniversaryRewardPolicyDetailPage() {
                 <Label className="text-sm font-medium text-muted-foreground">
                   연차
                 </Label>
-                <p className="text-lg font-semibold mt-1">{policy.year}년</p>
+                <p className="text-lg font-semibold mt-1">
+                  {policy.year}년{policy?.year === 0 ? "(가입기념)" : ""}
+                </p>
               </div>
               <div>
                 <Label className="text-sm font-medium text-muted-foreground">

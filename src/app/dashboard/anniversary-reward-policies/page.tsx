@@ -221,7 +221,9 @@ export default function AnniversaryRewardPoliciesPage() {
                       </div>
 
                       <p className="text-sm text-muted-foreground mt-1">
-                        {`연차 : ${policy?.year}년`}
+                        {`연차 : ${policy?.year}년 ${
+                          policy?.year === 0 ? "(가입기념)" : ""
+                        }`}
                       </p>
                       <p className="text-sm text-muted-foreground mt-1">
                         {`포인트 : ${policy?.pointAmount}P`}
