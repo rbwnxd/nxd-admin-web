@@ -37,7 +37,7 @@ export const useUserManagementStore = create<UserManagementState>(
     setCurrentPage: (currentPage) => set({ currentPage }),
     setSearchNickname: (searchNickname) => set({ searchNickname }),
     setIncludeDeleted: (includeDeleted) => set({ includeDeleted }),
-    resetPagination: () => set({ currentPage: 1 }),
+    resetPagination: () => set({ currentPage: 1, searchNickname: "" }),
 
     findUserById: (id) => {
       const { users } = get();

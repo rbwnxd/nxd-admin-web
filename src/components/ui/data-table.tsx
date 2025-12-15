@@ -379,7 +379,21 @@ export function DataTableColumnHeader<TData, TValue>({
         className={`-ml-3 h-8 data-[state=open]:bg-accent ${
           sortedState ? "bg-accent/50 font-medium" : ""
         }`}
-        onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+        onClick={() => {
+          const state = column.getIsSorted();
+
+          if (state === "asc") {
+            column.toggleSorting(true);
+            return;
+          }
+
+          if (state === "desc") {
+            column.clearSorting();
+            return;
+          }
+
+          column.toggleSorting(false);
+        }}
       >
         <span className={sortedState ? "font-medium" : ""}>{title}</span>
         {sortedState === "desc" ? (

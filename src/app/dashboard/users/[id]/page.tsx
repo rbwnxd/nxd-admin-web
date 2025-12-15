@@ -695,7 +695,8 @@ export default function UserDetailPage() {
                   약관 동의일
                 </Label>
                 <p className="font-medium mt-1">
-                  {moment(user.termsAgreedAt).format("YYYY년 MM월 DD일 HH:mm")}
+                  {user?.termsAgreedAt &&
+                    moment(user.termsAgreedAt).format("YYYY년 MM월 DD일 HH:mm")}
                 </p>
               </div>
 

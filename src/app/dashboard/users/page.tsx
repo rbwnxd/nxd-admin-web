@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useAuthStore } from "@/store/authStore";
 import { useUserManagementStore } from "@/store/userManagementStore";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -32,6 +32,10 @@ import moment from "moment";
 import { STORAGE_URL } from "@/lib/api";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
+import { DataTable, DataTableColumnHeader } from "@/components/ui/data-table";
+import { ColumnDef, SortingState } from "@tanstack/react-table";
+import { DailyRankingAnalysisUserStat, User } from "@/lib/types";
+import Image from "next/image";
 
 export default function UsersPage() {
   const router = useRouter();
@@ -52,6 +56,178 @@ export default function UsersPage() {
     setIncludeDeleted,
   } = useUserManagementStore();
 
+  const [sorting, setSorting] = useState<SortingState>([]);
+
+  const columns = useMemo<ColumnDef<User>[]>(
+    () => [
+      {
+        accessorKey: "state",
+        header: "",
+        cell: ({ row }) => {
+          const user = row.original;
+          return (
+            <div className="flex justify-center text-center gap-1">
+              {!!user?.deletedAt && (
+                <Badge variant="secondary" className="text-xs">
+                  탈퇴
+                </Badge>
+              )}
+              {!user?.deletedAt &&
+                !user?.banInfo?.isBanned &&
+                user?.restrictionInfo?.isRestricted && (
+                  <Badge variant="destructive" className="text-xs">
+                    제한됨
+                  </Badge>
+                )}
+              {!user?.deletedAt && user?.banInfo?.isBanned && (
+                <Badge variant="destructive" className="text-xs">
+                  차단됨
+                </Badge>
+              )}
+            </div>
+          );
+        },
+        size: 10,
+      },
+      {
+        accessorKey: "gradeInfo",
+        header: "등급",
+        cell: ({ row }) => {
+          const user = row.original;
+          return (
+            <div className="text-center">
+              {user?.gradeInfo?.title && (
+                <Badge
+                  variant={"default"}
+                  className={`text-xs ${getGradeBadgeColor(
+                    user.gradeInfo.title
+                  )}`}
+                >
+                  {user.gradeInfo.title}
+                </Badge>
+              )}
+            </div>
+          );
+        },
+        size: 20,
+      },
+      {
+        id: "user",
+        header: "닉네임",
+        accessorFn: (row) => row.profile?.nickname || "",
+        cell: ({ row }) => {
+          const user = row.original;
+          return (
+            <div className="flex items-center gap-2">
+              {user?.imageList && user.imageList.length > 0 ? (
+                <div className="relative w-8 h-8 rounded-full overflow-hidden">
+                  <Image
+                    src={`${STORAGE_URL}/${user?.imageList?.[0]?.image64Path}`}
+                    alt={user?.profile?.nickname || "profile"}
+                    fill
+                    className="object-cover"
+                    sizes="32px"
+                  />
+                </div>
+              ) : (
+                <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center">
+                  <User2 className="h-4 w-4 text-muted-foreground" />
+                </div>
+              )}
+              <span className="text-sm font-medium">
+                {user.profile?.nickname || "알 수 없음"}
+              </span>
+              {getPlatformBadge(user?.platform)}
+            </div>
+          );
+        },
+        size: 100,
+      },
+      {
+        accessorKey: "email",
+        header: "이메일",
+        cell: ({ row }) => {
+          const user = row.original;
+          return <div className="text-center">{user?.email}</div>;
+        },
+        size: 20,
+      },
+
+      {
+        accessorKey: "gender",
+        header: "성별",
+        cell: ({ row }) => {
+          const user = row.original;
+          return (
+            <div className="text-center">
+              {getGenderBadge(user?.profile?.gender)}
+            </div>
+          );
+        },
+        size: 20,
+      },
+      {
+        accessorKey: "point.totalReceivedPoint",
+        id: "point.totalReceivedPoint",
+        header: ({ column }) => (
+          <DataTableColumnHeader column={column} title="총 받은 포인트" />
+        ),
+        cell: ({ row }) => {
+          const user = row.original;
+          return (
+            <div className="text-right">
+              {user.point?.totalReceivedPoint.toLocaleString()} P
+            </div>
+          );
+        },
+        size: 50,
+      },
+      {
+        accessorKey: "point.currentPoint",
+        id: "point.currentPoint",
+        header: ({ column }) => (
+          <DataTableColumnHeader column={column} title="현재 포인트" />
+        ),
+        cell: ({ row }) => {
+          const user = row.original;
+          return (
+            <div className="text-right">
+              {user.point?.currentPoint.toLocaleString()} P
+            </div>
+          );
+        },
+        size: 50,
+      },
+      {
+        id: "memberHash",
+        header: ({ column }) => (
+          <DataTableColumnHeader column={column} title="해시" />
+        ),
+        cell: ({ row }) => {
+          const user = row.original;
+          return <div className="text-left">{user.memberHash}</div>;
+        },
+        size: 100,
+      },
+      {
+        accessorKey: "createdAt",
+        header: ({ column }) => (
+          <DataTableColumnHeader column={column} title="가입일" />
+        ),
+        cell: ({ row }) => {
+          const user = row.original;
+          return (
+            <div className="text-center text-xs">
+              {moment(user.createdAt).format("YYYY-MM-DD HH:mm")}
+            </div>
+          );
+        },
+        size: 20,
+      },
+    ],
+    []
+  );
+
   const [searchInput, setSearchInput] = useState(searchNickname);
 
   useEffect(() => {
@@ -60,11 +236,22 @@ export default function UsersPage() {
     const fetchUsers = async () => {
       setLoading(true);
       try {
+        // 스웨거 스펙에 맞는 정렬 파라미터 생성
+        let sortParam = '{ "field": "createdAt", "order": "DESC" }'; // 기본값
+        if (sorting.length > 0) {
+          const sort = sorting[0]; // 첫 번째 정렬만 사용
+          sortParam = JSON.stringify({
+            field: sort.id,
+            order: sort.desc ? "DESC" : "ASC",
+          });
+        }
+
         const result = await getUsers({
           params: {
             __skip: (currentPage - 1) * itemsPerPage,
             __limit: itemsPerPage,
             __includeDeleted: includeDeleted,
+            sort: sortParam,
             ...(searchNickname && { nickname: searchNickname }),
           },
           jsonWebToken,
@@ -84,7 +271,14 @@ export default function UsersPage() {
 
     fetchUsers();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [jsonWebToken, currentPage, itemsPerPage, searchNickname, includeDeleted]);
+  }, [
+    jsonWebToken,
+    currentPage,
+    itemsPerPage,
+    searchNickname,
+    includeDeleted,
+    sorting,
+  ]);
 
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
@@ -240,11 +434,7 @@ export default function UsersPage() {
             </Button>
           </div>
 
-          {loading ? (
-            <div className="flex items-center justify-center py-12">
-              <Loader2 className="h-8 w-8 animate-spin" />
-            </div>
-          ) : users.length === 0 ? (
+          {users.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-12">
               <Users className="h-12 w-12 text-muted-foreground mb-4" />
               <p className="text-lg font-medium text-muted-foreground mb-2">
@@ -256,7 +446,7 @@ export default function UsersPage() {
             </div>
           ) : (
             <div className="space-y-4">
-              {users.map((user) => (
+              {/* {users.map((user) => (
                 <div
                   key={user._id}
                   className={`border rounded-lg p-4 hover:bg-muted/30 transition-colors ${
@@ -344,7 +534,23 @@ export default function UsersPage() {
                     </div>
                   </div>
                 </div>
-              ))}
+              ))} */}
+              <DataTable
+                columns={columns}
+                data={users || []}
+                // searchKey="user"
+                // searchPlaceholder="사용자 검색..."
+                showColumnToggle={false}
+                showPagination={false}
+                pageSize={10}
+                loading={loading}
+                onRowClick={(row) => {
+                  router.push(`/dashboard/users/${row?._id}`);
+                }}
+                serverSide={true}
+                sorting={sorting}
+                onSortingChange={setSorting}
+              />
             </div>
           )}
 

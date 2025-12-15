@@ -104,6 +104,11 @@ export const getUsers = async ({
     __skip?: number;
     __limit?: number;
     __includeDeleted?: boolean;
+    sort?: string;
+    // sort?: {
+    //   field: "createdAt" | "point.totalReceivedPoint" | "point.currentPoint"; // 생성일, life-time포인트, 사용가능 포인트
+    //   order: "ASC" | "DESC";
+    // }; // Default value : { "field": "createdAt", "order": "DESC" }
   };
   jsonWebToken: string;
 }): Promise<UsersResponse | null> => {
