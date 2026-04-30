@@ -37,15 +37,10 @@ import {
 import { getQRCodeCheckIns, deleteQRCodeCheckIn } from "../actions";
 import { toast } from "sonner";
 import moment from "moment";
-import { QRCodeCheckIn, QRCodeCategory } from "@/lib/types";
+import { QRCodeCheckIn } from "@/lib/types";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
-const CATEGORY_LABELS: Record<QRCodeCategory, string> = {
-  ALBUM: "앨범",
-  CONCERT: "콘서트",
-  OFFLINE_SPOT: "오프라인 스팟",
-  GOODS: "굿즈",
-};
+import { getCategoryLabel } from "@/lib/consts";
 
 export default function QRCodeCheckInPage() {
   const router = useRouter();
@@ -218,7 +213,7 @@ export default function QRCodeCheckInPage() {
                     <div className="flex-1">
                       <div className="flex items-center gap-2 mb-2">
                         <Badge variant={"default"}>
-                          {CATEGORY_LABELS[checkIn.category]}
+                          {getCategoryLabel(checkIn.category)}
                         </Badge>
                         {getStatusBadge(checkIn)}
                         {!!checkIn?.deletedAt && (
@@ -279,7 +274,7 @@ export default function QRCodeCheckInPage() {
                             onClick={(e) => {
                               e.stopPropagation();
                               router.push(
-                                `/dashboard/qr-codes/check-in/create?id=${checkIn._id}&isUpdate=true`
+                                `/dashboard/qr-codes/check-in/create?id=${checkIn._id}&isUpdate=true`,
                               );
                             }}
                           >
@@ -338,7 +333,10 @@ export default function QRCodeCheckInPage() {
 
                   {Array.from({ length: Math.min(totalPages, 5) }, (_, i) => {
                     const pageNumber =
-                      Math.max(1, Math.min(totalPages - 4, currentCheckInPage - 2)) + i;
+                      Math.max(
+                        1,
+                        Math.min(totalPages - 4, currentCheckInPage - 2),
+                      ) + i;
                     if (pageNumber > totalPages) return null;
 
                     return (

@@ -34,6 +34,7 @@ import {
   MultiLanguageText,
   QRCodeFormData,
   QRCodeUploadedImage,
+  QRCodeCategory,
 } from "@/lib/types";
 import { useQRCodeStore } from "@/store/qrCodeStore";
 
@@ -98,7 +99,7 @@ export default function CreateQRCodePage() {
               hashCount: existingQRCode.hashCount || 1,
               isHashReusable: Boolean(
                 (existingQRCode as unknown as Record<string, unknown>)
-                  .isHashReusable
+                  .isHashReusable,
               ),
               isEnabled: Boolean(existingQRCode.isEnabled ?? true),
             });
@@ -113,8 +114,8 @@ export default function CreateQRCodePage() {
                   (title: MultiLanguageText) => ({
                     ko: title.ko || "",
                     en: title.en || "",
-                  })
-                )
+                  }),
+                ),
               );
             }
 
@@ -128,8 +129,8 @@ export default function CreateQRCodePage() {
                   (title: MultiLanguageText) => ({
                     ko: title.ko || "",
                     en: title.en || "",
-                  })
-                )
+                  }),
+                ),
               );
             }
 
@@ -143,8 +144,8 @@ export default function CreateQRCodePage() {
                   (text: MultiLanguageText) => ({
                     ko: text.ko || "",
                     en: text.en || "",
-                  })
-                )
+                  }),
+                ),
               );
             }
 
@@ -157,7 +158,7 @@ export default function CreateQRCodePage() {
               setImage({
                 id: Date.now().toString(),
                 file: null, // 이미 업로드된 파일이므로 null
-                path: existingImage.image256Path,
+                path: existingImage.imageOriginalPath,
                 progress: 100,
                 isUploading: false,
               });
@@ -177,7 +178,7 @@ export default function CreateQRCodePage() {
 
   const handleAddLanguageField = (
     list: MultiLanguageText[],
-    setList: React.Dispatch<React.SetStateAction<MultiLanguageText[]>>
+    setList: React.Dispatch<React.SetStateAction<MultiLanguageText[]>>,
   ) => {
     setList([...list, { ko: "", en: "" }]);
   };
@@ -185,7 +186,7 @@ export default function CreateQRCodePage() {
   const handleRemoveLanguageField = (
     index: number,
     list: MultiLanguageText[],
-    setList: React.Dispatch<React.SetStateAction<MultiLanguageText[]>>
+    setList: React.Dispatch<React.SetStateAction<MultiLanguageText[]>>,
   ) => {
     if (list.length > 1) {
       const newList = list.filter((_, i) => i !== index);
@@ -198,7 +199,7 @@ export default function CreateQRCodePage() {
     field: "ko" | "en",
     value: string,
     list: MultiLanguageText[],
-    setList: React.Dispatch<React.SetStateAction<MultiLanguageText[]>>
+    setList: React.Dispatch<React.SetStateAction<MultiLanguageText[]>>,
   ) => {
     const newList = [...list];
     newList[index][field] = value;
@@ -230,13 +231,13 @@ export default function CreateQRCodePage() {
         });
 
         setImage((prev) =>
-          prev ? { ...prev, path, isUploading: false } : null
+          prev ? { ...prev, path, isUploading: false } : null,
         );
         toast.success("이미지가 업로드되었습니다.");
       } catch (error) {
         console.error("Image upload error:", error);
         setImage((prev) =>
-          prev ? { ...prev, error: "업로드 실패", isUploading: false } : null
+          prev ? { ...prev, error: "업로드 실패", isUploading: false } : null,
         );
         toast.error("이미지 업로드에 실패했습니다.");
       }
@@ -303,7 +304,7 @@ export default function CreateQRCodePage() {
 
     // 필수 필드인 displayTextList 검증
     const validDisplayTextList = displayTextList.filter(
-      (item) => item.ko.trim() || item.en.trim()
+      (item) => item.ko.trim() || item.en.trim(),
     );
     // if (validDisplayTextList.length === 0) {
     //   toast.error("설명 텍스트를 최소 하나는 입력해주세요.");
@@ -320,11 +321,7 @@ export default function CreateQRCodePage() {
 
     try {
       const requestBody = {
-        category: formData.category as
-          | "ALBUM"
-          | "CONCERT"
-          | "OFFLINE_SPOT"
-          | "GOODS",
+        category: formData.category as QRCodeCategory,
         point: formData.point,
         displayTextList: validDisplayTextList,
         expireMinutes: formData?.expireMinutes || null,
@@ -334,12 +331,12 @@ export default function CreateQRCodePage() {
         isEnabled: formData.isEnabled,
         ...(displayMainTitleList.some((item) => item.ko || item.en) && {
           displayMainTitleList: displayMainTitleList.filter(
-            (item) => item.ko || item.en
+            (item) => item.ko || item.en,
           ),
         }),
         ...(displaySubTitleList.some((item) => item.ko || item.en) && {
           displaySubTitleList: displaySubTitleList.filter(
-            (item) => item.ko || item.en
+            (item) => item.ko || item.en,
           ),
         }),
         ...(image?.path && {
@@ -370,7 +367,7 @@ export default function CreateQRCodePage() {
         toast.success(
           isUpdateMode
             ? "QR 코드가 성공적으로 수정되었습니다."
-            : "QR 코드가 성공적으로 생성되었습니다."
+            : "QR 코드가 성공적으로 생성되었습니다.",
         );
 
         if (isUpdateMode) {
@@ -383,7 +380,7 @@ export default function CreateQRCodePage() {
         toast.error(
           isUpdateMode
             ? "QR 코드 수정에 실패했습니다."
-            : "QR 코드 생성에 실패했습니다."
+            : "QR 코드 생성에 실패했습니다.",
         );
       }
     } catch (error) {
@@ -391,7 +388,7 @@ export default function CreateQRCodePage() {
       toast.error(
         isUpdateMode
           ? "QR 코드 수정에 실패했습니다."
-          : "QR 코드 생성에 실패했습니다."
+          : "QR 코드 생성에 실패했습니다.",
       );
     } finally {
       setLoading(false);
@@ -402,7 +399,7 @@ export default function CreateQRCodePage() {
     title: string,
     list: MultiLanguageText[],
     setList: React.Dispatch<React.SetStateAction<MultiLanguageText[]>>,
-    isRequired = false
+    isRequired = false,
   ) => (
     <div className="space-y-3">
       <div className="flex items-center justify-between">
@@ -433,7 +430,7 @@ export default function CreateQRCodePage() {
                   "ko",
                   e.target.value,
                   list,
-                  setList
+                  setList,
                 )
               }
             />
@@ -446,7 +443,7 @@ export default function CreateQRCodePage() {
                   "en",
                   e.target.value,
                   list,
-                  setList
+                  setList,
                 )
               }
             />
@@ -527,9 +524,9 @@ export default function CreateQRCodePage() {
                   </Label>
                   <Select
                     value={formData.category}
-                    onValueChange={(
-                      value: "ALBUM" | "CONCERT" | "OFFLINE_SPOT" | "GOODS"
-                    ) => setFormData({ ...formData, category: value })}
+                    onValueChange={(value: QRCodeCategory) =>
+                      setFormData({ ...formData, category: value })
+                    }
                   >
                     <SelectTrigger>
                       <SelectValue placeholder="카테고리 선택" />
@@ -801,8 +798,8 @@ export default function CreateQRCodePage() {
                           image.file
                             ? URL.createObjectURL(image.file)
                             : image.path
-                            ? `${STORAGE_URL}/${image.path}`
-                            : ""
+                              ? `${STORAGE_URL}/${image.path}`
+                              : ""
                         }
                         alt="업로드된 이미지"
                         fill
@@ -844,17 +841,17 @@ export default function CreateQRCodePage() {
               {renderLanguageFields(
                 "메인 타이틀",
                 displayMainTitleList,
-                setDisplayMainTitleList
+                setDisplayMainTitleList,
               )}
               {renderLanguageFields(
                 "서브 타이틀",
                 displaySubTitleList,
-                setDisplaySubTitleList
+                setDisplaySubTitleList,
               )}
               {renderLanguageFields(
                 "설명 텍스트",
                 displayTextList,
-                setDisplayTextList
+                setDisplayTextList,
               )}
             </CardContent>
           </Card>
@@ -880,10 +877,10 @@ export default function CreateQRCodePage() {
                   ? "수정 중..."
                   : "생성 중..."
                 : image?.isUploading
-                ? "이미지 업로드 중..."
-                : isUpdateMode
-                ? "QR 코드 수정"
-                : "QR 코드 생성"}
+                  ? "이미지 업로드 중..."
+                  : isUpdateMode
+                    ? "QR 코드 수정"
+                    : "QR 코드 생성"}
             </Button>
           </div>
         </div>

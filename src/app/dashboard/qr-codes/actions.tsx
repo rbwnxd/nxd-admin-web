@@ -2,6 +2,8 @@
 
 import { axiosApi } from "@/lib/axios";
 
+import type { QRCodeCategory } from "@/lib/types";
+
 // QR 코드 목록 조회
 export const getQRCodes = async ({
   params,
@@ -10,7 +12,7 @@ export const getQRCodes = async ({
   params?: {
     __skip?: number;
     __limit?: number;
-    category?: "ALBUM" | "CONCERT" | "OFFLINE_SPOT" | "GOODS";
+    category?: QRCodeCategory;
     __includeDeleted?: boolean;
     __includeDisabled?: boolean;
   };
@@ -35,7 +37,7 @@ export const createQRCode = async ({
   jsonWebToken,
 }: {
   body: {
-    category: "ALBUM" | "CONCERT" | "OFFLINE_SPOT" | "GOODS";
+    category: QRCodeCategory;
     point?: number;
     displayMainTitleList?: { [key: string]: string }[];
     displaySubTitleList?: { [key: string]: string }[];
@@ -70,7 +72,7 @@ export const updateQRCode = async ({
 }: {
   id: string;
   body: {
-    category?: "ALBUM" | "CONCERT" | "OFFLINE_SPOT" | "GOODS";
+    category?: QRCodeCategory;
     point?: number;
     displayMainTitleList?: { [key: string]: string }[];
     displaySubTitleList?: { [key: string]: string }[];
@@ -111,7 +113,7 @@ export const deleteQRCode = async ({
         headers: {
           Authorization: `jwt ${jsonWebToken}`,
         },
-      }
+      },
     );
     return (data && data["data"]) || null;
   } catch (error) {
@@ -137,7 +139,7 @@ export const getQRCodeDetail = async ({
         headers: {
           Authorization: `jwt ${jsonWebToken}`,
         },
-      }
+      },
     );
     return (data && data["data"]) || null;
   } catch (error) {
@@ -169,7 +171,7 @@ export const getQRCodeHashes = async ({
         headers: {
           Authorization: `jwt ${jsonWebToken}`,
         },
-      }
+      },
     );
     return (data && data["data"]) || null;
   } catch (error) {
@@ -199,7 +201,7 @@ export const createAdditionalIssueQRCode = async ({
         headers: {
           Authorization: `jwt ${jsonWebToken}`,
         },
-      }
+      },
     );
     return (data && data["data"]) || null;
   } catch (error) {
@@ -239,7 +241,7 @@ export const createQRCodeCheckIn = async ({
   jsonWebToken,
 }: {
   body: {
-    category: "ALBUM" | "CONCERT" | "OFFLINE_SPOT" | "GOODS";
+    category: QRCodeCategory;
     title: string;
     startAt: string;
     endAt: string;
@@ -269,7 +271,7 @@ export const updateQRCodeCheckIn = async ({
 }: {
   checkInId: string;
   body: {
-    category: "ALBUM" | "CONCERT" | "OFFLINE_SPOT" | "GOODS";
+    category: QRCodeCategory;
     title: string;
     startAt: string;
     endAt: string;
@@ -287,7 +289,7 @@ export const updateQRCodeCheckIn = async ({
         headers: {
           Authorization: `jwt ${jsonWebToken}`,
         },
-      }
+      },
     );
     return (data && data["data"] && data["data"]["qrCodeCheckIn"]) || null;
   } catch (error) {
@@ -313,7 +315,7 @@ export const deleteQRCodeCheckIn = async ({
         headers: {
           Authorization: `jwt ${jsonWebToken}`,
         },
-      }
+      },
     );
     return (data && data["data"]) || null;
   } catch (error) {
@@ -344,7 +346,7 @@ export const verifyQRCodeCheckIn = async ({
         headers: {
           Authorization: `jwt ${jsonWebToken}`,
         },
-      }
+      },
     );
     return (data && data["data"]) || null;
   } catch (error) {
@@ -376,7 +378,7 @@ export const getQRCodeVerifications = async ({
         headers: {
           Authorization: `jwt ${jsonWebToken}`,
         },
-      }
+      },
     );
     return (data && data["data"]) || null;
   } catch (error) {
@@ -404,7 +406,7 @@ export const deleteQRCodeVerification = async ({
         headers: {
           Authorization: `jwt ${jsonWebToken}`,
         },
-      }
+      },
     );
     return (data && data["data"]) || null;
   } catch (error) {

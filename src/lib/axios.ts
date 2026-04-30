@@ -33,7 +33,7 @@ apiHandler.interceptors.response.use(
       // showToast('네트워크 상태를 확인해주세요.')
     }
     throw error;
-  }
+  },
 );
 
 /**
@@ -67,7 +67,7 @@ export async function axiosApi(
     | "patch" = "GET",
   data?: object,
   options: ApiOptions = {},
-  baseURL = `${API_URL}`
+  baseURL = `${API_URL}`,
 ) {
   try {
     const _method = method.toLowerCase();
@@ -103,7 +103,7 @@ export async function axiosApi(
           _method,
           url,
           data,
-          res
+          res,
         );
         return res;
       } catch (error: unknown) {
@@ -116,7 +116,7 @@ export async function axiosApi(
           url,
           data,
           axiosError?.response,
-          error
+          error,
         );
         throw error;
       }

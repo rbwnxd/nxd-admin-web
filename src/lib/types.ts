@@ -4,13 +4,13 @@ export interface Announcement {
     {
       ko: string;
       en: string;
-    }
+    },
   ];
   contentList: [
     {
       ko: string;
       en: string;
-    }
+    },
   ];
   publishedAt: string;
   imageList: {
@@ -34,7 +34,7 @@ export interface Artist {
     {
       ko: string;
       en: string;
-    }
+    },
   ];
   imageList: {
     image64Path: string;
@@ -152,7 +152,15 @@ export interface MultiLanguageText {
   en: string;
 }
 
-export type QRCodeCategory = "ALBUM" | "CONCERT" | "OFFLINE_SPOT" | "GOODS";
+export type QRCodeCategory =
+  | "PLATFORM_ALBUM"
+  | "CONTENTS_ALBUM"
+  | "CONTENTS_GOODS"
+  | "ALBUM"
+  | "CONCERT"
+  | "BROADCAST"
+  | "GOODS"
+  | "OFFLINE_SPOT";
 
 export interface QRCode {
   _id: string;
@@ -497,7 +505,7 @@ export interface MultiLanguageText {
 
 // QR 코드 폼 데이터
 export interface QRCodeFormData {
-  category: "ALBUM" | "CONCERT" | "OFFLINE_SPOT" | "GOODS" | "";
+  category: QRCodeCategory | "";
   point: number;
   expireMinutes: number | null;
   issuedCount: number;
@@ -525,7 +533,7 @@ export interface QRCodeCheckInAdmin {
 
 // QR 코드 체크인 폼 데이터
 export interface QRCodeCheckInFormData {
-  category: "ALBUM" | "CONCERT" | "OFFLINE_SPOT" | "GOODS" | "";
+  category: QRCodeCategory | "";
   title: string;
   startAt: string;
   endAt: string;
@@ -647,13 +655,13 @@ export interface Terms {
     {
       ko: string;
       en: string;
-    }
+    },
   ];
   contentList: [
     {
       ko: string;
       en: string;
-    }
+    },
   ];
   version: string;
   isActive: boolean;

@@ -1,6 +1,6 @@
 import { create } from "zustand";
 import { persist, createJSONStorage } from "zustand/middleware";
-import { QRCode, QRCodeHash, QRCodeCheckIn } from "@/lib/types";
+import { QRCode, QRCodeHash, QRCodeCheckIn, QRCodeCategory } from "@/lib/types";
 
 interface QRCodeStore {
   // QR 코드 관련 상태
@@ -9,7 +9,7 @@ interface QRCodeStore {
   qrLoading: boolean;
   currentQRPage: number;
   qrItemsPerPage: number;
-  selectedCategory: string | undefined;
+  selectedCategory: "ALL" | QRCodeCategory | undefined;
   includeDeleted: boolean;
   includeDisabled: boolean;
 
@@ -34,7 +34,7 @@ interface QRCodeStore {
   setTotalQRCount: (count: number) => void;
   setQRLoading: (loading: boolean) => void;
   setCurrentQRPage: (page: number) => void;
-  setSelectedCategory: (category: string | undefined) => void;
+  setSelectedCategory: (category: "ALL" | QRCodeCategory | undefined) => void;
   setIncludeDeleted: (includeDeleted: boolean) => void;
   setIncludeDisabled: (includeDisabled: boolean) => void;
 
@@ -153,7 +153,7 @@ export const useQRCodeStore = create<QRCodeStore>()(
       updateCheckIn: (id, updatedCheckIn) =>
         set((state) => ({
           checkIns: state.checkIns.map((checkIn) =>
-            checkIn._id === id ? { ...checkIn, ...updatedCheckIn } : checkIn
+            checkIn._id === id ? { ...checkIn, ...updatedCheckIn } : checkIn,
           ),
         })),
 
@@ -166,7 +166,7 @@ export const useQRCodeStore = create<QRCodeStore>()(
       updateQRCode: (id, updatedQRCode) =>
         set((state) => ({
           qrCodes: state.qrCodes.map((qr) =>
-            qr._id === id ? { ...qr, ...updatedQRCode } : qr
+            qr._id === id ? { ...qr, ...updatedQRCode } : qr,
           ),
         })),
 
@@ -209,6 +209,6 @@ export const useQRCodeStore = create<QRCodeStore>()(
         currentCheckInPage: state.currentCheckInPage,
         checkInItemsPerPage: state.checkInItemsPerPage,
       }),
-    }
-  )
+    },
+  ),
 );

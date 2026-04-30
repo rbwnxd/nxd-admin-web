@@ -37,6 +37,7 @@ import { ConfirmDialog } from "@/components/dialog/ConfirmDialog";
 import { toast } from "sonner";
 import moment from "moment";
 import { CATEGORY_OPTIONS, getCategoryLabel } from "@/lib/consts";
+import type { QRCodeCategory } from "@/lib/types";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import {
@@ -86,11 +87,7 @@ export default function QRCodesPage() {
             __includeDisabled: includeDisabled,
             ...(selectedCategory &&
               selectedCategory !== "ALL" && {
-                category: selectedCategory as
-                  | "ALBUM"
-                  | "CONCERT"
-                  | "OFFLINE_SPOT"
-                  | "GOODS",
+                category: selectedCategory as QRCodeCategory,
               }),
           },
           jsonWebToken,
@@ -179,9 +176,9 @@ export default function QRCodesPage() {
           <div className="flex flex-col lg:flex-row w-full items-end justify-end lg:items-center mt-2 gap-4">
             <Select
               value={selectedCategory}
-              onValueChange={(
-                value: "ALL" | "ALBUM" | "CONCERT" | "OFFLINE_SPOT" | "GOODS"
-              ) => setSelectedCategory(value)}
+              onValueChange={(value: "ALL" | QRCodeCategory) =>
+                setSelectedCategory(value)
+              }
             >
               <SelectTrigger>
                 <SelectValue placeholder="카테고리 선택" />
@@ -192,7 +189,7 @@ export default function QRCodesPage() {
                     <SelectItem key={option.value} value={option.value}>
                       {option.label}
                     </SelectItem>
-                  )
+                  ),
                 )}
               </SelectContent>
             </Select>
@@ -344,7 +341,7 @@ export default function QRCodesPage() {
                               onClick={(e) => {
                                 e.stopPropagation();
                                 router.push(
-                                  `/dashboard/qr-codes/create?isUpdate=true&id=${qrCode?._id}`
+                                  `/dashboard/qr-codes/create?isUpdate=true&id=${qrCode?._id}`,
                                 );
                               }}
                             >

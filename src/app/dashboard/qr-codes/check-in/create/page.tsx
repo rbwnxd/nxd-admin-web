@@ -29,20 +29,17 @@ import {
 import { createQRCodeCheckIn, updateQRCodeCheckIn } from "../../actions";
 import { AdminSearchDialog } from "@/components/dialog/AdminSearchDialog";
 import { toast } from "sonner";
-import { QRCodeCheckInAdmin, QRCodeCheckInFormData } from "@/lib/types";
-
-const CATEGORY_OPTIONS = [
-  { value: "ALBUM", label: "앨범" },
-  { value: "CONCERT", label: "콘서트" },
-  { value: "OFFLINE_SPOT", label: "오프라인 스팟" },
-  { value: "GOODS", label: "굿즈" },
-];
-
+import {
+  QRCodeCheckInAdmin,
+  QRCodeCheckInFormData,
+  QRCodeCategory,
+} from "@/lib/types";
+import { CATEGORY_OPTIONS } from "@/lib/consts";
 
 export default function CreateCheckInPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  
+
   // Next.js 15 권장: useSearchParams hook 사용
   const isUpdateMode = searchParams.get("isUpdate") === "true";
   const checkInId = searchParams.get("id");
@@ -108,11 +105,7 @@ export default function CreateCheckInPage() {
         };
 
         setFormData({
-          category: data.category as
-            | "ALBUM"
-            | "CONCERT"
-            | "OFFLINE_SPOT"
-            | "GOODS",
+          category: data.category as QRCodeCategory,
           title: data.title,
           startAt: formatDateForInput(data.startAt),
           endAt: formatDateForInput(data.endAt),
@@ -136,14 +129,17 @@ export default function CreateCheckInPage() {
           setRetryCount((prev) => prev + 1);
 
           // 지연 후 재시도
-          setTimeout(() => {
-            loadData();
-          }, RETRY_DELAY * (retryCount + 1)); // 재시도할 때마다 지연시간 증가
+          setTimeout(
+            () => {
+              loadData();
+            },
+            RETRY_DELAY * (retryCount + 1),
+          ); // 재시도할 때마다 지연시간 증가
         } else {
           // 최대 재시도 횟수 초과 시
           setDataLoading(false);
           toast.error(
-            "체크인 정보를 찾을 수 없습니다. 페이지를 새로고침하거나 리스트에서 다시 시도해주세요."
+            "체크인 정보를 찾을 수 없습니다. 페이지를 새로고침하거나 리스트에서 다시 시도해주세요.",
           );
         }
       }
@@ -152,9 +148,7 @@ export default function CreateCheckInPage() {
     loadData();
   }, [isUpdateMode, checkInId, isMounted, retryCount, findCheckInById]);
 
-  const handleAdminSelect = (
-    selectedUsers: QRCodeCheckInAdmin[]
-  ) => {
+  const handleAdminSelect = (selectedUsers: QRCodeCheckInAdmin[]) => {
     setAdmins(selectedUsers);
     toast.success(`${selectedUsers.length}명의 관리자가 선택되었습니다.`);
   };
@@ -207,11 +201,7 @@ export default function CreateCheckInPage() {
 
     try {
       const body = {
-        category: formData.category as
-          | "ALBUM"
-          | "CONCERT"
-          | "OFFLINE_SPOT"
-          | "GOODS",
+        category: formData.category as QRCodeCategory,
         title: formData.title.trim(),
         startAt: formData.startAt,
         endAt: formData.endAt,
@@ -237,7 +227,7 @@ export default function CreateCheckInPage() {
         toast.success(
           isUpdateMode
             ? "체크인이 성공적으로 수정되었습니다."
-            : "체크인이 성공적으로 생성되었습니다."
+            : "체크인이 성공적으로 생성되었습니다.",
         );
 
         if (isUpdateMode && checkInId) {
@@ -263,7 +253,7 @@ export default function CreateCheckInPage() {
         toast.error(
           isUpdateMode
             ? "체크인 수정에 실패했습니다."
-            : "체크인 생성에 실패했습니다."
+            : "체크인 생성에 실패했습니다.",
         );
       }
     } catch (error) {
@@ -271,7 +261,7 @@ export default function CreateCheckInPage() {
       toast.error(
         isUpdateMode
           ? "체크인 수정에 실패했습니다."
-          : "체크인 생성에 실패했습니다."
+          : "체크인 생성에 실패했습니다.",
       );
     } finally {
       setLoading(false);
@@ -357,9 +347,9 @@ export default function CreateCheckInPage() {
                   <Label htmlFor="category">카테고리 *</Label>
                   <Select
                     value={formData.category}
-                    onValueChange={(
-                      value: "ALBUM" | "CONCERT" | "OFFLINE_SPOT" | "GOODS"
-                    ) => setFormData({ ...formData, category: value })}
+                    onValueChange={(value: QRCodeCategory) =>
+                      setFormData({ ...formData, category: value })
+                    }
                   >
                     <SelectTrigger>
                       <SelectValue placeholder="카테고리 선택" />
@@ -521,8 +511,8 @@ export default function CreateCheckInPage() {
                   ? "수정 중..."
                   : "생성 중..."
                 : isUpdateMode
-                ? "체크인 수정"
-                : "체크인 생성"}
+                  ? "체크인 수정"
+                  : "체크인 생성"}
             </Button>
           </div>
         </div>

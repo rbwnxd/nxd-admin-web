@@ -53,13 +53,7 @@ import {
 import { toast } from "sonner";
 import moment from "moment";
 import { ConfirmDialog } from "@/components/dialog/ConfirmDialog";
-
-const CATEGORY_LABELS: Record<QRCodeCategory, string> = {
-  ALBUM: "앨범",
-  CONCERT: "콘서트",
-  OFFLINE_SPOT: "오프라인 스팟",
-  GOODS: "굿즈",
-};
+import { getCategoryLabel } from "@/lib/consts";
 
 interface Admin {
   _id: string;
@@ -220,7 +214,7 @@ export default function QRCodeCheckInDetailPage() {
   };
 
   const totalVerificationPages = Math.ceil(
-    totalVerificationCount / verificationItemsPerPage
+    totalVerificationCount / verificationItemsPerPage,
   );
 
   if (!checkIn) {
@@ -257,7 +251,7 @@ export default function QRCodeCheckInDetailPage() {
             variant="outline"
             onClick={() => {
               router.push(
-                `/dashboard/qr-codes/check-in/create?id=${checkIn._id}&isUpdate=true`
+                `/dashboard/qr-codes/check-in/create?id=${checkIn._id}&isUpdate=true`,
               );
             }}
             className="flex items-center gap-2"
@@ -305,7 +299,7 @@ export default function QRCodeCheckInDetailPage() {
                 </Label>
                 <div className="mt-1">
                   <Badge variant={"default"}>
-                    {CATEGORY_LABELS[checkIn.category]}
+                    {getCategoryLabel(checkIn.category)}
                   </Badge>
                 </div>
               </div>
@@ -477,7 +471,7 @@ export default function QRCodeCheckInDetailPage() {
                         <p className="text-sm text-muted-foreground text-right">
                           검증 시간:{" "}
                           {moment(verification.verifiedAt).format(
-                            "YYYY-MM-DD HH:mm:ss"
+                            "YYYY-MM-DD HH:mm:ss",
                           )}
                         </p>
                       </div>
@@ -533,7 +527,7 @@ export default function QRCodeCheckInDetailPage() {
                         size="icon"
                         onClick={() =>
                           handleVerificationPageChange(
-                            currentVerificationPage - 1
+                            currentVerificationPage - 1,
                           )
                         }
                         disabled={currentVerificationPage <= 1}
@@ -552,8 +546,8 @@ export default function QRCodeCheckInDetailPage() {
                             1,
                             Math.min(
                               totalVerificationPages - 4,
-                              currentVerificationPage - 2
-                            )
+                              currentVerificationPage - 2,
+                            ),
                           ) + i;
                         if (pageNumber > totalVerificationPages) return null;
 
@@ -570,7 +564,7 @@ export default function QRCodeCheckInDetailPage() {
                             </PaginationLink>
                           </PaginationItem>
                         );
-                      }
+                      },
                     )}
 
                     <PaginationItem>
@@ -579,7 +573,7 @@ export default function QRCodeCheckInDetailPage() {
                         size="icon"
                         onClick={() =>
                           handleVerificationPageChange(
-                            currentVerificationPage + 1
+                            currentVerificationPage + 1,
                           )
                         }
                         disabled={
