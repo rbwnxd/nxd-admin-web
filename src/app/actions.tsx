@@ -29,7 +29,7 @@ export const getMultipartUploadId = async ({
         headers: {
           Authorization: `jwt ${jsonWebToken}`,
         },
-      }
+      },
     );
     return data?.data || null;
   } catch (error) {
@@ -63,7 +63,7 @@ export const getPreSignedUrls = async ({
         headers: {
           Authorization: `jwt ${jsonWebToken}`,
         },
-      }
+      },
     );
     return data?.data || null;
   } catch (error) {
@@ -75,7 +75,7 @@ export const getPreSignedUrls = async ({
 // 3단계: 파일을 pre-signed URL에 업로드
 export const uploadFileToS3 = async (
   presignedUrl: string,
-  file: File
+  file: File,
 ): Promise<string> => {
   try {
     const response = await axiosApi(
@@ -87,7 +87,7 @@ export const uploadFileToS3 = async (
           "Content-Type": file.type,
         },
       },
-      "" // baseURL을 빈 문자열로 설정하여 완전한 URL 사용
+      "", // baseURL을 빈 문자열로 설정하여 완전한 URL 사용
     );
 
     // ETag 추출 (따옴표 제거)
@@ -130,7 +130,7 @@ export const completeMultipartUpload = async ({
         headers: {
           Authorization: `jwt ${jsonWebToken}`,
         },
-      }
+      },
     );
     return data?.data || null;
   } catch (error) {
@@ -202,6 +202,140 @@ export const uploadImageFile = async ({
     return uploadData.key;
   } catch (error) {
     console.error("uploadImageFile error", error);
+    throw error;
+  }
+};
+
+// 통합 동영상 업로드 함수
+export const uploadVideoFile = async ({
+  file,
+  jsonWebToken,
+  onProgress,
+  dataCollectionName = "announcements",
+}: {
+  file: File;
+  jsonWebToken: string | null;
+  onProgress?: (progress: number) => void;
+  dataCollectionName?: string;
+}): Promise<string> => {
+  try {
+    onProgress?.(10); // 시작
+
+    // 1단계: 업로드 ID 발급
+    const uploadData = await getMultipartUploadId({
+      filename: file.name,
+      fileType: "videos",
+      dataCollectionName,
+      jsonWebToken,
+    });
+
+    if (!uploadData?.uploadId || !uploadData?.key) {
+      throw new Error("Failed to get upload ID");
+    }
+
+    onProgress?.(30); // 업로드 ID 발급 완료
+
+    // 2단계: Pre-signed URL 발급
+    const urlData = await getPreSignedUrls({
+      uploadId: uploadData.uploadId,
+      key: uploadData.key,
+      partCount: 1,
+      jsonWebToken,
+    });
+
+    if (!urlData?.urlList?.[0]?.url) {
+      throw new Error("Failed to get pre-signed URL");
+    }
+
+    onProgress?.(50); // Pre-signed URL 발급 완료
+
+    // 3단계: S3에 파일 업로드
+    const etag = await uploadFileToS3(urlData.urlList[0].url, file);
+
+    onProgress?.(80); // 파일 업로드 완료
+
+    // 4단계: 멀티파트 업로드 완료 처리
+    await completeMultipartUpload({
+      uploadId: uploadData.uploadId,
+      key: uploadData.key,
+      partList: [{ partNumber: 1, ETag: etag }],
+      action: "complete",
+      jsonWebToken,
+    });
+
+    onProgress?.(100); // 완료
+
+    // 업로드된 파일의 key 반환 (경로)
+    return uploadData.key;
+  } catch (error) {
+    console.error("uploadVideoFile error", error);
+    throw error;
+  }
+};
+
+// 통합 오디오 업로드 함수
+export const uploadAudioFile = async ({
+  file,
+  jsonWebToken,
+  onProgress,
+  dataCollectionName = "announcements",
+}: {
+  file: File;
+  jsonWebToken: string | null;
+  onProgress?: (progress: number) => void;
+  dataCollectionName?: string;
+}): Promise<string> => {
+  try {
+    onProgress?.(10); // 시작
+
+    // 1단계: 업로드 ID 발급
+    const uploadData = await getMultipartUploadId({
+      filename: file.name,
+      fileType: "songs",
+      dataCollectionName,
+      jsonWebToken,
+    });
+
+    if (!uploadData?.uploadId || !uploadData?.key) {
+      throw new Error("Failed to get upload ID");
+    }
+
+    onProgress?.(30); // 업로드 ID 발급 완료
+
+    // 2단계: Pre-signed URL 발급
+    const urlData = await getPreSignedUrls({
+      uploadId: uploadData.uploadId,
+      key: uploadData.key,
+      partCount: 1,
+      jsonWebToken,
+    });
+
+    if (!urlData?.urlList?.[0]?.url) {
+      throw new Error("Failed to get pre-signed URL");
+    }
+
+    onProgress?.(50); // Pre-signed URL 발급 완료
+
+    // 3단계: S3에 파일 업로드
+    const etag = await uploadFileToS3(urlData.urlList[0].url, file);
+
+    onProgress?.(80); // 파일 업로드 완료
+
+    // 4단계: 멀티파트 업로드 완료 처리
+    await completeMultipartUpload({
+      uploadId: uploadData.uploadId,
+      key: uploadData.key,
+      partList: [{ partNumber: 1, ETag: etag }],
+      action: "complete",
+      jsonWebToken,
+    });
+
+    onProgress?.(100); // 완료
+
+    // 업로드된 파일의 key 반환 (경로)
+    return uploadData.key;
+  } catch (error) {
+    console.error("uploadAudioFile error", error);
     throw error;
   }
 };

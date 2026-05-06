@@ -118,6 +118,21 @@ export default function QRCodeDetailPage() {
         </Button>
 
         <div className="flex items-center gap-2">
+          {/* 콘텐츠 관리 버튼 - PLATFORM_ALBUM, CONTENTS_ALBUM, CONTENTS_GOODS만 */}
+          {(qrCode.category === "PLATFORM_ALBUM" ||
+            qrCode.category === "CONTENTS_ALBUM" ||
+            qrCode.category === "CONTENTS_GOODS") && (
+            <Button
+              variant="outline"
+              onClick={() => {
+                router.push(`/dashboard/qr-codes/${qrCode._id}/contents`);
+              }}
+              className="flex items-center gap-2"
+            >
+              <FileText className="w-4 h-4" />
+              콘텐츠 관리
+            </Button>
+          )}
           <Button
             variant="outline"
             onClick={() => {
@@ -136,7 +151,7 @@ export default function QRCodeDetailPage() {
                   variant="outline"
                   onClick={() =>
                     router.push(
-                      `/dashboard/qr-codes/create?isUpdate=true&id=${qrCode._id}`
+                      `/dashboard/qr-codes/create?isUpdate=true&id=${qrCode._id}`,
                     )
                   }
                   className="flex items-center gap-2"
@@ -323,7 +338,7 @@ export default function QRCodeDetailPage() {
                 <span>
                   {qrCode.issuedCount > 0
                     ? Math.round(
-                        (qrCode.verifiedCount / qrCode.issuedCount) * 100
+                        (qrCode.verifiedCount / qrCode.issuedCount) * 100,
                       )
                     : 0}
                   %
@@ -337,7 +352,7 @@ export default function QRCodeDetailPage() {
                       qrCode.issuedCount > 0
                         ? `${Math.min(
                             (qrCode.verifiedCount / qrCode.issuedCount) * 100,
-                            100
+                            100,
                           )}%`
                         : "0%",
                   }}

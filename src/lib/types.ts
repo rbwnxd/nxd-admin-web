@@ -187,6 +187,10 @@ export interface QRCode {
     imageList: QRCodeImage[];
   };
   isHashReusable?: boolean; // 해시 재활용 가능 여부
+  albumCount?: number; // 앨범 콘텐츠 수
+  trackCount?: number; // 트랙 수
+  photoCount?: number; // 사진 콘텐츠 수
+  videoCount?: number; // 비디오 콘텐츠 수
 }
 
 export interface QRCodeHash {
@@ -235,6 +239,55 @@ export interface QRCodeVerification {
     account: string;
     name: string;
   };
+}
+
+// === QR 코드 콘텐츠 관련 타입들 ===
+
+export type QRCodeContentType = "TEXT" | "PHOTO" | "VIDEO" | "ALBUM";
+
+export interface QRCodeContentAlbumTrack {
+  number: number;
+  isMainTitle: string;
+  isTitle: number;
+  titleI18n?: {
+    ko?: string;
+    en?: string;
+  };
+  descriptionI18n?: {
+    ko?: string;
+    en?: string;
+  };
+  durationSeconds: number;
+  trackFilename: string;
+  trackFilePath: string;
+}
+
+export interface QRCodeContent {
+  _id: string;
+  qrCodeId: string;
+  type: QRCodeContentType;
+  titleI18n?: { [key: string]: string } | null;
+  descriptionI18n?: { [key: string]: string } | null;
+  isPublished: boolean;
+  publishedAt?: string | null;
+  photo?: {
+    imageOriginalPath: string;
+    image512Path?: string;
+  };
+  video?: {
+    thumbnailImageOriginalPath: string;
+    thumbnailImage512Path?: string;
+    videoFilename: string;
+    videoFilePath: string;
+  };
+  album?: {
+    imageOriginalPath: string;
+    image512Path?: string;
+    trackList: QRCodeContentAlbumTrack[];
+  };
+  createdAt: string;
+  updatedAt: string;
+  deletedAt?: string | null;
 }
 
 // === 사용자 관련 타입들 ===

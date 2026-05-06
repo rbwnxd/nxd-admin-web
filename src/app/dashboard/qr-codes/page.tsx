@@ -349,6 +349,21 @@ export default function QRCodesPage() {
                               수정
                             </DropdownMenuItem>
                           )}
+                          {(qrCode.category === "PLATFORM_ALBUM" ||
+                            qrCode.category === "CONTENTS_ALBUM" ||
+                            qrCode.category === "CONTENTS_GOODS") && (
+                            <DropdownMenuItem
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                router.push(
+                                  `/dashboard/qr-codes/${qrCode._id}/contents`,
+                                );
+                              }}
+                            >
+                              <Settings className="w-4 h-4 mr-2" />
+                              콘텐츠 관리
+                            </DropdownMenuItem>
+                          )}
                           <DropdownMenuItem
                             onClick={(e) => {
                               e.stopPropagation();

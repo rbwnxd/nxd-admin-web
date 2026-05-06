@@ -2,7 +2,11 @@
 
 import { axiosApi } from "@/lib/axios";
 
-import type { QRCodeCategory } from "@/lib/types";
+import type {
+  QRCodeCategory,
+  QRCodeContentType,
+  QRCodeContentAlbumTrack,
+} from "@/lib/types";
 
 // QR 코드 목록 조회
 export const getQRCodes = async ({
@@ -414,3 +418,165 @@ export const deleteQRCodeVerification = async ({
     throw error;
   }
 };
+
+// === QR 코드 콘텐츠 관련 함수들 ===
+
+// QR 코드 콘텐츠 목록 조회
+export const getQRCodeContents = async ({
+  qrCodeId,
+  params,
+  jsonWebToken,
+}: {
+  qrCodeId: string;
+  params?: {
+    type?: QRCodeContentType;
+    __limit?: number;
+    __skip?: number;
+    __sortBy?: string;
+    __sort?: "1" | "-1";
+  };
+  jsonWebToken: string;
+}) => {
+  try {
+    const { data } = await axiosApi(
+      `/admin/qr-codes/${qrCodeId}/contents`,
+      "get",
+      params,
+      {
+        headers: {
+          Authorization: `jwt ${jsonWebToken}`,
+        },
+      },
+    );
+    return (data && data["data"]) || null;
+  } catch (error) {
+    console.warn("QRCode getQRCodeContents error", error);
+    throw error;
+  }
+};
+
+// QR 코드 콘텐츠 생성
+export const createQRCodeContent = async ({
+  qrCodeId,
+  body,
+  jsonWebToken,
+}: {
+  qrCodeId: string;
+  body: {
+    type: QRCodeContentType;
+    titleI18n?: { [key: string]: string } | null;
+    descriptionI18n?: { [key: string]: string } | null;
+    isPublished?: boolean;
+    publishedAt?: string | null;
+    photo?: {
+      imageOriginalPath: string;
+    };
+    video?: {
+      thumbnailImageOriginalPath: string;
+      videoFilename: string;
+      videoFilePath: string;
+    };
+    album?: {
+      imageOriginalPath: string;
+      trackList: QRCodeContentAlbumTrack[];
+    };
+  };
+  jsonWebToken: string;
+}) => {
+  try {
+    const { data } = await axiosApi(
+      `/admin/qr-codes/${qrCodeId}/contents`,
+      "post",
+      body,
+      {
+        headers: {
+          Authorization: `jwt ${jsonWebToken}`,
+        },
+      },
+    );
+    return (data && data["data"]) || null;
+  } catch (error) {
+    console.warn("QRCode createQRCodeContent error", error);
+    throw error;
+  }
+};
+
+// QR 코드 콘텐츠 수정
+export const updateQRCodeContent = async ({
+  qrCodeId,
+  qrCodeContentId,
+  body,
+  jsonWebToken,
+}: {
+  qrCodeId: string;
+  qrCodeContentId: string;
+  body: {
+    type?: QRCodeContentType;
+    titleI18n?: { [key: string]: string } | null;
+    descriptionI18n?: { [key: string]: string } | null;
+    isPublished?: boolean;
+    publishedAt?: string | null;
+    photo?: {
+      imageOriginalPath: string;
+    };
+    video?: {
+      thumbnailImageOriginalPath: string;
+      videoFilename: string;
+      videoFilePath: string;
+    };
+    album?: {
+      imageOriginalPath: string;
+      trackList: QRCodeContentAlbumTrack[];
+    };
+  };
+  jsonWebToken: string;
+}) => {
+  try {
+    const { data } = await axiosApi(
+      `/admin/qr-codes/${qrCodeId}/contents/${qrCodeContentId}`,
+      "put",
+      body,
+      {
+        headers: {
+          Authorization: `jwt ${jsonWebToken}`,
+        },
+      },
+    );
+    return (data && data["data"]) || null;
+  } catch (error) {
+    console.warn("QRCode updateQRCodeContent error", error);
+    throw error;
+  }
+};
+
+// QR 코드 콘텐츠 삭제
+export const deleteQRCodeContent = async ({
+  qrCodeId,
+  qrCodeContentId,
+  jsonWebToken,
+}: {
+  qrCodeId: string;
+  qrCodeContentId: string;
+  jsonWebToken: string;
+}) => {
+  try {
+    const { data } = await axiosApi(
+      `/admin/qr-codes/${qrCodeId}/contents/${qrCodeContentId}`,
+      "delete",
+      undefined,
+      {
+        headers: {
+          Authorization: `jwt ${jsonWebToken}`,
+        },
+      },
+    );
+    return (data && data["data"]) || null;
+  } catch (error) {
+    console.warn("QRCode deleteQRCodeContent error", error);
+    throw error;
+  }
+};
+
+// 별칭 export (다이얼로그 호환성)
+export const postQRCodeContent = createQRCodeContent;
+export const putQRCodeContent = updateQRCodeContent;
