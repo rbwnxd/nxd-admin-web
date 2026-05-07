@@ -524,9 +524,17 @@ export default function CreateQRCodePage() {
                   </Label>
                   <Select
                     value={formData.category}
-                    onValueChange={(value: QRCodeCategory) =>
-                      setFormData({ ...formData, category: value })
-                    }
+                    onValueChange={(value: QRCodeCategory) => {
+                      setFormData({
+                        ...formData,
+                        category: value,
+                        ...(value === "PLATFORM_ALBUM" ||
+                        value === "CONTENTS_ALBUM" ||
+                        value === "CONTENTS_GOODS"
+                          ? { isHashReusable: false }
+                          : {}),
+                      });
+                    }}
                   >
                     <SelectTrigger>
                       <SelectValue placeholder="카테고리 선택" />
@@ -712,7 +720,12 @@ export default function CreateQRCodePage() {
                   <Label htmlFor="isHashReusable">해시 중복인증 여부</Label>
                   <Select
                     value={formData.isHashReusable ? "true" : "false"}
-                    disabled={isUpdateMode}
+                    disabled={
+                      isUpdateMode ||
+                      formData.category === "PLATFORM_ALBUM" ||
+                      formData.category === "CONTENTS_ALBUM" ||
+                      formData.category === "CONTENTS_GOODS"
+                    }
                     onValueChange={(value) =>
                       setFormData({
                         ...formData,
@@ -732,7 +745,9 @@ export default function CreateQRCodePage() {
                     </SelectContent>
                   </Select>
                   <p className="text-sm text-muted-foreground mt-1">
-                    해시 코드의 재사용 가능 여부를 설정합니다
+                    {formData.isHashReusable
+                      ? "한 개의 해쉬로 여러명이 인증할 수 있어요"
+                      : "한 개의 해쉬로 한명만 인증할 수 있어요"}
                   </p>
                 </div>
               </div>
