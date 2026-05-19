@@ -81,6 +81,8 @@ interface ContentItem {
     titleEn: string;
     descriptionKo: string;
     descriptionEn: string;
+    artistNameKo: string;
+    artistNameEn: string;
     durationSeconds: number;
     trackFilename: string;
     trackFilePath: string;
@@ -176,6 +178,8 @@ export function QRCodeContentDialog({
             titleEn: track.titleI18n?.en || "",
             descriptionKo: track.descriptionI18n?.ko || "",
             descriptionEn: track.descriptionI18n?.en || "",
+            artistNameKo: track.artistNameI18n?.ko || "",
+            artistNameEn: track.artistNameI18n?.en || "",
             durationSeconds: track.durationSeconds,
             trackFilename: track.trackFilename,
             trackFilePath: track.trackFilePath,
@@ -236,6 +240,8 @@ export function QRCodeContentDialog({
             titleEn: track.titleI18n?.en || "",
             descriptionKo: track.descriptionI18n?.ko || "",
             descriptionEn: track.descriptionI18n?.en || "",
+            artistNameKo: track.artistNameI18n?.ko || "",
+            artistNameEn: track.artistNameI18n?.en || "",
             durationSeconds: track.durationSeconds,
             trackFilename: track.trackFilename,
             trackFilePath: track.trackFilePath,
@@ -956,6 +962,7 @@ export function QRCodeContentDialog({
                     isTitle: number;
                     titleI18n?: { ko?: string; en?: string };
                     descriptionI18n?: { ko?: string; en?: string };
+                    artistNameI18n?: { ko?: string; en?: string };
                     durationSeconds: number;
                     trackFilename: string;
                     trackFilePath: string;
@@ -1008,6 +1015,10 @@ export function QRCodeContentDialog({
                       ko: track.descriptionKo,
                       en: track.descriptionEn,
                     },
+                    artistNameI18n: {
+                      ko: track.artistNameKo,
+                      en: track.artistNameEn,
+                    },
                     durationSeconds: track.durationSeconds,
                     trackFilename: track.trackFilename,
                     trackFilePath: track.trackFilePath,
@@ -1047,6 +1058,7 @@ export function QRCodeContentDialog({
                 isTitle: number;
                 titleI18n?: { ko?: string; en?: string };
                 descriptionI18n?: { ko?: string; en?: string };
+                artistNameI18n?: { ko?: string; en?: string };
                 durationSeconds: number;
                 trackFilename: string;
                 trackFilePath: string;
@@ -1099,6 +1111,10 @@ export function QRCodeContentDialog({
                 descriptionI18n: {
                   ko: track.descriptionKo,
                   en: track.descriptionEn,
+                },
+                artistNameI18n: {
+                  ko: track.artistNameKo,
+                  en: track.artistNameEn,
                 },
                 durationSeconds: track.durationSeconds,
                 trackFilename: track.trackFilename,
@@ -1883,6 +1899,8 @@ export function QRCodeContentDialog({
                                 titleEn: "",
                                 descriptionKo: "",
                                 descriptionEn: "",
+                                artistNameKo: "",
+                                artistNameEn: "",
                                 durationSeconds: 0,
                                 trackFilename: "",
                                 trackFilePath: "",
@@ -2031,6 +2049,143 @@ export function QRCodeContentDialog({
                                         );
                                       }}
                                       placeholder="트랙 제목 (영어)"
+                                      readOnly={mode === "view"}
+                                      className="text-sm"
+                                    />
+                                  </div>
+                                </div>
+
+                                <div className="grid grid-cols-2 gap-2">
+                                  <div className="space-y-1">
+                                    <div className="flex items-center justify-between">
+                                      <Label className="text-xs">
+                                        아티스트 (한국어)
+                                      </Label>
+                                      {mode !== "view" &&
+                                        track.artistNameKo &&
+                                        currentContent.trackList &&
+                                        currentContent.trackList.some(
+                                          (t) => !t.artistNameKo,
+                                        ) && (
+                                          <Button
+                                            variant="ghost"
+                                            size="sm"
+                                            className="h-6 text-xs px-2"
+                                            onClick={() => {
+                                              const actualIndex =
+                                                getActualIndex(currentIndex);
+                                              if (actualIndex === -1) return;
+
+                                              const newTrackList =
+                                                currentContent.trackList?.map(
+                                                  (t) => ({
+                                                    ...t,
+                                                    artistNameKo:
+                                                      t.artistNameKo ||
+                                                      track.artistNameKo,
+                                                  }),
+                                                ) || [];
+
+                                              handleUpdateContent(
+                                                actualIndex,
+                                                "trackList",
+                                                newTrackList,
+                                              );
+                                            }}
+                                          >
+                                            빈 칸 채우기
+                                          </Button>
+                                        )}
+                                    </div>
+                                    <Input
+                                      value={track.artistNameKo}
+                                      onChange={(e) => {
+                                        const actualIndex =
+                                          getActualIndex(currentIndex);
+                                        if (actualIndex === -1) return;
+
+                                        const newTrackList = [
+                                          ...(currentContent.trackList || []),
+                                        ];
+                                        newTrackList[trackIndex] = {
+                                          ...track,
+                                          artistNameKo: e.target.value,
+                                        };
+
+                                        handleUpdateContent(
+                                          actualIndex,
+                                          "trackList",
+                                          newTrackList,
+                                        );
+                                      }}
+                                      placeholder="아티스트 이름 (한국어)"
+                                      readOnly={mode === "view"}
+                                      className="text-sm"
+                                    />
+                                  </div>
+                                  <div className="space-y-1">
+                                    <div className="flex items-center justify-between">
+                                      <Label className="text-xs">
+                                        아티스트 (영어)
+                                      </Label>
+                                      {mode !== "view" &&
+                                        track.artistNameEn &&
+                                        currentContent.trackList &&
+                                        currentContent.trackList.some(
+                                          (t) => !t.artistNameEn,
+                                        ) && (
+                                          <Button
+                                            variant="ghost"
+                                            size="sm"
+                                            className="h-6 text-xs px-2"
+                                            onClick={() => {
+                                              const actualIndex =
+                                                getActualIndex(currentIndex);
+                                              if (actualIndex === -1) return;
+
+                                              const newTrackList =
+                                                currentContent.trackList?.map(
+                                                  (t) => ({
+                                                    ...t,
+                                                    artistNameEn:
+                                                      t.artistNameEn ||
+                                                      track.artistNameEn,
+                                                  }),
+                                                ) || [];
+
+                                              handleUpdateContent(
+                                                actualIndex,
+                                                "trackList",
+                                                newTrackList,
+                                              );
+                                            }}
+                                          >
+                                            빈 칸 채우기
+                                          </Button>
+                                        )}
+                                    </div>
+                                    <Input
+                                      value={track.artistNameEn}
+                                      onChange={(e) => {
+                                        const actualIndex =
+                                          getActualIndex(currentIndex);
+                                        if (actualIndex === -1) return;
+
+                                        const newTrackList = [
+                                          ...(currentContent.trackList || []),
+                                        ];
+                                        newTrackList[trackIndex] = {
+                                          ...track,
+                                          artistNameEn: e.target.value,
+                                        };
+
+                                        handleUpdateContent(
+                                          actualIndex,
+                                          "trackList",
+                                          newTrackList,
+                                        );
+                                      }}
+                                      placeholder="아티스트 이름 (영어)"
                                       readOnly={mode === "view"}
                                       className="text-sm"
                                     />

@@ -257,6 +257,10 @@ export interface QRCodeContentAlbumTrack {
     ko?: string;
     en?: string;
   };
+  artistNameI18n?: {
+    ko?: string;
+    en?: string;
+  };
   durationSeconds: number;
   trackFilename: string;
   trackFilePath: string;
