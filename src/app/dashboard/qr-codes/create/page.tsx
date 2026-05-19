@@ -286,6 +286,15 @@ export default function CreateQRCodePage() {
       return;
     }
 
+    // 메인 타이틀 필수 검사
+    const validMainTitleList = displayMainTitleList.filter(
+      (item) => item.ko.trim() && item.en.trim(),
+    );
+    if (validMainTitleList.length === 0) {
+      toast.error("메인 타이틀은 한국어와 영어 모두 입력해주세요.");
+      return;
+    }
+
     // 새로운 필드들 유효성 검사
     if (formData.hashCount < 1) {
       toast.error("해시 개수는 1 이상이어야 합니다.");
@@ -857,6 +866,7 @@ export default function CreateQRCodePage() {
                 "메인 타이틀",
                 displayMainTitleList,
                 setDisplayMainTitleList,
+                true,
               )}
               {renderLanguageFields(
                 "서브 타이틀",
