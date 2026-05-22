@@ -67,6 +67,7 @@ interface ContentItem {
   image512Path?: string;
   imageUploading?: boolean;
   imageProgress?: number;
+  isBulk?: boolean;
 
   // ALBUM 타입
   albumCoverImagePath?: string;
@@ -121,13 +122,14 @@ export function QRCodeContentDialog({
   >([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [saving, setSaving] = useState(false);
-  const [contentType, setContentType] = useState<"VIDEO" | "PHOTO" | "ALBUM">(
-    initialContentType,
-  );
+  const [contentType, setContentType] = useState<
+    "VIDEO" | "PHOTO" | "ALBUM" | "BULK_PHOTO"
+  >(initialContentType);
   const isInitialLoadRef = useRef(true);
   const [isDraggingThumbnail, setIsDraggingThumbnail] = useState(false);
   const [isDraggingVideo, setIsDraggingVideo] = useState(false);
   const [isDraggingImage, setIsDraggingImage] = useState(false);
+  const [isDraggingBulkPhoto, setIsDraggingBulkPhoto] = useState(false);
   const [isDraggingAlbumCover, setIsDraggingAlbumCover] = useState(false);
   const [isDraggingTrack, setIsDraggingTrack] = useState<number | null>(null);
   const [imagePreviewOpen, setImagePreviewOpen] = useState(false);
@@ -192,7 +194,7 @@ export function QRCodeContentDialog({
         titleEn: "",
         descriptionKo: "",
         descriptionEn: "",
-        type: contentType,
+        type: (contentType === "BULK_PHOTO" ? "PHOTO" : contentType) as "VIDEO" | "PHOTO" | "ALBUM",
         isPublished: false,
         publishedAt: undefined,
       };
@@ -287,7 +289,7 @@ export function QRCodeContentDialog({
       titleEn: "",
       descriptionKo: "",
       descriptionEn: "",
-      type: contentType,
+      type: (contentType === "BULK_PHOTO" ? "PHOTO" : contentType) as "VIDEO" | "PHOTO" | "ALBUM",
       isPublished: false,
       publishedAt: undefined,
     };
@@ -540,6 +542,110 @@ export function QRCodeContentDialog({
     if (!file) return;
     await uploadImageFileHandler(file);
   };
+
+  const uploadBulkPhotos = async (files: File[]) => {
+    const validFiles = files.filter((file) => {
+      if (!file.type.startsWith("image/")) {
+        toast.error(`${file.name}: 이미지 파일만 업로드 가능합니다.`);
+        return false;
+      }
+      if (file.size > 100 * 1024 * 1024) {
+        toast.error(`${file.name}: 100MB 이하의 파일만 업로드 가능합니다.`);
+        return false;
+      }
+      return true;
+    });
+
+    if (validFiles.length === 0) return;
+
+    const baseIndex = contentItems.length;
+
+    const newItems: ContentItem[] = validFiles.map(() => ({
+      titleKo: "",
+      titleEn: "",
+      descriptionKo: "",
+      descriptionEn: "",
+      type: "PHOTO" as const,
+      isPublished: true,
+      isBulk: true,
+      imageUploading: true,
+      imageProgress: 0,
+    }));
+
+    setContentItems((prev: ContentItem[]) => [...prev, ...newItems]);
+
+    let successCount = 0;
+
+    await Promise.all(
+      validFiles.map(async (file, i) => {
+        const idx = baseIndex + i;
+        try {
+          const path = await uploadImageFile({
+            file,
+            jsonWebToken,
+            dataCollectionName: "qrCodeContents",
+            onProgress: (progress: number) => {
+              setContentItems((prev: ContentItem[]) =>
+                prev.map((item: ContentItem, j: number) =>
+                  j === idx ? { ...item, imageProgress: progress } : item,
+                ),
+              );
+            },
+          });
+          if (path) {
+            setContentItems((prev: ContentItem[]) =>
+              prev.map((item: ContentItem, j: number) =>
+                j === idx
+                  ? {
+                      ...item,
+                      imagePath: path,
+                      imageUploading: false,
+                      imageProgress: 0,
+                    }
+                  : item,
+              ),
+            );
+            successCount++;
+          }
+        } catch {
+          toast.error(`${file.name} 업로드에 실패했습니다.`);
+          setContentItems((prev: ContentItem[]) =>
+            prev.map((item: ContentItem, j: number) =>
+              j === idx
+                ? { ...item, imageUploading: false, imageProgress: 0 }
+                : item,
+            ),
+          );
+        }
+      }),
+    );
+
+    if (successCount > 0) {
+      toast.success(
+        successCount === 1
+          ? "사진이 업로드되었습니다."
+          : `${successCount}장의 사진이 업로드되었습니다.`,
+      );
+    }
+  };
+
+  const handleBulkPhotoFileSelect = async (
+    e: React.ChangeEvent<HTMLInputElement>,
+  ) => {
+    const files = e.target.files ? Array.from<File>(e.target.files) : [];
+    if (files.length === 0) return;
+    await uploadBulkPhotos(files);
+    e.target.value = "";
+  };
+
+  const handleBulkPhotoDrop = async (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    setIsDraggingBulkPhoto(false);
+    const files = Array.from<File>(e.dataTransfer.files);
+    if (files.length === 0) return;
+    await uploadBulkPhotos(files);
+  };
+
 
   const handleRemoveThumbnail = () => {
     const actualIndex = getActualIndex(currentIndex);
@@ -862,12 +968,19 @@ export function QRCodeContentDialog({
       }
     }
 
-    // PHOTO 콘텐츠 유효성 검사 (imagePath만 필수)
-    for (let i = 0; i < photoContents.length; i++) {
-      const content = photoContents[i];
-      if (!content.imagePath) {
-        toast.error(`${i + 1}번째 사진의 이미지를 업로드해주세요.`);
-        return;
+    // PHOTO 콘텐츠 유효성 검사
+    if (photoContents.some((c) => c.imageUploading)) {
+      toast.error("사진 업로드가 완료될 때까지 기다려주세요.");
+      return;
+    }
+    // 단일 사진(non-bulk)은 imagePath 필수 - BULK_PHOTO 모드에서는 체크 생략
+    if (contentType !== "BULK_PHOTO") {
+      const singlePhotoContents = photoContents.filter((c) => !c.isBulk);
+      for (let i = 0; i < singlePhotoContents.length; i++) {
+        if (!singlePhotoContents[i].imagePath) {
+          toast.error(`${i + 1}번째 사진의 이미지를 업로드해주세요.`);
+          return;
+        }
       }
     }
 
@@ -1035,6 +1148,9 @@ export function QRCodeContentDialog({
             }
           }
         } else {
+          // imagePath 없는 PHOTO 항목(업로드 실패 등) 건너뜀
+          if (content.type === "PHOTO" && !content.imagePath) continue;
+
           // 새 콘텐츠 생성
           const createBody: {
             titleI18n: { ko: string; en: string };
@@ -1233,6 +1349,13 @@ export function QRCodeContentDialog({
                 }`}
               </Button>
               <Button
+                variant={contentType === "BULK_PHOTO" ? "default" : "outline"}
+                onClick={() => setContentType("BULK_PHOTO")}
+                className="w-fit"
+              >
+                사진 여러장 추가
+              </Button>
+              <Button
                 variant={contentType === "ALBUM" ? "default" : "outline"}
                 onClick={() => setContentType("ALBUM")}
                 className="w-fit"
@@ -1245,8 +1368,8 @@ export function QRCodeContentDialog({
           </DialogHeader>
 
           <div className="space-y-6">
-            {/* 콘텐츠 탭 */}
-
+            {/* 콘텐츠 탭 - BULK_PHOTO 모드 제외 */}
+            {contentType !== "BULK_PHOTO" && (
             <div className="flex items-center gap-2 flex-wrap">
               {filteredContentItems.map((content, index) => (
                 <div key={index} className="relative">
@@ -1290,9 +1413,10 @@ export function QRCodeContentDialog({
                 </Button>
               )}
             </div>
+            )}
 
-            {/* 콘텐츠 입력 폼 */}
-            {!currentContent ? (
+            {/* 콘텐츠 입력 폼 - BULK_PHOTO 모드 제외 */}
+            {contentType !== "BULK_PHOTO" && (!currentContent ? (
               <div className="text-center py-8">
                 <p className="text-muted-foreground">콘텐츠가 없습니다.</p>
               </div>
@@ -2492,6 +2616,113 @@ export function QRCodeContentDialog({
                       }
                       readOnly={mode === "view"}
                     />
+                  </div>
+                )}
+              </div>
+            ))}
+
+            {/* 여러 장 사진 업로드 섹션 (BULK_PHOTO 모드) */}
+            {contentType === "BULK_PHOTO" && (
+              <div className="space-y-3">
+                <Separator />
+                <div className="flex items-center justify-between">
+                  <Label className="text-base">여러 장 사진 업로드</Label>
+                  {contentItems.filter((i) => i.type === "PHOTO" && i.imagePath).length > 0 && (
+                    <span className="text-xs text-muted-foreground">
+                      {contentItems.filter((i) => i.type === "PHOTO" && i.imagePath).length}장
+                    </span>
+                  )}
+                </div>
+
+                {mode !== "view" && (
+                  <div
+                    className={`border-2 border-dashed rounded-lg p-4 transition-colors cursor-pointer ${
+                      isDraggingBulkPhoto ? "border-primary bg-primary/10" : ""
+                    }`}
+                    onDragEnter={(e) => {
+                      e.preventDefault();
+                      setIsDraggingBulkPhoto(true);
+                    }}
+                    onDragLeave={(e) => {
+                      e.preventDefault();
+                      setIsDraggingBulkPhoto(false);
+                    }}
+                    onDragOver={(e) => e.preventDefault()}
+                    onDrop={handleBulkPhotoDrop}
+                    onClick={() =>
+                      document.getElementById("bulk-photo-upload")?.click()
+                    }
+                  >
+                    <div className="flex flex-col items-center justify-center py-3">
+                      <Plus className="h-7 w-7 text-muted-foreground mb-2" />
+                      <p className="text-sm font-medium">
+                        클릭 또는 드래그하여 사진 여러 장 추가
+                      </p>
+                      <p className="text-xs text-muted-foreground">
+                        JPG, PNG (100MB 이하, 여러 장 동시 선택 가능)
+                      </p>
+                    </div>
+                    <input
+                      id="bulk-photo-upload"
+                      type="file"
+                      accept="image/*"
+                      multiple
+                      className="hidden"
+                      onChange={handleBulkPhotoFileSelect}
+                    />
+                  </div>
+                )}
+
+                {contentItems.filter((i) => i.type === "PHOTO" && (i.imagePath || i.imageUploading)).length > 0 && (
+                  <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-2">
+                    {contentItems
+                      .map((item, actualIdx) => ({ item, actualIdx }))
+                      .filter(({ item }) => item.type === "PHOTO" && (item.imagePath || item.imageUploading))
+                      .map(({ item, actualIdx }, idx) => (
+                        <div
+                          key={idx}
+                          className="relative aspect-square bg-muted rounded-md overflow-hidden border"
+                        >
+                          {item.imageUploading ? (
+                            <div className="flex flex-col items-center justify-center h-full p-2">
+                              <ImageIcon className="h-5 w-5 text-primary animate-pulse mb-1" />
+                              <Progress
+                                value={item.imageProgress ?? 0}
+                                className="w-full"
+                              />
+                              <p className="text-xs mt-0.5 text-muted-foreground">
+                                {item.imageProgress ?? 0}%
+                              </p>
+                            </div>
+                          ) : item.imagePath ? (
+                            <>
+                              <Image
+                                src={`${STORAGE_URL}/${item.image512Path || item.imagePath}`}
+                                alt={`사진 ${idx + 1}`}
+                                fill
+                                className="object-cover cursor-pointer"
+                                onClick={() => {
+                                  setImagePreviewUrl(
+                                    `${STORAGE_URL}/${item.imagePath}`,
+                                  );
+                                  setImagePreviewOpen(true);
+                                }}
+                              />
+                              {mode !== "view" && (
+                                <button
+                                  className="absolute top-1 right-1 bg-black/60 rounded-full p-0.5 text-white hover:bg-black/90 transition-colors"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleRemoveContent(actualIdx);
+                                  }}
+                                >
+                                  <X className="h-3 w-3" />
+                                </button>
+                              )}
+                            </>
+                          ) : null}
+                        </div>
+                      ))}
                   </div>
                 )}
               </div>
