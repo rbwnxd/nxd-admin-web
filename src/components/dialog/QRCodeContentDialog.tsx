@@ -576,49 +576,48 @@ export function QRCodeContentDialog({
 
     let successCount = 0;
 
-    await Promise.all(
-      validFiles.map(async (file, i) => {
-        const idx = baseIndex + i;
-        try {
-          const path = await uploadImageFile({
-            file,
-            jsonWebToken,
-            dataCollectionName: "qrCodeContents",
-            onProgress: (progress: number) => {
-              setContentItems((prev: ContentItem[]) =>
-                prev.map((item: ContentItem, j: number) =>
-                  j === idx ? { ...item, imageProgress: progress } : item,
-                ),
-              );
-            },
-          });
-          if (path) {
+    for (let i = 0; i < validFiles.length; i++) {
+      const file = validFiles[i];
+      const idx = baseIndex + i;
+      try {
+        const path = await uploadImageFile({
+          file,
+          jsonWebToken,
+          dataCollectionName: "qrCodeContents",
+          onProgress: (progress: number) => {
             setContentItems((prev: ContentItem[]) =>
               prev.map((item: ContentItem, j: number) =>
-                j === idx
-                  ? {
-                      ...item,
-                      imagePath: path,
-                      imageUploading: false,
-                      imageProgress: 0,
-                    }
-                  : item,
+                j === idx ? { ...item, imageProgress: progress } : item,
               ),
             );
-            successCount++;
-          }
-        } catch {
-          toast.error(`${file.name} 업로드에 실패했습니다.`);
+          },
+        });
+        if (path) {
           setContentItems((prev: ContentItem[]) =>
             prev.map((item: ContentItem, j: number) =>
               j === idx
-                ? { ...item, imageUploading: false, imageProgress: 0 }
+                ? {
+                    ...item,
+                    imagePath: path,
+                    imageUploading: false,
+                    imageProgress: 0,
+                  }
                 : item,
             ),
           );
+          successCount++;
         }
-      }),
-    );
+      } catch {
+        toast.error(`${file.name} 업로드에 실패했습니다.`);
+        setContentItems((prev: ContentItem[]) =>
+          prev.map((item: ContentItem, j: number) =>
+            j === idx
+              ? { ...item, imageUploading: false, imageProgress: 0 }
+              : item,
+          ),
+        );
+      }
+    }
 
     if (successCount > 0) {
       toast.success(
