@@ -496,8 +496,8 @@ export function QRCodeContentDialog({
       return;
     }
 
-    if (file.size > 10 * 1024 * 1024) {
-      toast.error("10MB 이하의 파일만 업로드 가능합니다.");
+    if (file.size > 100 * 1024 * 1024) {
+      toast.error("100MB 이하의 파일만 업로드 가능합니다.");
       return;
     }
 
@@ -1719,7 +1719,7 @@ export function QRCodeContentDialog({
                               클릭 또는 드래그하여 사진 업로드
                             </p>
                             <p className="text-xs text-muted-foreground">
-                              JPG, PNG (10MB 이하)
+                              JPG, PNG (100MB 이하)
                             </p>
                           </div>
                         )}
