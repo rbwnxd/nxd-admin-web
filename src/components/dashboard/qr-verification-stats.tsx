@@ -28,6 +28,7 @@ import {
 } from "recharts";
 import { QRCodeVerificationStatsDto } from "@/lib/types";
 import type { ChartConfig } from "@/components/ui/chart";
+import { getCategoryLabel } from "@/lib/consts";
 
 interface QRVerificationStatsProps {
   stats: QRCodeVerificationStatsDto;
@@ -111,31 +112,23 @@ const CustomXAxisTick = ({ x, y, payload }: any) => {
   );
 };
 
-// 카테고리 한글명 매핑
-const CATEGORY_LABELS: Record<string, string> = {
-  CONCERT: "콘서트",
-  ALBUM: "앨범",
-  OFFLINE_SPOT: "오프라인 스팟",
-  GOODS: "굿즈",
-  BROADCAST: "방송",
-  PERFORMANCE: "공연",
-};
-
 // 카테고리별 고정 색상
 const CATEGORY_COLORS: Record<string, string> = {
-  CONCERT: "#8b5cf6",
-  ALBUM: "#3b82f6",
-  OFFLINE_SPOT: "#10b981",
-  GOODS: "#f59e0b",
-  BROADCAST: "#ec4899",
-  PERFORMANCE: "#06b6d4",
+  PLATFORM_ALBUM: "#6366f1", // 인디고
+  CONTENTS_ALBUM: "#06b6d4", // 사이안
+  CONTENTS_GOODS: "#f97316", // 진한 주황
+  ALBUM: "#3b82f6", // 파랑
+  CONCERT: "#8b5cf6", // 보라
+  BROADCAST: "#ec4899", // 핑크
+  GOODS: "#f59e0b", // 주황
+  OFFLINE_SPOT: "#10b981", // 초록
 };
 
 export function QRVerificationStats({ stats }: QRVerificationStatsProps) {
   // 막대 그래프용 데이터
   const barChartData = useMemo(() => {
     return stats.categoryStats.map((stat) => ({
-      category: CATEGORY_LABELS[stat.category] || stat.category,
+      category: getCategoryLabel(stat.category),
       count: stat.count,
       fill: CATEGORY_COLORS[stat.category] || "#6b7280",
     }));
@@ -145,7 +138,7 @@ export function QRVerificationStats({ stats }: QRVerificationStatsProps) {
   const pieChartData = useMemo(() => {
     return stats.categoryStats.map((stat) => ({
       category: stat.category,
-      label: CATEGORY_LABELS[stat.category] || stat.category,
+      label: getCategoryLabel(stat.category),
       count: stat.count,
       percentage: stat.percentage,
       fill: CATEGORY_COLORS[stat.category] || "#6b7280",
@@ -168,7 +161,7 @@ export function QRVerificationStats({ stats }: QRVerificationStatsProps) {
     const config: ChartConfig = {};
     stats.categoryStats.forEach((stat, index) => {
       config[stat.category] = {
-        label: CATEGORY_LABELS[stat.category] || stat.category,
+        label: getCategoryLabel(stat.category),
         color: `hsl(var(--chart-${(index % 5) + 1}))`,
       };
     });
