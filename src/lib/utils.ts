@@ -13,7 +13,19 @@ export function cn(...inputs: ClassValue[]) {
 export function downloadCSV(data: string[][], filename: string) {
   // BOM 추가로 한글 깨짐 방지
   const BOM = "\uFEFF";
-  const csvContent = data.map(row => row.join(",")).join("\n");
+  const csvContent = data
+    .map((row) =>
+      row
+        .map((cell) => {
+          const value = cell ?? "";
+          if (/[",\n\r]/.test(value)) {
+            return `"${value.replace(/"/g, '""')}"`;
+          }
+          return value;
+        })
+        .join(","),
+    )
+    .join("\n");
   const blob = new Blob([BOM + csvContent], { type: "text/csv;charset=utf-8;" });
   
   const link = document.createElement("a");

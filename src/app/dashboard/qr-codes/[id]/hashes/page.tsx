@@ -45,6 +45,8 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { QRCodeSVG } from "qrcode.react";
+import { downloadCSV } from "@/lib/utils";
+import type { QRCodeHash } from "@/lib/types";
 
 /**
  *
@@ -60,6 +62,7 @@ export default function QRCodeHashesPage() {
   const [additionalIssueCount, setAdditionalIssueCount] = useState(1);
   const [additionalIssueDialogOpen, setAdditionalIssueDialogOpen] =
     useState(false);
+  const [csvDownloadLoading, setCsvDownloadLoading] = useState(false);
 
   // QR 코드 생성 관련 state
   const [qrCodeDialogOpen, setQrCodeDialogOpen] = useState(false);
@@ -141,6 +144,62 @@ export default function QRCodeHashesPage() {
 
   const isExpired =
     !!qrCode?.expiresAt && !moment().isBefore(moment(qrCode?.expiresAt));
+
+  const getQrData = (hash: QRCodeHash) => ({
+    _id: hash._id,
+    qrCodeId: params.id,
+    token: hash.token,
+  });
+
+  const handleDownloadHashCSV = async () => {
+    if (!jsonWebToken || !params.id) return;
+
+    if (totalHashCount < 1) {
+      toast.error("다운로드할 해시가 없습니다.");
+      return;
+    }
+
+    setCsvDownloadLoading(true);
+
+    try {
+      const result = await getQRCodeHashes({
+        qrCodeId: params.id,
+        params: {
+          __skip: 0,
+          __limit: totalHashCount,
+          __includeDeleted: hashIncludeDeleted,
+        },
+        jsonWebToken,
+      });
+
+      const hashes: QRCodeHash[] = result?.qrCodeHashes || [];
+
+      if (hashes.length === 0) {
+        toast.error("다운로드할 해시가 없습니다.");
+        return;
+      }
+
+      const csvData: string[][] = [
+        ["value"],
+        ...hashes.map((hash) => [JSON.stringify(getQrData(hash))]),
+      ];
+
+      const title =
+        qrCode?.displayMainTitleList[0]?.ko?.replace(/[\\/:*?"<>|]/g, "_") ||
+        "qr-code";
+      const filename = `${title}_hashes_${moment().format(
+        "YYYYMMDD_HHmmss",
+      )}.csv`;
+
+      downloadCSV(csvData, filename);
+      toast.success(`${hashes.length}개의 해시 CSV를 다운로드했습니다.`);
+    } catch (error) {
+      console.error("QR hash CSV download error:", error);
+      toast.error("해시 CSV 다운로드에 실패했습니다.");
+    } finally {
+      setCsvDownloadLoading(false);
+    }
+  };
 
   if (!qrCode) {
     return (
@@ -232,6 +291,19 @@ export default function QRCodeHashesPage() {
         </div>
 
         <div className="flex items-center gap-2 self-end lg:self-auto">
+          <Button
+            variant="outline"
+            onClick={handleDownloadHashCSV}
+            className="flex items-center gap-2"
+            disabled={hashLoading || csvDownloadLoading || totalHashCount < 1}
+          >
+            {csvDownloadLoading ? (
+              <Loader2 className="w-4 h-4 animate-spin" />
+            ) : (
+              <Download className="w-4 h-4" />
+            )}
+            CSV 다운로드
+          </Button>
           <Tooltip>
             <TooltipTrigger asChild>
               <span className={isExpired ? "cursor-not-allowed" : undefined}>
@@ -353,9 +425,7 @@ export default function QRCodeHashesPage() {
                         size="sm"
                         onClick={() => {
                           setSelectedQrData({
-                            _id: hash._id,
-                            qrCodeId: params.id,
-                            token: hash.token,
+                            ...getQrData(hash),
                           });
                           setQrCodeDialogOpen(true);
                         }}
