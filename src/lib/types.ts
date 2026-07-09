@@ -160,7 +160,7 @@ export type QRCodeCategory =
   | "CONCERT"
   | "BROADCAST"
   | "GOODS"
-  | "OFFLINE_SPOT";
+  | "EVENT";
 
 export interface QRCode {
   _id: string;

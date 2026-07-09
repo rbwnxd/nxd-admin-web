@@ -7,7 +7,7 @@ export const CATEGORY_OPTIONS = [
   { value: "CONCERT", label: "콘서트" },
   { value: "BROADCAST", label: "방송" },
   { value: "GOODS", label: "굿즈" },
-  { value: "OFFLINE_SPOT", label: "오프라인 스팟" },
+  { value: "EVENT", label: "이벤트" },
 ] as const;
 
 // 카테고리 코드를 한글 라벨로 변환하는 헬퍼 함수

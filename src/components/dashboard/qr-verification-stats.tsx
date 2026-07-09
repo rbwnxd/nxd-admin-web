@@ -121,7 +121,7 @@ const CATEGORY_COLORS: Record<string, string> = {
   CONCERT: "#8b5cf6", // 보라
   BROADCAST: "#ec4899", // 핑크
   GOODS: "#f59e0b", // 주황
-  OFFLINE_SPOT: "#10b981", // 초록
+  EVENT: "#10b981", // 초록
 };
 
 export function QRVerificationStats({ stats }: QRVerificationStatsProps) {
