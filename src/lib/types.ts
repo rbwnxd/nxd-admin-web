@@ -28,6 +28,31 @@ export interface Announcement {
   deletedAt: string | null;
 }
 
+export interface PopupImage {
+  name: string;
+  imageOriginalPath: string;
+  image64Path: string;
+  image128Path: string;
+  image256Path: string;
+  image512Path: string;
+  image1024Path: string;
+  imageFilename: string;
+}
+
+export interface Popup {
+  _id: string;
+  eventName: string;
+  displayStartedAt: string;
+  displayEndedAt: string;
+  displayOrder?: number;
+  isPublished: boolean;
+  image: PopupImage;
+  externalLink: string | null;
+  createdAt: string;
+  updatedAt: string;
+  deletedAt: string | null;
+}
+
 export interface Artist {
   _id: string;
   nameList: [
@@ -549,6 +574,15 @@ export interface AnnouncementFormData {
   contentKo: string;
   contentEn: string;
   publishedAt: string;
+}
+
+export interface PopupFormData {
+  eventName: string;
+  displayStartedAt: string;
+  displayEndedAt: string;
+  displayOrder: string;
+  isPublished: boolean;
+  externalLink: string;
 }
 
 // === QR 코드 관련 타입들 ===

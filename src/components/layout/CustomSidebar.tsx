@@ -23,6 +23,7 @@ import {
   Users2,
   CalendarHeart,
   Bell,
+  PanelsTopLeft,
 } from "lucide-react";
 
 import { useAuthStore } from "@/store/authStore";
@@ -33,6 +34,7 @@ import { useChartStore } from "@/store/chartStore";
 import { useAnnouncementStore } from "@/store/announcementStore";
 import { usePointModificationStore } from "@/store/pointModificationStore";
 import { useAnniversaryRewardPolicyStore } from "@/store/anniversaryRwardPolicyStore";
+import { usePopupStore } from "@/store/popupStore";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
 import {
   Sidebar,
@@ -89,6 +91,11 @@ const menuItems = [
     icon: Megaphone,
   },
   {
+    title: "팝업 관리",
+    href: "/dashboard/popups",
+    icon: PanelsTopLeft,
+  },
+  {
     title: "특전 관리",
     href: "/dashboard/benefits",
     icon: Gift,
@@ -136,6 +143,7 @@ export function CustomSidebar({ className }: SidebarProps) {
   const resetAnnouncementPagination = useAnnouncementStore(
     (state) => state.resetPagination
   );
+  const resetPopupPagination = usePopupStore((state) => state.resetPagination);
   const resetPointModificationPagination = usePointModificationStore(
     (state) => state.resetPagination
   );
@@ -173,6 +181,9 @@ export function CustomSidebar({ className }: SidebarProps) {
         break;
       case "/dashboard/announcements":
         resetAnnouncementPagination();
+        break;
+      case "/dashboard/popups":
+        resetPopupPagination();
         break;
       case "/dashboard/point-modifications":
         resetPointModificationPagination();
