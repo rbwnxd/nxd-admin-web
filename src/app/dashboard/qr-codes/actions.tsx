@@ -247,6 +247,7 @@ export const createQRCodeCheckIn = async ({
   body: {
     category: QRCodeCategory;
     title: string;
+    point: number;
     startAt: string;
     endAt: string;
     adminIds: string[];
@@ -277,6 +278,7 @@ export const updateQRCodeCheckIn = async ({
   body: {
     category: QRCodeCategory;
     title: string;
+    point: number;
     startAt: string;
     endAt: string;
     adminIds: string[];

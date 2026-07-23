@@ -238,6 +238,10 @@ export default function QRCodeCheckInPage() {
                         </p>
                       </div>
 
+                      <p className="text-sm text-muted-foreground mb-1">
+                        포인트: {checkIn.point}P
+                      </p>
+
                       <div className="flex items-center justify-between text-sm text-muted-foreground mb-3">
                         <div className="flex items-center gap-4">
                           <div className="flex items-center gap-1">

@@ -65,6 +65,7 @@ interface CheckIn {
   _id: string;
   title: string;
   category: QRCodeCategory;
+  point: number;
   startAt: string;
   endAt: string;
   memo?: string | null;
@@ -309,6 +310,13 @@ export default function QRCodeCheckInDetailPage() {
                   상태
                 </Label>
                 <div className="mt-1">{getStatusBadge(checkIn)}</div>
+              </div>
+
+              <div>
+                <Label className="text-sm font-medium text-muted-foreground">
+                  포인트
+                </Label>
+                <p className="text-lg font-semibold mt-1">{checkIn.point}P</p>
               </div>
 
               <div>

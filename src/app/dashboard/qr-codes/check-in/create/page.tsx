@@ -69,6 +69,7 @@ export default function CreateCheckInPage() {
   const [formData, setFormData] = useState<QRCodeCheckInFormData>({
     category: "",
     title: "",
+    point: 10,
     startAt: getCurrentDateTime(),
     endAt: getEndDateTime(),
     memo: "",
@@ -107,6 +108,7 @@ export default function CreateCheckInPage() {
         setFormData({
           category: data.category as QRCodeCategory,
           title: data.title,
+          point: data.point,
           startAt: formatDateForInput(data.startAt),
           endAt: formatDateForInput(data.endAt),
           memo: data.memo || "",
@@ -177,6 +179,11 @@ export default function CreateCheckInPage() {
       return;
     }
 
+    if (!Number.isInteger(formData.point) || formData.point < 1) {
+      toast.error("포인트는 1 이상인 정수로 입력해주세요.");
+      return;
+    }
+
     if (!formData.startAt) {
       toast.error("시작 시간을 입력해주세요.");
       return;
@@ -203,6 +210,7 @@ export default function CreateCheckInPage() {
       const body = {
         category: formData.category as QRCodeCategory,
         title: formData.title.trim(),
+        point: formData.point,
         startAt: formData.startAt,
         endAt: formData.endAt,
         adminIds: admins.map((admin) => admin._id),
@@ -235,6 +243,7 @@ export default function CreateCheckInPage() {
           updateCheckIn(checkInId, {
             category: body.category,
             title: body.title,
+            point: body.point,
             startAt: body.startAt,
             endAt: body.endAt,
             memo: body.memo,
@@ -373,6 +382,33 @@ export default function CreateCheckInPage() {
                       setFormData({ ...formData, title: e.target.value })
                     }
                     placeholder="체크인 이벤트 제목"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="point">포인트 *</Label>
+                  <Input
+                    id="point"
+                    type="number"
+                    min="1"
+                    step="1"
+                    value={formData.point || ""}
+                    onChange={(e) => {
+                      const value = e.target.value;
+                      setFormData({
+                        ...formData,
+                        point: value === "" ? 0 : Number(value),
+                      });
+                    }}
+                    onBlur={() => {
+                      if (
+                        !Number.isInteger(formData.point) ||
+                        formData.point < 1
+                      ) {
+                        setFormData({ ...formData, point: 10 });
+                      }
+                    }}
+                    placeholder="10"
                   />
                 </div>
               </div>

@@ -232,6 +232,7 @@ export interface QRCodeCheckIn {
   _id: string;
   category: QRCodeCategory;
   title: string;
+  point: number;
   startAt: string;
   endAt: string;
   admins: Array<{
@@ -626,6 +627,7 @@ export interface QRCodeCheckInAdmin {
 export interface QRCodeCheckInFormData {
   category: QRCodeCategory | "";
   title: string;
+  point: number;
   startAt: string;
   endAt: string;
   memo: string;
