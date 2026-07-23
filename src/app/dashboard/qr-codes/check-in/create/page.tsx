@@ -69,7 +69,7 @@ export default function CreateCheckInPage() {
   const [formData, setFormData] = useState<QRCodeCheckInFormData>({
     category: "",
     title: "",
-    point: 10,
+    point: 100,
     startAt: getCurrentDateTime(),
     endAt: getEndDateTime(),
     memo: "",
@@ -405,10 +405,10 @@ export default function CreateCheckInPage() {
                         !Number.isInteger(formData.point) ||
                         formData.point < 1
                       ) {
-                        setFormData({ ...formData, point: 10 });
+                        setFormData({ ...formData, point: 100 });
                       }
                     }}
-                    placeholder="10"
+                    placeholder="100"
                   />
                 </div>
               </div>
