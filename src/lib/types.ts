@@ -345,6 +345,7 @@ export interface UserPoint {
   currentPoint: number;
   totalUsedPoint: number;
   totalReceivedPoint: number;
+  totalSentPoint?: number;
 }
 
 export interface RestrictionInfo {

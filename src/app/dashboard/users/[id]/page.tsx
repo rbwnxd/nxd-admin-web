@@ -336,6 +336,9 @@ export default function UserDetailPage() {
     );
   }
 
+  const accumulatedPoint =
+    user.point.totalReceivedPoint - (user.point.totalSentPoint ?? 0);
+
   return (
     <div className="container mx-auto max-w-4xl">
       {/* 상단 네비게이션 */}
@@ -580,9 +583,9 @@ export default function UserDetailPage() {
 
               <div className="text-center p-4 border rounded-lg space-y-2">
                 <p className="text-2xl font-bold ">
-                  {user.point.totalReceivedPoint.toLocaleString()}P
+                  {accumulatedPoint.toLocaleString()}P
                 </p>
-                <p className="text-sm text-muted-foreground">총 획득 포인트</p>
+                <p className="text-sm text-muted-foreground">누적 포인트</p>
               </div>
 
               <div className="text-center p-4 border rounded-lg space-y-2">
