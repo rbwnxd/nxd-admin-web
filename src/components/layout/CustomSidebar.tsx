@@ -24,6 +24,7 @@ import {
   CalendarHeart,
   Bell,
   PanelsTopLeft,
+  Target,
 } from "lucide-react";
 
 import { useAuthStore } from "@/store/authStore";
@@ -34,6 +35,7 @@ import { useChartStore } from "@/store/chartStore";
 import { useAnnouncementStore } from "@/store/announcementStore";
 import { usePointModificationStore } from "@/store/pointModificationStore";
 import { useAnniversaryRewardPolicyStore } from "@/store/anniversaryRwardPolicyStore";
+import { useMissionStore } from "@/store/missionStore";
 import { usePopupStore } from "@/store/popupStore";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
 import {
@@ -75,6 +77,11 @@ const menuItems = [
     icon: Star,
   },
 
+  {
+    title: "미션 관리",
+    href: "/dashboard/missions",
+    icon: Target,
+  },
   {
     title: "QR 코드 관리",
     href: "/dashboard/qr-codes",
@@ -133,22 +140,23 @@ export function CustomSidebar({ className }: SidebarProps) {
 
   // Store 리셋 함수들
   const resetUserPagination = useUserManagementStore(
-    (state) => state.resetPagination
+    (state) => state.resetPagination,
   );
   const resetArtistPagination = useArtistStore(
-    (state) => state.resetPagination
+    (state) => state.resetPagination,
   );
   const resetQRCode = useQRCodeStore((state) => state.reset);
   const resetChart = useChartStore((state) => state.reset);
   const resetAnnouncementPagination = useAnnouncementStore(
-    (state) => state.resetPagination
+    (state) => state.resetPagination,
   );
   const resetPopupPagination = usePopupStore((state) => state.resetPagination);
   const resetPointModificationPagination = usePointModificationStore(
-    (state) => state.resetPagination
+    (state) => state.resetPagination,
   );
   const resetAnniversaryRewardPolicyPagination =
     useAnniversaryRewardPolicyStore((state) => state.resetPagination);
+  const resetMission = useMissionStore((state) => state.reset);
 
   const handleLogout = async () => {
     try {
@@ -172,6 +180,9 @@ export function CustomSidebar({ className }: SidebarProps) {
         break;
       case "/dashboard/artists":
         resetArtistPagination();
+        break;
+      case "/dashboard/missions":
+        resetMission();
         break;
       case "/dashboard/qr-codes":
         resetQRCode();

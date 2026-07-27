@@ -785,6 +785,95 @@ export interface CreateTermsResponse {
   terms: Terms;
 }
 
+// === 미션 관련 타입들 ===
+
+export interface MissionLocalizedText {
+  ko: string;
+  en: string;
+}
+
+export interface Mission {
+  _id: string;
+  thumbnailImageOriginalPath: string;
+  thumbnailImage64Path: string;
+  thumbnailImage128Path: string;
+  thumbnailImage256Path: string;
+  thumbnailImage512Path: string;
+  thumbnailImage1024Path: string;
+  title: MissionLocalizedText;
+  description: MissionLocalizedText;
+  youtubeUrl: string;
+  pointAmount: number;
+  totalPointAmount: number;
+  remainingPointAmount: number;
+  playStartedCount: number;
+  playStartedUserCount: number;
+  playEndedCount: number;
+  playEndedUserCount: number;
+  pointGrantedCount: number;
+  pointGrantedUserCount: number;
+  participationIntervalHours: number | null;
+  publishedAt: string;
+  pointFinishedAt: string | null;
+  endedAt: string | null;
+  isPointAvailable: boolean;
+  createdAt: string;
+  updatedAt: string;
+  deletedAt: string | null;
+}
+
+export interface MissionFormData {
+  thumbnailImageOriginalPath: string;
+  title: MissionLocalizedText;
+  description: MissionLocalizedText;
+  youtubeUrl: string;
+  pointAmount: number;
+  totalPointAmount: number;
+  participationIntervalHours: number | null;
+  publishedAt: string;
+  pointFinishedAt: string | null;
+  endedAt: string | null;
+}
+
+export interface MissionsResponse {
+  totalCount: number;
+  missions: Mission[];
+}
+
+export interface MissionDetailResponse {
+  mission: Mission;
+}
+
+export interface DailyMissionParticipationStat {
+  _id: string;
+  missionId: string;
+  dateKST: string;
+  yearKST: number;
+  monthKST: number;
+  dayKST: number;
+  playStartedUserCount: number;
+  playStartedCount: number;
+  playEndedUserCount: number;
+  playEndedCount: number;
+  pointGrantedUserCount: number;
+  pointGrantedCount: number;
+  pointGrantedAmount: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface MissionParticipationStatsSyncResponse {
+  dateKST: string;
+  startedAt: string;
+  endedAt: string;
+  missionCount: number;
+  dailyStats: DailyMissionParticipationStat[];
+}
+
+export interface MissionParticipationSummariesSyncResponse {
+  summaryCount: number;
+}
+
 // === 알림 관련 타입들 ===
 
 export interface Notification {
