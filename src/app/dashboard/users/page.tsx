@@ -167,16 +167,17 @@ export default function UsersPage() {
         size: 20,
       },
       {
-        accessorKey: "point.totalReceivedPoint",
-        id: "point.totalReceivedPoint",
-        header: ({ column }) => (
-          <DataTableColumnHeader column={column} title="총 받은 포인트" />
-        ),
+        id: "accumulatedPoint",
+        header: "누적 포인트",
+        enableSorting: false,
         cell: ({ row }) => {
           const user = row.original;
+          const accumulatedPoint =
+            (user.point?.totalReceivedPoint ?? 0) -
+            (user.point?.totalSentPoint ?? 0);
           return (
             <div className="text-right">
-              {user.point?.totalReceivedPoint.toLocaleString()} P
+              {accumulatedPoint.toLocaleString()} P
             </div>
           );
         },
