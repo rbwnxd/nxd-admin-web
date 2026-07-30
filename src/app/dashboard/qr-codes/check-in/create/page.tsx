@@ -211,8 +211,8 @@ export default function CreateCheckInPage() {
         category: formData.category as QRCodeCategory,
         title: formData.title.trim(),
         point: formData.point,
-        startAt: formData.startAt,
-        endAt: formData.endAt,
+        startAt: new Date(formData.startAt).toISOString(),
+        endAt: new Date(formData.endAt).toISOString(),
         adminIds: admins.map((admin) => admin._id),
         memo: formData.memo.trim() || undefined,
       };
