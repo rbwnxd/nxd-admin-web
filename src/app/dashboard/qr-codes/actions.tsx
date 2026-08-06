@@ -48,6 +48,7 @@ export const createQRCode = async ({
     displayTextList?: { [key: string]: string }[];
     imageList?: { name: string; imageOriginalPath: string }[];
     expireMinutes?: number | null;
+    expiresAt?: string;
     issuedCount?: number;
     hashCount?: number;
     isHashReusable?: boolean;

@@ -601,6 +601,7 @@ export interface QRCodeFormData {
   category: QRCodeCategory | "";
   point: number;
   expireMinutes: number | null;
+  expiresAt: string;
   issuedCount: number;
   hashCount: number;
   isHashReusable: boolean;

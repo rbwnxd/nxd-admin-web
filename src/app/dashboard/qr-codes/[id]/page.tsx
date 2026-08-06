@@ -266,12 +266,16 @@ export default function QRCodeDetailPage() {
 
               <div>
                 <Label className="text-sm font-medium text-muted-foreground">
-                  만료 시간
+                  {qrCode.expiresAt ? "만료 일시 (KST)" : "만료 시간"}
                 </Label>
                 <p className="text-lg font-semibold mt-1">
-                  {qrCode.expireMinutes
-                    ? `${qrCode.expireMinutes}분`
-                    : "무제한"}
+                  {qrCode.expiresAt
+                    ? moment(qrCode.expiresAt)
+                        .utcOffset(9)
+                        .format("YYYY-MM-DD hh:mm")
+                    : qrCode.expireMinutes
+                      ? `${qrCode.expireMinutes}분`
+                      : "무제한"}
                 </p>
               </div>
 
@@ -528,17 +532,6 @@ export default function QRCodeDetailPage() {
                 </Label>
                 <p className="font-medium mt-1">
                   {moment(qrCode.updatedAt).format("YYYY년 MM월 DD일 HH:mm")}
-                </p>
-              </div>
-
-              <div>
-                <Label className="text-sm font-medium text-muted-foreground">
-                  만료일
-                </Label>
-                <p className="font-medium mt-1">
-                  {qrCode?.expiresAt
-                    ? moment(qrCode.expiresAt).format("YYYY년 MM월 DD일 HH:mm")
-                    : "무제한"}
                 </p>
               </div>
 

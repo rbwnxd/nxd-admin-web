@@ -307,9 +307,11 @@ export default function QRCodesPage() {
                         {moment(qrCode?.createdAt).format("YYYY-MM-DD HH:mm")}
                       </p>
                       <p className="text-sm text-muted-foreground mt-1">
-                        만료일:{" "}
+                        만료일 (KST):{" "}
                         {qrCode?.expiresAt
-                          ? moment(qrCode?.expiresAt).format("YYYY-MM-DD HH:mm")
+                          ? moment(qrCode?.expiresAt)
+                              .utcOffset(9)
+                              .format("YYYY-MM-DD hh:mm")
                           : "무제한"}
                       </p>
                       {qrCode?.deletedAt && (

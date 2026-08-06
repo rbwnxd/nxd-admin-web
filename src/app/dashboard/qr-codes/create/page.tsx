@@ -23,6 +23,7 @@ import {
   Upload,
   Trash2,
   Loader2,
+  CircleHelp,
 } from "lucide-react";
 import { createQRCode, updateQRCode, getQRCodeDetail } from "../actions";
 import { toast } from "sonner";
@@ -37,6 +38,11 @@ import {
   QRCodeCategory,
 } from "@/lib/types";
 import { useQRCodeStore } from "@/store/qrCodeStore";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 // 썸네일 이미지 추가, 적립태그 추가
 
@@ -58,6 +64,7 @@ export default function CreateQRCodePage() {
     category: "",
     point: 10,
     expireMinutes: 0,
+    expiresAt: "",
     issuedCount: 1, // 인증가능한 횟수
     hashCount: 1, // 발급할 해시 개수
     isHashReusable: false, // 해시 재활용 가능 여부
@@ -95,6 +102,7 @@ export default function CreateQRCodePage() {
               category: existingQRCode.category,
               point: existingQRCode.point,
               expireMinutes: existingQRCode?.expireMinutes,
+              expiresAt: "",
               issuedCount: existingQRCode.issuedCount,
               hashCount: existingQRCode.hashCount || 1,
               isHashReusable: Boolean(
@@ -334,6 +342,9 @@ export default function CreateQRCodePage() {
         point: formData.point,
         displayTextList: validDisplayTextList,
         expireMinutes: formData?.expireMinutes || null,
+        ...(formData.expiresAt && {
+          expiresAt: new Date(formData.expiresAt).toISOString(),
+        }),
         issuedCount: formData.issuedCount,
         hashCount: formData.hashCount,
         isHashReusable: formData.isHashReusable,
@@ -609,35 +620,63 @@ export default function CreateQRCodePage() {
                   />
                 </div>
 
-                <div className="flex flex-col gap-2">
-                  <Label htmlFor="expireMinutes">만료 시간 (분)</Label>
-                  <Input
-                    id="expireMinutes"
-                    type="number"
-                    min={0}
-                    value={formData?.expireMinutes || ""}
-                    placeholder="0"
-                    disabled={isUpdateMode}
-                    onChange={(e) => {
-                      const val = e.target.value;
-                      setFormData({
-                        ...formData,
-                        expireMinutes: val === "" ? 0 : parseInt(val) || 0,
-                      });
-                    }}
-                    onBlur={(e) => {
-                      const numVal = parseInt(e.target.value);
-                      if (isNaN(numVal) || numVal < 0) {
+                <div className="grid grid-cols-1 gap-4 md:col-span-2 md:grid-cols-2">
+                  <div className="flex flex-col gap-2">
+                    <Label htmlFor="expireMinutes">만료 시간 (분)</Label>
+                    <Input
+                      id="expireMinutes"
+                      type="number"
+                      min={0}
+                      value={formData?.expireMinutes || ""}
+                      placeholder="0"
+                      disabled={isUpdateMode}
+                      onChange={(e) => {
+                        const val = e.target.value;
                         setFormData({
                           ...formData,
-                          expireMinutes: 0,
+                          expireMinutes: val === "" ? 0 : parseInt(val) || 0,
                         });
+                      }}
+                      onBlur={(e) => {
+                        const numVal = parseInt(e.target.value);
+                        if (isNaN(numVal) || numVal < 0) {
+                          setFormData({
+                            ...formData,
+                            expireMinutes: 0,
+                          });
+                        }
+                      }}
+                    />
+                    <p className="text-sm text-muted-foreground mt-1">
+                      기본값: 0 (무제한)
+                    </p>
+                  </div>
+
+                  <div className="flex flex-col gap-2">
+                    <div className="flex items-center gap-1">
+                      <Label htmlFor="expiresAt">만료 일시</Label>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <button type="button" aria-label="만료 설정 안내">
+                            <CircleHelp className="h-4 w-4" />
+                          </button>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          만료 시간과 만료 일시를 함께 입력하면 만료 일시가 우선합니다.
+                        </TooltipContent>
+                      </Tooltip>
+                    </div>
+                    <Input
+                      id="expiresAt"
+                      type="datetime-local"
+                      className="w-fit"
+                      value={formData.expiresAt}
+                      disabled={isUpdateMode}
+                      onChange={(e) =>
+                        setFormData({ ...formData, expiresAt: e.target.value })
                       }
-                    }}
-                  />
-                  <p className="text-sm text-muted-foreground mt-1">
-                    기본값: 0 (무제한)
-                  </p>
+                    />
+                  </div>
                 </div>
               </div>
             </CardContent>
