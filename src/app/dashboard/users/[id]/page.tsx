@@ -32,6 +32,7 @@ import {
   liftBanUser,
   liftRestrictUser,
   promoteUser,
+  demoteUser,
 } from "../actions";
 import { toast } from "sonner";
 import moment from "moment";
@@ -63,6 +64,7 @@ export default function UserDetailPage() {
   const [unrestrictDialogOpen, setUnrestrictDialogOpen] = useState(false);
   const [promoteToArtistDialogOpen, setPromoteToArtistDialogOpen] =
     useState(false);
+  const [demoteToUserDialogOpen, setDemoteToUserDialogOpen] = useState(false);
   const [actionLoading, setActionLoading] = useState(false);
 
   // 폼 상태
@@ -276,6 +278,30 @@ export default function UserDetailPage() {
     }
   };
 
+  const handleDemoteToUser = async () => {
+    setActionLoading(true);
+    try {
+      await demoteUser({
+        userId: params.id,
+        jsonWebToken: jsonWebToken!,
+      });
+
+      toast.success("아티스트가 일반 사용자로 강등되었습니다.");
+      setDemoteToUserDialogOpen(false);
+
+      const result = await getUserDetail({
+        userId: params.id,
+        jsonWebToken: jsonWebToken!,
+      });
+      if (result?.user) setUser(result.user);
+    } catch (error) {
+      console.error("아티스트 강등 오류:", error);
+      toast.error("아티스트 강등에 실패했습니다.");
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
   const getPlatformLabel = (platform: string) => {
     const platformMap: { [key: string]: string } = {
       GOOGLE: "구글",
@@ -354,7 +380,18 @@ export default function UserDetailPage() {
 
         {/* 관리 액션 버튼들 */}
         <div className="flex items-center gap-2">
-          {user?.gradeInfo?.title?.toUpperCase() !== "ARTIST" && (
+          {user?.gradeInfo?.title?.toUpperCase() === "ARTIST" ? (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setDemoteToUserDialogOpen(true)}
+              className="flex items-center gap-2 text-orange-500 hover:text-orange-600 hover:bg-orange-50"
+              disabled={loading || actionLoading}
+            >
+              <User2 className="w-4 h-4" />
+              일반 사용자 강등
+            </Button>
+          ) : (
             <Button
               variant="outline"
               size="sm"
@@ -1035,6 +1072,40 @@ export default function UserDetailPage() {
               ) : (
                 "아티스트 승격"
               )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog
+        open={demoteToUserDialogOpen}
+        onOpenChange={setDemoteToUserDialogOpen}
+      >
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <User2 className="w-5 h-5" />
+              아티스트 일반 사용자 강등
+            </DialogTitle>
+            <DialogDescription>
+              {`${user?.profile?.nickname}님을 일반 사용자로 강등합니다. 누적 수령 포인트에서 전송 포인트를 차감한 값으로 등급이 재계산됩니다.`}
+            </DialogDescription>
+          </DialogHeader>
+
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setDemoteToUserDialogOpen(false)}
+              disabled={actionLoading}
+            >
+              취소
+            </Button>
+            <Button
+              variant="default"
+              onClick={handleDemoteToUser}
+              disabled={actionLoading}
+            >
+              {actionLoading ? "처리중..." : "일반 사용자 강등"}
             </Button>
           </DialogFooter>
         </DialogContent>

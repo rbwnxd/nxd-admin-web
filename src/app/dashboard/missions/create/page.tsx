@@ -17,6 +17,8 @@ import { toast } from "sonner";
 import { STORAGE_URL } from "@/lib/api";
 import type { MissionFormData } from "@/lib/types";
 
+const INITIAL_MISSION_POINT_BUDGET = 2_100_000_000;
+
 export default function CreateMissionPage() {
   const router = useRouter();
   const jsonWebToken = useAuthStore((state) => state.token);
@@ -28,7 +30,7 @@ export default function CreateMissionPage() {
     description: { ko: "", en: "" },
     youtubeUrl: "",
     pointAmount: 100,
-    totalPointAmount: 100000,
+    totalPointAmount: INITIAL_MISSION_POINT_BUDGET,
     participationIntervalHours: 24,
     publishedAt: "",
     pointFinishedAt: null,
@@ -118,7 +120,7 @@ export default function CreateMissionPage() {
       toast.error("1회당 지급 포인트를 올바르게 입력해주세요.");
       return;
     }
-    if (formData.totalPointAmount < formData.pointAmount) {
+    if (INITIAL_MISSION_POINT_BUDGET < formData.pointAmount) {
       toast.error("전체 포인트 예산은 1회당 지급 포인트 이상이어야 합니다.");
       return;
     }
@@ -130,8 +132,10 @@ export default function CreateMissionPage() {
     setLoading(true);
 
     try {
-      const requestBody: MissionFormData = {
-        ...formData,
+      const { totalPointAmount: _, ...requestBody } = formData;
+      await createMission({
+        body: {
+          ...requestBody,
         participationIntervalHours: isOneTimeOnly
           ? null
           : formData.participationIntervalHours,
@@ -144,10 +148,7 @@ export default function CreateMissionPage() {
           hasEndedAt && formData.endedAt
             ? new Date(formData.endedAt).toISOString()
             : null,
-      };
-
-      await createMission({
-        body: requestBody,
+        },
         jsonWebToken,
       });
 
@@ -361,12 +362,7 @@ export default function CreateMissionPage() {
                 type="number"
                 min={1}
                 value={formData.totalPointAmount}
-                onChange={(e) =>
-                  setFormData((prev) => ({
-                    ...prev,
-                    totalPointAmount: Number(e.target.value),
-                  }))
-                }
+                disabled
               />
             </div>
           </div>

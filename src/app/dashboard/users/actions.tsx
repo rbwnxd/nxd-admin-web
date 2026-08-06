@@ -196,3 +196,29 @@ export const promoteUser = async ({
     throw error;
   }
 };
+
+// 관리자용 아티스트 일반 사용자 강등
+export const demoteUser = async ({
+  userId,
+  jsonWebToken,
+}: {
+  userId: string;
+  jsonWebToken: string;
+}) => {
+  try {
+    const { data } = await axiosApi(
+      `/admin/users/${userId}/demote-to-user`,
+      "patch",
+      {},
+      {
+        headers: {
+          Authorization: `jwt ${jsonWebToken}`,
+        },
+      },
+    );
+    return (data && data["data"]) || null;
+  } catch (error) {
+    console.warn("demoteUser error", error);
+    throw error;
+  }
+};

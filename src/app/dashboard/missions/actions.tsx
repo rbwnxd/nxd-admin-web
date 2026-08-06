@@ -58,7 +58,7 @@ export const createMission = async ({
   body,
   jsonWebToken,
 }: {
-  body: MissionFormData;
+  body: Omit<MissionFormData, "totalPointAmount">;
   jsonWebToken: string;
 }) => {
   try {
